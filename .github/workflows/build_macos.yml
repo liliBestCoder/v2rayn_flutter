@@ -1,0 +1,42 @@
+name: Build macOS
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44'
+          channel: 'stable'
+
+      - name: Select correct xray binary
+        run: |
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "arm64" ]; then
+            cp macos/Runner/Resources/bin/xray/arm64/xray macos/Runner/Resources/bin/xray/xray
+          else
+            cp macos/Runner/Resources/bin/xray/amd64/xray macos/Runner/Resources/bin/xray/xray
+          fi
+          chmod +x macos/Runner/Resources/bin/xray/xray
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build macOS
+        run: flutter build macos --release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release
+          path: build/macos/Build/Products/Release/

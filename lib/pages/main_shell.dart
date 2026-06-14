@@ -174,7 +174,7 @@ static String _generateUuid() {
     final sToken = _submitToken ?? "";
     final params = <String, String>{"token": token};
     if (sToken.isNotEmpty) params["submitToken"] = sToken;
-    final url = Uri.parse("http://127.0.0.1:8081/pay").replace(queryParameters: params).toString();
+    final url = Uri.parse("http://101.201.215.20:8000/pay").replace(queryParameters: params).toString();
     try {
       if (Platform.isWindows) {
         await Process.start("rundll32", ["url.dll,FileProtocolHandler", url], runInShell: false);
@@ -315,7 +315,7 @@ class _NavButton extends StatelessWidget {
 class _UserHeader extends StatelessWidget {
   const _UserHeader({required this.onTrade, required this.onRenew});
 
-  static const _renewUrl = 'http://127.0.0.1:8081/pay';
+  static const _renewUrl = 'http://101.201.215.20:8000/pay';
 
   final VoidCallback onTrade;
   final VoidCallback onRenew;
