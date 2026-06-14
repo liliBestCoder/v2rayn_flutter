@@ -27,15 +27,11 @@ build.bat
 dhcp_server.py
 unlocker428/
 .reasonix/
-.reasonix/
 BOOT-INF/
 com/
 *.class
 speedtest-debug.json
 line-list-debug.json
 user-info-debug.json
-flutter-*.log
 flutter_*.png
 wpf_screen.png
-*.err.log
-*.out.log
