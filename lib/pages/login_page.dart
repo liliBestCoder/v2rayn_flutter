@@ -22,7 +22,6 @@ class _LoginPageState extends State<LoginPage> {
   bool oauthLoading = false;
   String? notice;
   HttpServer? oauthCallbackServer;
-  int _oauthPort = 3000;
   int registerCountdown = 0;
   int resetCountdown = 0;
   Timer? registerTimer;
@@ -241,14 +240,12 @@ class _LoginPageState extends State<LoginPage> {
       final state = AppScope.of(context);
       final api = state.api;
       await _startOauthCallbackServer();
-      final callbackUrl = 'http://127.0.0.1:$_oauthPort/api/auth/callback/$provider';
       final create = await api.createOauthLoginTask(
         provider: provider,
         deviceId: _deviceId(),
         os: Platform.operatingSystemVersion,
         deviceType: 'PC',
         deviceName: Platform.localHostname,
-        redirectUri: callbackUrl,
       );
       if (!mounted) {
         return;
@@ -269,31 +266,27 @@ class _LoginPageState extends State<LoginPage> {
       }
       for (var i = 0; i < 90 && mounted; i++) {
         await Future.delayed(const Duration(seconds: 2));
-        try {
-          final poll = await api.pollOauthLogin(taskId);
-          if (poll.data is! Map<String, dynamic>) {
-            continue;
-          }
-          final pollData = poll.data as Map<String, dynamic>;
-          final status = pollData['status']?.toString();
-          if (poll.success && status == 'success') {
-            final token = pollData['token']?.toString();
-            if (token == null || token.isEmpty) {
-              _toast('授权结果缺少 token');
-              return;
-            }
-            state.token = token;
-            await state.tokenStore.saveToken(token);
-            await state.refreshUserInfo();
-            showAppToast('登录成功', success: true);
+        final poll = await api.pollOauthLogin(taskId);
+        if (poll.data is! Map<String, dynamic>) {
+          continue;
+        }
+        final pollData = poll.data as Map<String, dynamic>;
+        final status = pollData['status']?.toString();
+        if (poll.success && status == 'success') {
+          final token = pollData['token']?.toString();
+          if (token == null || token.isEmpty) {
+            _toast('授权结果缺少 token');
             return;
           }
-          if (status == 'failed') {
-            _toast(pollData['msg']?.toString() ?? '授权登录失败');
-            return;
-          }
-        } catch (_) {
-          // 轮询超时或网络异常，继续下一次
+          state.token = token;
+          await state.tokenStore.saveToken(token);
+          await state.refreshUserInfo();
+          showAppToast('登录成功', success: true);
+          return;
+        }
+        if (status == 'failed') {
+          _toast(pollData['msg']?.toString() ?? '授权登录失败');
+          return;
         }
       }
       _toast('授权登录超时');
@@ -302,8 +295,6 @@ class _LoginPageState extends State<LoginPage> {
         _toast('授权登录异常：$e');
       }
     } finally {
-      oauthCallbackServer?.close(force: true);
-      oauthCallbackServer = null;
       if (mounted) {
         setState(() => oauthLoading = false);
       }
@@ -330,20 +321,12 @@ class _LoginPageState extends State<LoginPage> {
     if (oauthCallbackServer != null) {
       return;
     }
-    // Try port 3000 first.  If taken (e.g. AirPlay on macOS), let the OS
-    // assign a free random port.
-    for (final port in [3000, 0]) {
-      try {
-        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, port);
-        oauthCallbackServer = server;
-        _oauthPort = server.port;
-        server.listen(_handleOauthCallback);
-        return;
-      } catch (_) {
-        if (port == 0) {
-          throw Exception('无法启动回调服务');
-        }
-      }
+    try {
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 3000);
+      oauthCallbackServer = server;
+      server.listen(_handleOauthCallback);
+    } catch (_) {
+      throw Exception('本地3000端口被占用，无法接收Google/X授权回调');
     }
   }
 
