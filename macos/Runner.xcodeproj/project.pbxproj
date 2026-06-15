@@ -317,7 +317,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "echo \"$PRODUCT_NAME.app\" > \"$PROJECT_DIR\"/Flutter/ephemeral/.app_filename && \"$FLUTTER_ROOT\"/packages/flutter_tools/bin/macos_assemble.sh embed\n# Copy xray native binaries and geo data into the .app bundle\nSRC=\"$PROJECT_DIR\"/Runner/Resources/bin\nDST=\"$BUILT_PRODUCTS_DIR\"/\"$PRODUCT_NAME.app\"/Contents/Resources/bin\nif [ -d \"$SRC\" ]; then\n  /bin/mkdir -p \"$(dirname \"$DST\")\" && /usr/bin/ditto \"$SRC\" \"$DST\"\n  echo \"Copied xray resources to $DST\"\nelse\n  echo \"WARNING: xray source not found at $SRC\"\nfi\n";
+			shellScript = "echo \"$PRODUCT_NAME.app\" > \"$PROJECT_DIR\"/Flutter/ephemeral/.app_filename && \"$FLUTTER_ROOT\"/packages/flutter_tools/bin/macos_assemble.sh embed\n# Copy xray native binaries and geo data into the .app bundle\nSRC=\"$PROJECT_DIR\"/Runner/Resources/bin\nDST=\"$BUILT_PRODUCTS_DIR\"/\"$PRODUCT_NAME.app\"/Contents/Resources/bin\nif [ -d \"$SRC\" ]; then\n  /bin/rm -rf \"$DST\"\n  /usr/bin/ditto \"$SRC\" \"$DST\"\n  echo \"Copied xray resources to $DST\"\nelse\n  echo \"WARNING: xray source not found at $SRC\"\nfi\n";
 		};
 		33CC111E2044C6BF0003C045 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
