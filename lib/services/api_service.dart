@@ -196,10 +196,7 @@ class ApiService {
       if (token != null && token.isNotEmpty) {
         request.headers.add('token', token);
       }
-      final response = await request.close().timeout(
-        _responseTimeout,
-        onTimeout: () => throw TimeoutException('请求超时'),
-      );
+      final response = await request.close();
       final text = await response.transform(utf8.decoder).join();
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw HttpException('HTTP ${response.statusCode}: $text', uri: uri);
