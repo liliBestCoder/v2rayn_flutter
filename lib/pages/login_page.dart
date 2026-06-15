@@ -241,7 +241,7 @@ class _LoginPageState extends State<LoginPage> {
       final state = AppScope.of(context);
       final api = state.api;
       await _startOauthCallbackServer();
-      final callbackUrl = 'http://localhost:$_oauthPort/api/auth/callback/$provider';
+      final callbackUrl = 'http://127.0.0.1:$_oauthPort/api/auth/callback/$provider';
       final create = await api.createOauthLoginTask(
         provider: provider,
         deviceId: _deviceId(),
@@ -312,11 +312,9 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _openExternalUrl(String url) async {
     if (Platform.isWindows) {
-      // Use explorer.exe without shell to avoid cmd interpreting & in URL
-      // as command separator (e.g. &response_type=code gets truncated).
       await Process.start(
-        'explorer.exe',
-        [url],
+        'rundll32',
+        ['url.dll,FileProtocolHandler', url],
         runInShell: false,
       );
       return;
@@ -332,23 +330,19 @@ class _LoginPageState extends State<LoginPage> {
     if (oauthCallbackServer != null) {
       return;
     }
-    // Try port 3000 first (free on Windows).  If taken (e.g. AirPlay on
-    // macOS), let the OS assign a random free port.
+    // Try port 3000 first.  If taken (e.g. AirPlay on macOS), let the OS
+    // assign a free random port.
     for (final port in [3000, 0]) {
       try {
-        // Bind on all IPv4 interfaces so both 127.0.0.1 and localhost work.
-        final server =
-            await HttpServer.bind(InternetAddress.anyIPv4, port);
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, port);
         oauthCallbackServer = server;
         _oauthPort = server.port;
         server.listen(_handleOauthCallback);
         return;
       } catch (_) {
         if (port == 0) {
-          // Random port also failed – give up.
-          throw Exception('无法启动回调服务，无法接收授权回调');
+          throw Exception('无法启动回调服务');
         }
-        // Port 3000 taken, retry with random port.
       }
     }
   }
