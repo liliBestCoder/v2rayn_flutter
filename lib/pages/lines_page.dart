@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:ffi' show Abi;
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
@@ -231,15 +232,21 @@ class _LinesPageState extends State<LinesPage> {
     final binName = Platform.isWindows ? 'xray.exe' : 'xray';
     final dir = _xrayDir();
     if (Platform.isMacOS) {
-      // Detect arch: arm64 (Apple Silicon) or amd64 (Intel)
-      final arm64Path =
-          '$dir${Platform.pathSeparator}arm64${Platform.pathSeparator}$binName';
-      if (File(arm64Path).existsSync()) return arm64Path;
-      final amd64Path =
-          '$dir${Platform.pathSeparator}amd64${Platform.pathSeparator}$binName';
-      if (File(amd64Path).existsSync()) return amd64Path;
+      // Pick the xray matching the current CPU architecture
+      final arch = _macCpuArch();
+      final path =
+          '$dir${Platform.pathSeparator}$arch${Platform.pathSeparator}$binName';
+      if (File(path).existsSync()) return path;
+      // Fallback: try the other architecture
+      final other = arch == 'arm64' ? 'amd64' : 'arm64';
+      return '$dir${Platform.pathSeparator}$other${Platform.pathSeparator}$binName';
     }
     return '$dir${Platform.pathSeparator}$binName';
+  }
+
+  String _macCpuArch() {
+    if (Abi.current() == Abi.macosArm64) return 'arm64';
+    return 'amd64';
   }
 
   Map<String, String> _xrayAssetEnvironment() {
