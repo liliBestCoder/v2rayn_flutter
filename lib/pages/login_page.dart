@@ -240,12 +240,14 @@ class _LoginPageState extends State<LoginPage> {
       final state = AppScope.of(context);
       final api = state.api;
       await _startOauthCallbackServer();
+      final redirectUri = 'http://127.0.0.1:3000/api/auth/callback/$provider';
       final create = await api.createOauthLoginTask(
         provider: provider,
         deviceId: _deviceId(),
         os: Platform.operatingSystemVersion,
         deviceType: 'PC',
         deviceName: Platform.localHostname,
+        redirectUri: redirectUri,
       );
       if (!mounted) {
         return;
@@ -309,10 +311,11 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _openExternalUrl(String url) async {
     if (Platform.isWindows) {
-      await Process.start(
-        'rundll32',
-        ['url.dll,FileProtocolHandler', url],
-        runInShell: false,
+      // Use 'start' cmd instead of rundll32 for better compatibility on Win10/11
+      await Process.run(
+        'cmd',
+        ['/c', 'start', '', url],
+        runInShell: true,
       );
       return;
     }
