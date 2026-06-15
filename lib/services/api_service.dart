@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -23,6 +24,9 @@ class ApiService {
   ApiService({this.baseUrl = 'http://101.201.215.20:8000'});
 
   final String baseUrl;
+
+  /// Connection timeout for HTTP requests (10 seconds).
+  static const _connectTimeout = Duration(seconds: 10);
 
   Future<ApiResult> login({
     required String username,
@@ -165,13 +169,16 @@ class ApiService {
 
   Future<ApiResult> get(String path, {String? token}) async {
     final uri = Uri.parse('$baseUrl$path');
-    final client = HttpClient();
+    final client = HttpClient()..connectionTimeout = _connectTimeout;
     try {
       final request = await client.getUrl(uri);
       if (token != null && token.isNotEmpty) {
         request.headers.add('token', token);
       }
-      final response = await request.close();
+      final response = await request.close().timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => throw TimeoutException('请求超时'),
+      );
       final text = await response.transform(utf8.decoder).join();
       return _decodeResult(text);
     } finally {
@@ -181,13 +188,16 @@ class ApiService {
 
   Future<String> getRaw(String path, {String? token}) async {
     final uri = Uri.parse('$baseUrl$path');
-    final client = HttpClient();
+    final client = HttpClient()..connectionTimeout = _connectTimeout;
     try {
       final request = await client.getUrl(uri);
       if (token != null && token.isNotEmpty) {
         request.headers.add('token', token);
       }
-      final response = await request.close();
+      final response = await request.close().timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => throw TimeoutException('请求超时'),
+      );
       final text = await response.transform(utf8.decoder).join();
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw HttpException('HTTP ${response.statusCode}: $text', uri: uri);
@@ -201,7 +211,7 @@ class ApiService {
   Future<ApiResult> post(String path,
       {String? token, Map<String, String>? body}) async {
     final uri = Uri.parse('$baseUrl$path');
-    final client = HttpClient();
+    final client = HttpClient()..connectionTimeout = _connectTimeout;
     try {
       final request = await client.postUrl(uri);
       if (token != null && token.isNotEmpty) {
@@ -211,7 +221,10 @@ class ApiService {
           ContentType('application', 'x-www-form-urlencoded', charset: 'utf-8');
       final payload = Uri(queryParameters: body ?? {}).query;
       request.write(payload);
-      final response = await request.close();
+      final response = await request.close().timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => throw TimeoutException('请求超时'),
+      );
       final text = await response.transform(utf8.decoder).join();
       return _decodeResult(text);
     } finally {

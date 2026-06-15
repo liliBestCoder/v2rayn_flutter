@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/widgets.dart';
 
 import 'models/client_config.dart';
@@ -49,13 +51,16 @@ class AppState extends ChangeNotifier {
   }
 
   Future<ApiResult> login(String username, String password) async {
+    final deviceId = _deviceId();
+    final os = _osName();
+    final deviceName = '$os ${_archName()}';
     final result = await api.login(
       username: username,
       password: password,
-      deviceId: 'flutter-windows',
-      os: 'windows',
+      deviceId: deviceId,
+      os: os,
       deviceType: 'desktop',
-      deviceName: 'Windows PC',
+      deviceName: deviceName,
     );
     if (!result.success) {
       return result;
@@ -93,6 +98,22 @@ class AppState extends ChangeNotifier {
     userInfo = null;
     await tokenStore.clear();
     notifyListeners();
+  }
+
+  static String _deviceId() {
+    final host = Platform.localHostname;
+    return host.isNotEmpty ? host : 'flutter-desktop';
+  }
+
+  static String _osName() {
+    if (Platform.isWindows) return 'windows';
+    if (Platform.isMacOS) return 'macos';
+    if (Platform.isLinux) return 'linux';
+    return Platform.operatingSystem;
+  }
+
+  static String _archName() {
+    return Platform.isMacOS ? 'Mac' : 'PC';
   }
 }
 

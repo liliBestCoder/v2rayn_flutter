@@ -68,16 +68,23 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
     setState(() => loading = true);
-    final state = AppScope.of(context);
-    final result = await state.login(username, password);
-    if (!mounted) {
-      return;
-    }
-    setState(() => loading = false);
-    if (result.success) {
-      showAppToast('登录成功', success: true);
-    } else {
-      _toast(result.msg.isEmpty ? '登录失败' : result.msg);
+    try {
+      final state = AppScope.of(context);
+      final result = await state.login(username, password);
+      if (!mounted) {
+        return;
+      }
+      setState(() => loading = false);
+      if (result.success) {
+        showAppToast('登录成功', success: true);
+      } else {
+        _toast(result.msg.isEmpty ? '登录失败' : result.msg);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => loading = false);
+        _toast('登录失败：$e');
+      }
     }
   }
 
@@ -288,6 +295,8 @@ class _LoginPageState extends State<LoginPage> {
         _toast('授权登录异常：$e');
       }
     } finally {
+      oauthCallbackServer?.close(force: true);
+      oauthCallbackServer = null;
       if (mounted) {
         setState(() => oauthLoading = false);
       }
