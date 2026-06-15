@@ -22,6 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   bool oauthLoading = false;
   String? notice;
   HttpServer? oauthCallbackServer;
+  int _oauthPort = 3000;
   int registerCountdown = 0;
   int resetCountdown = 0;
   Timer? registerTimer;
@@ -240,14 +241,14 @@ class _LoginPageState extends State<LoginPage> {
       final state = AppScope.of(context);
       final api = state.api;
       await _startOauthCallbackServer();
-      final redirectUri = 'http://127.0.0.1:3000/api/auth/callback/$provider';
+      final callbackUrl = 'http://localhost:$_oauthPort/api/auth/callback/$provider';
       final create = await api.createOauthLoginTask(
         provider: provider,
         deviceId: _deviceId(),
         os: Platform.operatingSystemVersion,
         deviceType: 'PC',
         deviceName: Platform.localHostname,
-        redirectUri: redirectUri,
+        redirectUri: callbackUrl,
       );
       if (!mounted) {
         return;
@@ -311,11 +312,12 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _openExternalUrl(String url) async {
     if (Platform.isWindows) {
-      // Use 'start' cmd instead of rundll32 for better compatibility on Win10/11
-      await Process.run(
-        'cmd',
-        ['/c', 'start', '', url],
-        runInShell: true,
+      // Use explorer.exe without shell to avoid cmd interpreting & in URL
+      // as command separator (e.g. &response_type=code gets truncated).
+      await Process.start(
+        'explorer.exe',
+        [url],
+        runInShell: false,
       );
       return;
     }
@@ -330,12 +332,24 @@ class _LoginPageState extends State<LoginPage> {
     if (oauthCallbackServer != null) {
       return;
     }
-    try {
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 3000);
-      oauthCallbackServer = server;
-      server.listen(_handleOauthCallback);
-    } catch (_) {
-      throw Exception('本地3000端口被占用，无法接收Google/X授权回调');
+    // Try port 3000 first (free on Windows).  If taken (e.g. AirPlay on
+    // macOS), let the OS assign a random free port.
+    for (final port in [3000, 0]) {
+      try {
+        // Bind on all IPv4 interfaces so both 127.0.0.1 and localhost work.
+        final server =
+            await HttpServer.bind(InternetAddress.anyIPv4, port);
+        oauthCallbackServer = server;
+        _oauthPort = server.port;
+        server.listen(_handleOauthCallback);
+        return;
+      } catch (_) {
+        if (port == 0) {
+          // Random port also failed – give up.
+          throw Exception('无法启动回调服务，无法接收授权回调');
+        }
+        // Port 3000 taken, retry with random port.
+      }
     }
   }
 
