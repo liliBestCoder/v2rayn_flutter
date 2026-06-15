@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -50,9 +48,6 @@ class _V2rayNFlutterAppState extends State<V2rayNFlutterApp> {
   }
 
   Future<void> _syncWindowSize() async {
-    if (!Platform.isWindows) {
-      return;
-    }
     final loggedIn = appState.isLoggedIn;
     try {
       await _windowChannel.invokeMethod('setSize', {
@@ -61,7 +56,7 @@ class _V2rayNFlutterAppState extends State<V2rayNFlutterApp> {
         'center': true,
       });
     } catch (_) {
-      // The Windows channel is only available in packaged desktop builds.
+      // The window channel is only available in packaged desktop builds.
     }
   }
 

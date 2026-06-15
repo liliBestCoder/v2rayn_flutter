@@ -229,7 +229,17 @@ class _LinesPageState extends State<LinesPage> {
 
   String _xrayPath() {
     final binName = Platform.isWindows ? 'xray.exe' : 'xray';
-    return '${_xrayDir()}${Platform.pathSeparator}$binName';
+    final dir = _xrayDir();
+    if (Platform.isMacOS) {
+      // Detect arch: arm64 (Apple Silicon) or amd64 (Intel)
+      final arm64Path =
+          '$dir${Platform.pathSeparator}arm64${Platform.pathSeparator}$binName';
+      if (File(arm64Path).existsSync()) return arm64Path;
+      final amd64Path =
+          '$dir${Platform.pathSeparator}amd64${Platform.pathSeparator}$binName';
+      if (File(amd64Path).existsSync()) return amd64Path;
+    }
+    return '$dir${Platform.pathSeparator}$binName';
   }
 
   Map<String, String> _xrayAssetEnvironment() {
