@@ -27,6 +27,8 @@ class ApiService {
 
   /// Connection timeout for HTTP requests (10 seconds).
   static const _connectTimeout = Duration(seconds: 10);
+  /// Response timeout for HTTP requests (30 seconds).
+  static const _responseTimeout = Duration(seconds: 30);
 
   Future<ApiResult> login({
     required String username,
@@ -176,7 +178,7 @@ class ApiService {
         request.headers.add('token', token);
       }
       final response = await request.close().timeout(
-        const Duration(seconds: 15),
+        _responseTimeout,
         onTimeout: () => throw TimeoutException('请求超时'),
       );
       final text = await response.transform(utf8.decoder).join();
@@ -195,7 +197,7 @@ class ApiService {
         request.headers.add('token', token);
       }
       final response = await request.close().timeout(
-        const Duration(seconds: 15),
+        _responseTimeout,
         onTimeout: () => throw TimeoutException('请求超时'),
       );
       final text = await response.transform(utf8.decoder).join();
@@ -222,7 +224,7 @@ class ApiService {
       final payload = Uri(queryParameters: body ?? {}).query;
       request.write(payload);
       final response = await request.close().timeout(
-        const Duration(seconds: 15),
+        _responseTimeout,
         onTimeout: () => throw TimeoutException('请求超时'),
       );
       final text = await response.transform(utf8.decoder).join();
