@@ -266,27 +266,31 @@ class _LoginPageState extends State<LoginPage> {
       }
       for (var i = 0; i < 90 && mounted; i++) {
         await Future.delayed(const Duration(seconds: 2));
-        final poll = await api.pollOauthLogin(taskId);
-        if (poll.data is! Map<String, dynamic>) {
-          continue;
-        }
-        final pollData = poll.data as Map<String, dynamic>;
-        final status = pollData['status']?.toString();
-        if (poll.success && status == 'success') {
-          final token = pollData['token']?.toString();
-          if (token == null || token.isEmpty) {
-            _toast('授权结果缺少 token');
+        try {
+          final poll = await api.pollOauthLogin(taskId);
+          if (poll.data is! Map<String, dynamic>) {
+            continue;
+          }
+          final pollData = poll.data as Map<String, dynamic>;
+          final status = pollData['status']?.toString();
+          if (poll.success && status == 'success') {
+            final token = pollData['token']?.toString();
+            if (token == null || token.isEmpty) {
+              _toast('授权结果缺少 token');
+              return;
+            }
+            state.token = token;
+            await state.tokenStore.saveToken(token);
+            await state.refreshUserInfo();
+            showAppToast('登录成功', success: true);
             return;
           }
-          state.token = token;
-          await state.tokenStore.saveToken(token);
-          await state.refreshUserInfo();
-          showAppToast('登录成功', success: true);
-          return;
-        }
-        if (status == 'failed') {
-          _toast(pollData['msg']?.toString() ?? '授权登录失败');
-          return;
+          if (status == 'failed') {
+            _toast(pollData['msg']?.toString() ?? '授权登录失败');
+            return;
+          }
+        } catch (_) {
+          // 轮询超时或网络异常，继续下一次
         }
       }
       _toast('授权登录超时');
