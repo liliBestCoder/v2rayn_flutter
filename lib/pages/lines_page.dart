@@ -158,8 +158,6 @@ class _LinesPageState extends State<LinesPage> {
       'outbounds': outbounds,
       'routing': {'rules': rules},
     });
-    await _writeSpeedtestConfig(configContent);
-
     Process? process;
     try {
       final xray = _xrayPath();
@@ -405,16 +403,6 @@ class _LinesPageState extends State<LinesPage> {
       );
     } catch (_) {
       // Diagnostic logging must never affect speed testing.
-    }
-  }
-
-  Future<void> _writeSpeedtestConfig(String content) async {
-    try {
-      final dir = await _appDataDir();
-      await File('${dir.path}${Platform.pathSeparator}speedtest-config.json')
-          .writeAsString(content, flush: true);
-    } catch (_) {
-      // Diagnostic config dump must never affect speed testing.
     }
   }
 
