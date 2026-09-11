@@ -489,7 +489,7 @@ class _UserHeader extends StatelessWidget {
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -516,7 +516,7 @@ class _UserHeader extends StatelessWidget {
                     child: const Text(
                       '续费',
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                          TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
                     ),
                   ),
                 ),

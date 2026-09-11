@@ -414,7 +414,7 @@ class _LinesPageState extends State<LinesPage> {
                 const Text('线路列表',
                     style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                         color: LuxwapColors.neutral900)),
                 const Spacer(),
                 _ToolbarButton(
@@ -857,7 +857,7 @@ class _StatusBar extends StatelessWidget {
           Text(
             connected ? '已连接' : '未连接',
             style: const TextStyle(
-                color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
           ),
           if (connected) ...[
             const SizedBox(width: 18),
@@ -866,14 +866,14 @@ class _StatusBar extends StatelessWidget {
               style: const TextStyle(
                   color: Colors.white,
                   fontSize: 12,
-                  fontWeight: FontWeight.bold),
+                  fontWeight: FontWeight.w500),
             ),
           ],
           const Spacer(),
           Text(
             connected ? 'STOP' : 'START',
             style: const TextStyle(
-                color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
           ),
           const SizedBox(width: 12),
           InkWell(
@@ -1118,7 +1118,7 @@ class _DelayText extends StatelessWidget {
           style: TextStyle(
               color: LuxwapColors.brand500,
               fontSize: 11,
-              fontWeight: FontWeight.bold));
+              fontWeight: FontWeight.w500));
     }
     if (node.delayMs == null) {
       return const Text('-',
@@ -1126,7 +1126,7 @@ class _DelayText extends StatelessWidget {
           style: TextStyle(
               color: LuxwapColors.brand500,
               fontSize: 11,
-              fontWeight: FontWeight.bold));
+              fontWeight: FontWeight.w500));
     }
     if (node.delayMs! < 0) {
       return const Text('超时',
@@ -1134,7 +1134,7 @@ class _DelayText extends StatelessWidget {
           style: TextStyle(
               color: LuxwapColors.brand500,
               fontSize: 11,
-              fontWeight: FontWeight.bold));
+              fontWeight: FontWeight.w500));
     }
     return RichText(
       textAlign: TextAlign.right,
@@ -1145,7 +1145,7 @@ class _DelayText extends StatelessWidget {
               style: const TextStyle(
                   color: LuxwapColors.brand500,
                   fontSize: 12,
-                  fontWeight: FontWeight.bold)),
+                  fontWeight: FontWeight.w500)),
           const TextSpan(
               text: ' /ms',
               style: TextStyle(color: LuxwapColors.neutral900, fontSize: 10)),

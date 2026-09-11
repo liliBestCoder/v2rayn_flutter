@@ -372,7 +372,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       backgroundColor: LuxwapColors.brand500,
                       foregroundColor: Colors.white,
                       textStyle: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.bold),
+                          fontSize: 12, fontWeight: FontWeight.w500),
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       shape: const RoundedRectangleBorder(
                           borderRadius: LuxwapRadius.rLg),
@@ -409,7 +409,7 @@ class _SectionTitle extends StatelessWidget {
       text,
       style: const TextStyle(
         fontSize: 15,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
         color: LuxwapColors.neutral900,
       ),
     );

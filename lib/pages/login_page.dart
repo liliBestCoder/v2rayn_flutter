@@ -514,7 +514,7 @@ class _LoginPageState extends State<LoginPage> {
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -567,7 +567,7 @@ class _LoginPageState extends State<LoginPage> {
                               '重置密码',
                               style: TextStyle(
                                 fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 color: Color(0xff1b1b1b),
                               ),
                             ),
@@ -776,7 +776,7 @@ class _LoginPageState extends State<LoginPage> {
           style: TextStyle(
               color: Color(0xff1b1b1b),
               fontSize: 12,
-              fontWeight: FontWeight.bold),
+              fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 4),
         Text(

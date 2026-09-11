@@ -24,7 +24,7 @@ class PersonalCenterPage extends StatelessWidget {
             '个人资料',
             style: TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
               color: LuxwapColors.neutral900,
             ),
           ),
@@ -101,7 +101,7 @@ class PersonalCenterPage extends StatelessWidget {
                   foregroundColor: Colors.white,
                   textStyle: const TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w500,
                   ),
                   shape: const RoundedRectangleBorder(
                     borderRadius: LuxwapRadius.rLg,
@@ -409,7 +409,7 @@ class _ProfileRow extends StatelessWidget {
                 child: Text(
                   label,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w500,
                     color: Color(0xff1b1b1b),
                   ),
                 ),
@@ -444,7 +444,7 @@ class _ProfileRow extends StatelessWidget {
                             actionText!,
                             style: const TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
@@ -508,7 +508,7 @@ class _PointsCard extends StatelessWidget {
                       '1000',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                         color: Color(0xffff8a18),
                       ),
                     ),
@@ -524,7 +524,7 @@ class _PointsCard extends StatelessWidget {
                         'LV1 会员',
                         style: TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                             color: LuxwapColors.brand500),
                       ),
                     ),
@@ -574,7 +574,7 @@ class _PointsCard extends StatelessWidget {
             icon: const Icon(Icons.redeem, size: 16),
             label: const Text('积分兑换',
                 style:
-                    TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                    TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
