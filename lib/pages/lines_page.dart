@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import '../app_state.dart';
 import '../models/client_config.dart';
 import '../models/line_node.dart';
+import '../services/xray_config_builder.dart';
 
 class LinesPage extends StatefulWidget {
   const LinesPage({super.key});
@@ -266,57 +267,7 @@ class _LinesPageState extends State<LinesPage> {
   }
 
   Map<String, dynamic>? _buildVlessOutbound(LineNode node, String tag) {
-    final uri = Uri.tryParse(node.raw);
-    if (uri == null ||
-        uri.scheme.toLowerCase() != 'vless' ||
-        uri.host.isEmpty ||
-        !uri.hasPort ||
-        uri.userInfo.isEmpty) {
-      return null;
-    }
-
-    final query = uri.queryParameters;
-    final user = <String, dynamic>{
-      'id': uri.userInfo,
-      'encryption': query['encryption'] ?? 'none',
-    };
-    if ((query['flow'] ?? '').isNotEmpty) {
-      user['flow'] = query['flow'];
-    }
-
-    final streamSettings = <String, dynamic>{
-      'network': query['type'] ?? 'tcp',
-      'security': query['security'] ?? 'none',
-    };
-    if (streamSettings['security'] == 'reality') {
-      streamSettings['realitySettings'] = {
-        'serverName': query['sni'] ?? '',
-        'fingerprint': query['fp'] ?? 'chrome',
-        'publicKey': query['pbk'] ?? '',
-        'shortId': query['sid'] ?? '',
-        'spiderX': query['spx'] ?? '',
-      };
-    } else if (streamSettings['security'] == 'tls') {
-      streamSettings['tlsSettings'] = {
-        'serverName': query['sni'] ?? '',
-        'allowInsecure': false,
-      };
-    }
-
-    return {
-      'tag': tag,
-      'protocol': 'vless',
-      'settings': {
-        'vnext': [
-          {
-            'address': uri.host,
-            'port': uri.port,
-            'users': [user],
-          }
-        ],
-      },
-      'streamSettings': streamSettings,
-    };
+    return XrayConfigBuilder.buildVlessOutbound(node, tag);
   }
 
   Future<int> _nextSpeedtestPort() async {
@@ -827,168 +778,27 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
     ClientConfig clientConfig,
     String? userCountry,
   ) async {
-    final uri = Uri.tryParse(node.raw);
-    if (uri == null ||
-        uri.scheme.toLowerCase() != 'vless' ||
-        uri.host.isEmpty ||
-        !uri.hasPort ||
-        uri.userInfo.isEmpty) {
-      return null;
-    }
-
     statsPort = await _freePort();
-    final proxyOutbound = _buildVlessOutbound(node, 'proxy');
-    if (proxyOutbound == null) {
-      return null;
-    }
-    final countryCode = _normalizeCountryCode(userCountry);
-    final isChina = countryCode == 'cn';
-
-    final inbounds = <Map<String, dynamic>>[
-      {
-        'tag': 'http-in',
-        'listen': '127.0.0.1',
-        'port': 10809,
-        'protocol': 'http',
-        'settings': {'timeout': 0},
-      },
-      {
-        'tag': 'socks-in',
-        'listen': '127.0.0.1',
-        'port': 10808,
-        'protocol': 'socks',
-        'settings': {'auth': 'noauth', 'udp': true},
-      },
-      {
-        'tag': 'api',
-        'listen': '127.0.0.1',
-        'port': statsPort,
-        'protocol': 'dokodemo-door',
-        'settings': {'address': '127.0.0.1'},
-      },
-    ];
-
-    if (clientConfig.tunEnabled) {
-      inbounds.add({
-        'tag': 'tun-in',
-        'port': 0,
-        'protocol': 'tun',
-        'settings': {
-          'name': Platform.isMacOS ? 'utun10' : 'wintun',
-          'desc': 'Wintun',
-          'mtu': 1500,
-        },
-      });
-    }
-
-    final config = {
-      'log': {'loglevel': 'warning'},
-      'dns': _buildDnsConfig(clientConfig, isChina),
-      'stats': {},
-      'metrics': {'tag': 'api'},
-      'policy': {
-        'system': {
-          'statsOutboundUplink': true,
-          'statsOutboundDownlink': true,
-        }
-      },
-      'inbounds': inbounds,
-      'outbounds': [
-        proxyOutbound,
-        {'tag': 'direct', 'protocol': 'freedom'},
-        {'tag': 'block', 'protocol': 'blackhole'},
-      ],
-      'routing': {
-        'domainStrategy': isChina ? 'AsIs' : 'IPIfNonMatch',
-        'rules': [
-          {
-            'type': 'field',
-            'inboundTag': ['api'],
-            'outboundTag': 'api',
-          },
-          ..._buildRoutingRules(clientConfig, countryCode, isChina),
-        ],
-      },
-    };
-
-    return const JsonEncoder.withIndent('  ').convert(config);
+    return XrayConfigBuilder.buildConfigJson(
+      node: node,
+      clientConfig: clientConfig,
+      userCountry: userCountry,
+      statsPort: statsPort,
+    );
   }
 
-  String _normalizeCountryCode(String? country) {
-    final code = (country ?? '').trim().toLowerCase();
-    if (RegExp(r'^[a-z]{2}$').hasMatch(code)) {
-      return code;
-    }
-    return 'cn';
-  }
+  String _normalizeCountryCode(String? country) =>
+      XrayConfigBuilder.normalizeCountryCode(country);
 
-  Map<String, dynamic> _buildDnsConfig(ClientConfig config, bool isChina) {
-    final servers = <dynamic>[];
-    if (config.dotDns.trim().isNotEmpty) {
-      servers.add(config.dotDns.trim());
-    }
-    if (config.vpnRoute) {
-      if (isChina) {
-        servers.add({
-          'address': config.innerDns,
-          'domains': ['geosite:cn'],
-          'expectIPs': ['geoip:cn'],
-        });
-        servers.add({
-          'address': config.outerDns,
-          'domains': ['geosite:geolocation-!cn'],
-        });
-      } else {
-        servers.add(config.outerDns);
-      }
-    }
-    servers.add(config.globalDns);
-    return {'servers': servers};
-  }
+  Map<String, dynamic> _buildDnsConfig(ClientConfig config, bool isChina) =>
+      XrayConfigBuilder.buildDnsConfig(config, isChina);
 
   List<Map<String, dynamic>> _buildRoutingRules(
     ClientConfig config,
     String countryCode,
     bool isChina,
-  ) {
-    final rules = <Map<String, dynamic>>[];
-    if (config.blockAds) {
-      rules.add({
-        'type': 'field',
-        'domain': ['geosite:category-ads-all'],
-        'outboundTag': 'block',
-      });
-    }
-    if (config.passByDomain && isChina) {
-      rules.add({
-        'type': 'field',
-        'domain': ['geosite:cn'],
-        'outboundTag': 'direct',
-      });
-    }
-    if (config.passByLanDomain) {
-      rules.add({
-        'type': 'field',
-        'domain': ['domain:localhost'],
-        'outboundTag': 'direct',
-      });
-    }
-    if (config.passByIp) {
-      rules.add({
-        'type': 'field',
-        'ip': ['geoip:$countryCode'],
-        'outboundTag': 'direct',
-      });
-    }
-    if (config.passByLanIp) {
-      rules.add({
-        'type': 'field',
-        'ip': ['geoip:private'],
-        'outboundTag': 'direct',
-      });
-    }
-    return rules;
-  }
+  ) =>
+      XrayConfigBuilder.buildRoutingRules(config, countryCode, isChina);
 
   Future<void> _showFilterMenu() async {
     final selected = await showMenu<String>(

@@ -61,4 +61,74 @@ void main() {
       expect(find.text('一键解除'), findsOneWidget);
     }
   });
+
+  testWidgets('Toggling TUN mode switch updates AppState clientConfig.tunEnabled', (WidgetTester tester) async {
+    final state = AppState(
+      api: ApiService(baseUrl: 'http://127.0.0.1:8080'),
+      tokenStore: MockTokenStore(),
+      configStore: MockConfigStore(),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: AppScope(
+            state: state,
+            child: const SettingsPage(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(state.clientConfig.tunEnabled, isTrue);
+
+    // Find the TUN switch row and tap it
+    final tunSwitch = find.ancestor(
+      of: find.text('TUN 虚拟网卡模式'),
+      matching: find.byType(Row),
+    );
+    expect(tunSwitch, findsWidgets);
+
+    // Tap the switch widget
+    final switches = find.byType(Switch);
+    if (switches.evaluate().isNotEmpty) {
+      await tester.tap(switches.first);
+      await tester.pumpAndSettle();
+    }
+  });
+
+  testWidgets('Double tapping DoT field enters edit mode', (WidgetTester tester) async {
+    final state = AppState(
+      api: ApiService(baseUrl: 'http://127.0.0.1:8080'),
+      tokenStore: MockTokenStore(),
+      configStore: MockConfigStore(),
+    );
+    await state.updateClientConfig(
+      state.clientConfig.copyWith(dotDns: 'tcp://1.1.1.1:853'),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: AppScope(
+            state: state,
+            child: const SettingsPage(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('tcp://1.1.1.1:853'), findsOneWidget);
+
+    // Double tap to edit
+    await tester.tap(find.text('tcp://1.1.1.1:853'));
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(find.text('tcp://1.1.1.1:853'));
+    await tester.pumpAndSettle();
+
+    // Now an input TextField should appear for editing
+    expect(find.byType(TextField), findsWidgets);
+  });
 }

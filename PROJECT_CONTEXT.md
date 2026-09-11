@@ -66,7 +66,7 @@
 
 ## 4. 全套测试用例体系与执行方式
 
-### 4.1 Flutter 单元 / 组件 / 变异测试（25 个用例全部通过）
+### 4.1 Flutter 单元 / 组件 / 变异测试（47 个用例全部通过）
 运行命令：
 ```powershell
 flutter test
@@ -78,14 +78,17 @@ flutter test
   - Mutant 4: TUN 默认开启标志反转杀灭
   - Mutant 5: 关闭到托盘默认开启标志反转杀灭
 - **单元测试** (`test/unit/`)：
-  - `client_config_test.dart`: 默认值、序列化与反序列化容错
-  - `line_node_test.dart`: 显式 load 计算、remark 正则解析、拥堵红黄绿三色区间断言、VLESS URI 容错
+  - `client_config_test.dart`: 默认值、序列化与反序列化容错（4 个用例）
+  - `line_node_test.dart`: 显式 load 计算、remark 正则解析、拥堵红黄绿三色区间断言、VLESS URI 容错（6 个用例）
+  - `dot_dns_test.dart`: DoT (DNS over TLS) 顶级优先级注入、格式裁剪（`tcp://` / `tls://`）、空值安全容错及完整 Xray JSON 组装（5 个用例）
+  - `tun_routing_test.dart`: TUN 模式原生入站（`port: 0`、`protocol: "tun"`、Windows `wintun` 与 macOS `utun10` 驱动命名）及全套路由表规则生效断言（`passByIp`、`passByDomain`、`passByLanIp`、`passByLanDomain`、`blockAds` 广告黑洞过滤、`AsIs` vs `IPIfNonMatch` 策略切换）（10 个用例）
+  - `uwp_loopback_test.dart`: Windows UWP `CheckNetIsolation LoopbackExempt` 命令拼接、非 Windows 平台安全拦截、PowerShell 执行结果与异常降级（5 个用例）
 - **组件测试** (`test/widget/`)：
   - `help_page_test.dart`: 帮助与文档中心双 Tab 切换、搜索过滤、分类胶囊点选、弹窗模式与关于页互通（6 个用例）
-  - `login_page_test.dart`: 双 Tab 切换与表单挂载
-  - `personal_center_test.dart`: 置顶积分卡片与 2x2 网格
-  - `settings_page_test.dart`: TUN 开关、DoT 输入、UWP 工具按钮
-  - `test/widget_test.dart`: LuxwapApp 整体应用挂载烟雾测试
+  - `login_page_test.dart`: 双 Tab 切换与表单挂载（2 个用例）
+  - `personal_center_test.dart`: 置顶积分卡片与 2x2 网格（1 个用例）
+  - `settings_page_test.dart`: TUN 开关切换、DoT 双击编辑、关闭行为与 UWP 工具按钮交互（3 个用例）
+  - `test/widget_test.dart`: LuxwapApp 整体应用挂载烟雾测试（1 个用例）
 
 ### 4.2 真实无头 Chrome 浏览器测试
 运行命令：

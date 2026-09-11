@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../app_state.dart';
 import '../app_toast.dart';
+import '../services/uwp_loopback_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -124,14 +125,8 @@ class _SettingsPageState extends State<SettingsPage> {
     }
     showAppToast('正在解除 UWP 回环限制...');
     try {
-      final res = await Process.run('powershell', [
-        '-NoProfile',
-        '-ExecutionPolicy',
-        'Bypass',
-        '-Command',
-        r'Get-AppxPackage | ForEach-Object { & CheckNetIsolation LoopbackExempt -a -p=$($_.PackageFamilyName) }',
-      ]);
-      if (res.exitCode == 0) {
+      final success = await UwpLoopbackService.exemptLoopback();
+      if (success) {
         showAppToast('已成功解除 UWP 应用回环代理限制！', success: true);
       } else {
         showAppToast('解除完成');
