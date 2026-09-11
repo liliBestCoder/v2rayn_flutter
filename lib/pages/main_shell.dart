@@ -208,69 +208,93 @@ class _Sidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 160,
-      child: Stack(
+      width: 170,
+      child: Column(
         children: [
-          Column(
-            children: [
-              const SizedBox(height: 42),
-              Container(
-                width: 56,
-                height: 56,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: LuxwapColors.brand50,
-                  borderRadius: LuxwapRadius.rMd,
+          Container(
+            padding: const EdgeInsets.fromLTRB(18, 24, 18, 20),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  padding: const EdgeInsets.all(6),
+                  decoration: const BoxDecoration(
+                    color: LuxwapColors.brand50,
+                    borderRadius: LuxwapRadius.rSm,
+                  ),
+                  child: const LuxwapIcon('icon-logo-blue', size: 24),
                 ),
-                child: const LuxwapIcon('icon-logo-blue', size: 40),
-              ),
-              const SizedBox(height: 36),
-              _NavButton(
-                  index: 0, selected: selected, label: '线路', onTap: onSelect),
-              _NavButton(
-                  index: 1, selected: selected, label: '个人中心', onTap: onSelect),
-              _NavButton(
-                  index: 2, selected: selected, label: '设置', onTap: onSelect),
-              _NavButton(
-                  index: 6,
-                  selected: selected,
-                  label: '帮助',
-                  onTap: onSelect),
-              _NavButton(
-                  index: 5, selected: selected, label: '关于', onTap: onSelect),
-              _NavButton(
-                  index: 4, selected: selected, label: '有礼活动', onTap: onSelect),
-            ],
+                const SizedBox(width: 12),
+                const Text(
+                  'Luxwap',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: LuxwapColors.brand500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
           ),
-          Positioned(
-            left: 0,
-            top: _activeIndicatorTop(selected),
-            child: Container(
-              width: 4,
-              height: 26,
-              decoration: const BoxDecoration(
-                color: LuxwapColors.brand500,
-                borderRadius:
-                    BorderRadius.horizontal(right: Radius.circular(3)),
+          _NavButton(
+            index: 0,
+            selected: selected,
+            label: '线路',
+            icon: 'icon-rocket',
+            onTap: onSelect,
+          ),
+          _NavButton(
+            index: 1,
+            selected: selected,
+            label: '个人中心',
+            icon: 'icon-star',
+            onTap: onSelect,
+          ),
+          _NavButton(
+            index: 2,
+            selected: selected,
+            label: '设置',
+            icon: 'icon-gear',
+            onTap: onSelect,
+          ),
+          _NavButton(
+            index: 6,
+            selected: selected,
+            label: '帮助',
+            icon: 'icon-clipboard',
+            onTap: onSelect,
+          ),
+          _NavButton(
+            index: 5,
+            selected: selected,
+            label: '关于',
+            icon: 'icon-cloud',
+            onTap: onSelect,
+          ),
+          _NavButton(
+            index: 4,
+            selected: selected,
+            label: '有礼活动',
+            icon: 'icon-turkey',
+            onTap: onSelect,
+          ),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Text(
+              'v2.0 PC 专业版',
+              style: TextStyle(
+                fontSize: 11,
+                color: LuxwapColors.neutral400,
+                fontWeight: FontWeight.w400,
               ),
             ),
           ),
         ],
       ),
     );
-  }
-
-  double _activeIndicatorTop(int index) {
-    final effectiveIndex = switch (index) {
-      0 => 0,
-      1 => 1,
-      2 => 2,
-      6 => 3,
-      5 => 4,
-      4 => 5,
-      _ => 0,
-    };
-    return 42 + 64 + 36 + effectiveIndex * 46 + 2;
   }
 }
 
@@ -279,41 +303,72 @@ class _NavButton extends StatelessWidget {
     required this.index,
     required this.selected,
     required this.label,
+    required this.icon,
     required this.onTap,
   });
 
   final int index;
   final int selected;
   final String label;
+  final String icon;
   final ValueChanged<int> onTap;
 
   @override
   Widget build(BuildContext context) {
     final active = selected == index;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Center(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+      child: Material(
+        color: Colors.transparent,
         child: InkWell(
           onTap: () => onTap(index),
           borderRadius: LuxwapRadius.rSm,
+          hoverColor: LuxwapColors.neutral100,
           child: Container(
-            width: 94,
-            height: 30,
+            height: 38,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: active ? LuxwapColors.brand50 : LuxwapColors.neutral50,
+              color: active ? LuxwapColors.brand50 : Colors.transparent,
               borderRadius: LuxwapRadius.rSm,
+              border: Border.all(
+                color: active
+                    ? LuxwapColors.brand500.withValues(alpha: 0.18)
+                    : Colors.transparent,
+                width: 1,
+              ),
             ),
-            child: Center(
-              child: Text(
-                label,
-                style: TextStyle(
+            child: Row(
+              children: [
+                LuxwapIcon(
+                  icon,
+                  size: 16,
                   color: active
                       ? LuxwapColors.brand500
-                      : LuxwapColors.neutral800,
-                  fontSize: 12,
-                  fontWeight: active ? FontWeight.w500 : FontWeight.w400,
+                      : LuxwapColors.neutral600,
                 ),
-              ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: active
+                          ? LuxwapColors.brand500
+                          : LuxwapColors.neutral800,
+                      fontSize: 13,
+                      fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+                if (active)
+                  Container(
+                    width: 4,
+                    height: 14,
+                    decoration: const BoxDecoration(
+                      color: LuxwapColors.brand500,
+                      borderRadius: BorderRadius.all(Radius.circular(2)),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),

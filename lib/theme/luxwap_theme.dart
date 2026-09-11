@@ -73,83 +73,93 @@ abstract final class LuxwapRadius {
 }
 
 abstract final class LuxwapTypography {
+  static const String primaryFont = 'Microsoft YaHei';
   static const List<String> fontFallbacks = [
+    'PingFang SC',
+    'Segoe UI',
     'MiSans',
     'Inter',
-    'PingFang SC',
-    'Microsoft YaHei',
-    'Segoe UI',
+    'Helvetica Neue',
     'sans-serif',
   ];
 
   static TextStyle get heading1 => const TextStyle(
+        fontFamily: primaryFont,
         fontSize: 20,
-        fontWeight: FontWeight.w500,
-        height: 1.0,
+        fontWeight: FontWeight.w600,
+        height: 1.3,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
 
   static TextStyle get heading2 => const TextStyle(
+        fontFamily: primaryFont,
         fontSize: 20,
         fontWeight: FontWeight.w400,
-        height: 1.0,
+        height: 1.3,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
 
   static TextStyle get heading3 => const TextStyle(
+        fontFamily: primaryFont,
         fontSize: 18,
         fontWeight: FontWeight.w400,
-        height: 1.0,
+        height: 1.35,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
 
   static TextStyle get heading4 => const TextStyle(
+        fontFamily: primaryFont,
         fontSize: 18,
-        fontWeight: FontWeight.w500,
-        height: 1.0,
+        fontWeight: FontWeight.w600,
+        height: 1.35,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
 
   static TextStyle get heading5 => const TextStyle(
+        fontFamily: primaryFont,
         fontSize: 16,
-        fontWeight: FontWeight.w500,
-        height: 1.0,
+        fontWeight: FontWeight.w600,
+        height: 1.4,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
 
   static TextStyle get heading6 => const TextStyle(
+        fontFamily: primaryFont,
         fontSize: 16,
         fontWeight: FontWeight.w400,
-        height: 1.0,
+        height: 1.4,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
 
   static TextStyle get bodyLarge => const TextStyle(
+        fontFamily: primaryFont,
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        height: 1.2,
+        height: 1.45,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
 
   static TextStyle get body => const TextStyle(
+        fontFamily: primaryFont,
         fontSize: 12,
         fontWeight: FontWeight.w400,
-        height: 1.2,
+        height: 1.5,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
 
   static TextStyle get caption => const TextStyle(
+        fontFamily: primaryFont,
         fontSize: 11,
         fontWeight: FontWeight.w400,
-        height: 1.2,
+        height: 1.4,
         color: LuxwapColors.mutedForeground,
         fontFamilyFallback: fontFallbacks,
       );
@@ -158,15 +168,15 @@ abstract final class LuxwapTypography {
 abstract final class LuxwapShadows {
   static const List<BoxShadow> shadow2xs = [
     BoxShadow(
-      color: Color(0x40000000),
-      offset: Offset(0, 2),
-      blurRadius: 4,
+      color: Color(0x1a000000),
+      offset: Offset(0, 1),
+      blurRadius: 3,
     ),
   ];
 
   static const List<BoxShadow> shadowXs = [
     BoxShadow(
-      color: Color(0x2e000000),
+      color: Color(0x14000000),
       offset: Offset(0, 2),
       blurRadius: 6,
     ),
@@ -174,9 +184,9 @@ abstract final class LuxwapShadows {
 
   static const List<BoxShadow> shadowSm = [
     BoxShadow(
-      color: Color(0x29000000),
+      color: Color(0x1f000000),
       offset: Offset(0, 3),
-      blurRadius: 6,
+      blurRadius: 8,
     ),
   ];
 
@@ -186,6 +196,8 @@ abstract final class LuxwapShadows {
 ThemeData buildLuxwapThemeData() {
   return ThemeData(
     useMaterial3: true,
+    fontFamily: LuxwapTypography.primaryFont,
+    fontFamilyFallback: LuxwapTypography.fontFallbacks,
     scaffoldBackgroundColor: LuxwapColors.scaffoldBackground,
     colorScheme: ColorScheme.fromSeed(
       seedColor: LuxwapColors.brand500,
@@ -193,6 +205,17 @@ ThemeData buildLuxwapThemeData() {
       onPrimary: LuxwapColors.primaryForeground,
       surface: LuxwapColors.card,
       onSurface: LuxwapColors.foreground,
+    ),
+    textTheme: TextTheme(
+      headlineLarge: LuxwapTypography.heading1,
+      headlineMedium: LuxwapTypography.heading2,
+      headlineSmall: LuxwapTypography.heading3,
+      titleLarge: LuxwapTypography.heading4,
+      titleMedium: LuxwapTypography.heading5,
+      titleSmall: LuxwapTypography.heading6,
+      bodyLarge: LuxwapTypography.bodyLarge,
+      bodyMedium: LuxwapTypography.body,
+      bodySmall: LuxwapTypography.caption,
     ),
     dividerTheme: const DividerThemeData(
       color: LuxwapColors.divider,

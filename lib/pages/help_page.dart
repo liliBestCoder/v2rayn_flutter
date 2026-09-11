@@ -368,58 +368,198 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildPrivacyPolicyTab() {
-    final lines = _privacyContent.split('\n');
-    final displayLines = lines.where((line) {
+    final sections = _getPrivacySections();
+    final filteredSections = sections.where((section) {
       if (_searchQuery.isEmpty) return true;
-      return line.toLowerCase().contains(_searchQuery);
+      if (section.title.toLowerCase().contains(_searchQuery) ||
+          section.summary.toLowerCase().contains(_searchQuery)) {
+        return true;
+      }
+      return section.points.any((p) =>
+          p.title.toLowerCase().contains(_searchQuery) ||
+          p.desc.toLowerCase().contains(_searchQuery));
     }).toList();
 
     return Column(
       children: [
+        // 顶部安全声明与协议标识
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-          color: LuxwapColors.stateSuccessSurface,
-          child: const Row(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+          decoration: const BoxDecoration(
+            color: LuxwapColors.stateSuccessSurface,
+            border: Border(bottom: BorderSide(color: Color(0xffc8e6c9))),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.shield_outlined, size: 16, color: LuxwapColors.stateSuccess),
-              SizedBox(width: 8),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: LuxwapRadius.rSm,
+                  border: Border.all(color: LuxwapColors.stateSuccess.withValues(alpha: 0.3)),
+                ),
+                child: const Center(
+                  child: Icon(Icons.verified_user_rounded, size: 20, color: LuxwapColors.stateSuccess),
+                ),
+              ),
+              const SizedBox(width: 14),
               Expanded(
-                child: Text(
-                  'Luxwap 恪守严格的无访问日志记录原则（No-Logs Policy），绝不记录用户的网络流量与隐私数据。',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: LuxwapColors.stateSuccess,
-                    fontWeight: FontWeight.w500,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Text(
+                          'Luxwap 隐私保护协议',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: LuxwapColors.neutral900,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: LuxwapColors.stateSuccess.withValues(alpha: 0.4)),
+                          ),
+                          child: const Text(
+                            '最新生效日期：2026年9月11日',
+                            style: TextStyle(fontSize: 10, color: LuxwapColors.stateSuccess, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Luxwap 恪守严格的无访问日志记录原则（No-Logs Policy），绝不记录用户的网络流量与隐私数据。您的配置与偏好仅加密保存在本地设备上。',
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.45,
+                        color: Color(0xff2e7d32),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
-        const Divider(height: 1, color: LuxwapColors.borderLight),
         Expanded(
-          child: displayLines.isEmpty
+          child: filteredSections.isEmpty
               ? _buildEmptySearch()
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: LuxwapRadius.rMd,
-                      border: Border.all(color: LuxwapColors.borderLight),
-                      boxShadow: LuxwapShadows.card,
-                    ),
-                    child: SelectableText(
-                      _searchQuery.isEmpty ? _privacyContent : displayLines.join('\n'),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        height: 1.7,
-                        color: LuxwapColors.neutral700,
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+                  itemCount: filteredSections.length,
+                  itemBuilder: (context, index) {
+                    final sec = filteredSections[index];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: LuxwapRadius.rMd,
+                        border: Border.all(color: LuxwapColors.borderLight),
+                        boxShadow: LuxwapShadows.card,
                       ),
-                    ),
-                  ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 4,
+                                  height: 16,
+                                  decoration: const BoxDecoration(
+                                    color: LuxwapColors.brand500,
+                                    borderRadius: BorderRadius.all(Radius.circular(2)),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  sec.title,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: LuxwapColors.neutral900,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: sec.badgeBg,
+                                    borderRadius: LuxwapRadius.rSm,
+                                  ),
+                                  child: Text(
+                                    sec.badge,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: sec.badgeColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (sec.summary.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                sec.summary,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: LuxwapColors.neutral600,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 12),
+                            ...sec.points.map((pt) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 6,
+                                        height: 6,
+                                        margin: const EdgeInsets.only(top: 6, right: 10),
+                                        decoration: BoxDecoration(
+                                          color: pt.dotColor ?? LuxwapColors.brand500,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: RichText(
+                                          text: TextSpan(
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: LuxwapColors.neutral800,
+                                              height: 1.5,
+                                            ),
+                                            children: [
+                                              TextSpan(
+                                                text: '${pt.title}：',
+                                                style: const TextStyle(fontWeight: FontWeight.w600),
+                                              ),
+                                              TextSpan(text: pt.desc),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
         ),
       ],
@@ -445,6 +585,146 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         ],
       ),
     );
+  }
+
+  List<_PrivacySection> _getPrivacySections() {
+    return [
+      _PrivacySection(
+        chapter: '01',
+        title: '1. 核心隐私原则',
+        badge: '核心承诺',
+        badgeBg: LuxwapColors.stateSuccessSurface,
+        badgeColor: LuxwapColors.stateSuccess,
+        summary: 'Luxwap 致力于为全球用户构建最安全、私密、透明的网络代理环境，恪守三大基本底线。',
+        points: [
+          _PrivacyPoint(
+            title: '零访问日志记录（No-Logs Policy）',
+            desc: '我们绝不记录、存储或监控用户通过代理网络传输的任何实际网络流量、访问网址、DNS 查询内容或下载数据。',
+            dotColor: LuxwapColors.stateSuccess,
+          ),
+          _PrivacyPoint(
+            title: '最小化收集原则',
+            desc: '我们仅在提供基本账户认证与订阅管理所需范围内收集最基础的数据。',
+            dotColor: LuxwapColors.brand500,
+          ),
+          _PrivacyPoint(
+            title: '本地优先原则',
+            desc: '您的所有客户端自定义配置、路由规则选择、节点偏好均加密保存在您的本地设备上。',
+            dotColor: LuxwapColors.brand500,
+          ),
+        ],
+      ),
+      _PrivacySection(
+        chapter: '02',
+        title: '2. 我们收集的信息范围',
+        badge: '信息合规',
+        badgeBg: LuxwapColors.brand50,
+        badgeColor: LuxwapColors.brand500,
+        summary: '为了确保服务的持续可用性与账户安全性，我们仅在必要场景下处理以下有限信息：',
+        points: [
+          _PrivacyPoint(
+            title: '账户与注册信息',
+            desc: '电子邮箱地址（用于用户身份标识与安全验证码发送）；账户密码（在服务器端经不可逆强哈希加密算法存储，本软件绝不以明文形式保存或传输）；第三方授权信息（Google、X、Facebook 授权仅获取公开 OpenID 及邮箱，绝不获取您的社交好友关系或第三方账号密码）。',
+          ),
+          _PrivacyPoint(
+            title: '服务运行与订阅信息',
+            desc: '当前套餐到期时间、套餐流量总额及当期已使用流量计数（用于展示剩余可用额度）；基于合规任务与使用时长累计的会员积分数据。',
+          ),
+          _PrivacyPoint(
+            title: '设备与技术信息',
+            desc: '设备操作系统版本（如 Windows 10/11 或 macOS，用于适配最佳代理核心架构组件）；应用版本（用于检测最新可用更新与推送安全补丁）。',
+          ),
+        ],
+      ),
+      _PrivacySection(
+        chapter: '03',
+        title: '3. 我们不收集的信息 (明确禁止清单)',
+        badge: '严禁收集',
+        badgeBg: LuxwapColors.stateErrorSurface,
+        badgeColor: LuxwapColors.stateError,
+        summary: '我们在任何情况下均绝不收集或记录以下任何用户隐私数据：',
+        points: [
+          _PrivacyPoint(
+            title: '网络访问记录',
+            desc: '绝不收集您浏览的具体网页 URL、访问历史记录、下载内容与搜索关键词。',
+            dotColor: LuxwapColors.stateError,
+          ),
+          _PrivacyPoint(
+            title: '通信与载荷内容',
+            desc: '绝不收集您的通讯内容、表单输入、传输的文件或数据包实际载荷。',
+            dotColor: LuxwapColors.stateError,
+          ),
+          _PrivacyPoint(
+            title: '物理地理位置',
+            desc: '绝不收集您的真实物理地理位置（GPS 精度数据）。',
+            dotColor: LuxwapColors.stateError,
+          ),
+          _PrivacyPoint(
+            title: '本地敏感文件',
+            desc: '绝不读取任何未经授权的本地计算机文件或敏感软硬件信息。',
+            dotColor: LuxwapColors.stateError,
+          ),
+        ],
+      ),
+      _PrivacySection(
+        chapter: '04',
+        title: '4. 数据的安全保障',
+        badge: '安全架构',
+        badgeBg: LuxwapColors.brand50,
+        badgeColor: LuxwapColors.brand500,
+        summary: '我们采用全球业界领先的端到端强加密架构保护数据安全：',
+        points: [
+          _PrivacyPoint(
+            title: '全链路传输加密',
+            desc: '客户端与中台服务器之间的所有通信均采用高强度 TLS 1.3 / HTTPS 加密信道，防止中间人窃听与篡改。',
+          ),
+          _PrivacyPoint(
+            title: '代理信道保护',
+            desc: '所有网络代理传输均采用强加密协议（VLESS + TLS / XTLS / ChaCha20），保障公用 Wi-Fi 及不可信网络环境下的通信安全。',
+          ),
+          _PrivacyPoint(
+            title: '系统代理安全重置',
+            desc: '客户端内置底层安全退出防护机制，在关闭程序或异常退出时立即撤销全局代理配置，防止用户网络中断或流量泄露。',
+          ),
+        ],
+      ),
+      _PrivacySection(
+        chapter: '05',
+        title: '5. Cookie 与本地存储',
+        badge: '存储透明',
+        badgeBg: LuxwapColors.neutral200,
+        badgeColor: LuxwapColors.neutral700,
+        summary: '本桌面客户端不依赖传统网页 Cookie。您的本地配置信息保存在系统标准应用配置目录：',
+        points: [
+          _PrivacyPoint(
+            title: '本地配置文件路径',
+            desc: 'Windows 系统存储于 %APPDATA%\\luxwap\\config.json；macOS 系统存储于 ~/Library/Application Support/luxwap/config.json。您可随时在客户端重置或在本地手动清除。',
+          ),
+        ],
+      ),
+      _PrivacySection(
+        chapter: '06',
+        title: '6. 用户的权利与支持',
+        badge: '用户赋权',
+        badgeBg: LuxwapColors.brand50,
+        badgeColor: LuxwapColors.brand500,
+        summary: '依据相关法律法规，您对您的个人信息享有完整权利：',
+        points: [
+          _PrivacyPoint(
+            title: '查询与更正',
+            desc: '您可在客户端「个人中心」随时查看您的用户 ID、昵称、注册邮箱，并可自主修改昵称或更新密码。',
+          ),
+          _PrivacyPoint(
+            title: '注销账号',
+            desc: '如需注销账号并删除所有云端关联数据，可通过官方客服渠道申请彻底注销。',
+          ),
+          _PrivacyPoint(
+            title: '联系我们',
+            desc: '如对本隐私协议有任何意见、建议或申诉，请随时联系官方隐私团队邮箱：privacy@luxwap.com。',
+          ),
+        ],
+      ),
+    ];
   }
 
   List<_HelpSection> _getHelpSections() {
@@ -622,6 +902,38 @@ class _HelpSection {
   final List<String> keywords;
   final String content;
   final Widget? extraWidget;
+}
+
+class _PrivacySection {
+  _PrivacySection({
+    required this.chapter,
+    required this.title,
+    required this.badge,
+    required this.badgeBg,
+    required this.badgeColor,
+    required this.summary,
+    required this.points,
+  });
+
+  final String chapter;
+  final String title;
+  final String badge;
+  final Color badgeBg;
+  final Color badgeColor;
+  final String summary;
+  final List<_PrivacyPoint> points;
+}
+
+class _PrivacyPoint {
+  _PrivacyPoint({
+    required this.title,
+    required this.desc,
+    this.dotColor,
+  });
+
+  final String title;
+  final String desc;
+  final Color? dotColor;
 }
 
 const String _fallbackHelpGuide = '''

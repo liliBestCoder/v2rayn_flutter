@@ -65,10 +65,20 @@ class _LuxwapAppState extends State<LuxwapApp> {
 
   Future<void> _bootstrap() async {
     await appState.loadSession();
-    _syncWindowSize(appState.isLoggedIn);
+    _lastLoggedIn = appState.isLoggedIn;
+    await _syncWindowSize(appState.isLoggedIn);
+    await _syncCloseToTray();
     if (mounted) {
       setState(() => loading = false);
     }
+  }
+
+  Future<void> _syncCloseToTray() async {
+    try {
+      await _windowChannel.invokeMethod('setCloseToTray', {
+        'enabled': appState.clientConfig.closeToTray,
+      });
+    } catch (_) {}
   }
 
   @override
@@ -79,9 +89,10 @@ class _LuxwapAppState extends State<LuxwapApp> {
 
   Future<void> _syncWindowSize(bool loggedIn) async {
     try {
-      await _windowChannel.invokeMethod('setWindowSize', {
-        'width': 960,
-        'height': 680,
+      await _windowChannel.invokeMethod('setSize', {
+        'width': loggedIn ? 1194 : 440,
+        'height': loggedIn ? 850 : 720,
+        'center': true,
       });
     } catch (_) {}
   }

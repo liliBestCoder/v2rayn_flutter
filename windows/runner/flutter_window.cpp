@@ -82,7 +82,7 @@ bool FlutterWindow::OnCreate() {
           return;
         }
 
-        if (method != "setSize") {
+        if (method != "setSize" && method != "setWindowSize") {
           result->NotImplemented();
           return;
         }
