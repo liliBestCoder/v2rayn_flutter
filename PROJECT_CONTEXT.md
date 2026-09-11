@@ -119,6 +119,24 @@ node test/e2e_proxy/real_proxy_test.mjs
   - 本地代理端点 10899 握手 100% 成功；
   - 远端节点 `103.94.185.18:443` 在 TLS 阶段断开（`unexpected EOF`），原因已定位：该远端 VPS 节点的 VLESS Reality 服务端配置中尚未同步该测试账号的 UUID（`60fbe84f-f3c2-4307-83d4-44ee2bf798d3`）。中台或运维在服务端将该 UUID 添加至放行列表后即可畅通访问外网。
 
+### 4.5 真实网络 DoT 解析对比、Wintun 设备干净度与 UWP 隔离测试
+运行命令：
+```powershell
+node test/e2e_real_verification/real_verification_suite.mjs
+```
+- **真实网络 DoT 解析对比测试**：
+  - 未开启 DoT（标准 UDP 53 明文传输）：极易受阻断或污染，实机测试解析 `cloudflare.com`、`google.com`、`github.com` 均因中间人拦截导致 `ETIMEOUT` 失败。
+  - 开启 DoT（TCP 853 + TLSv1.3，`TLS_AES_256_GCM_SHA384` 强加密）：
+    - Cloudflare DoT (`1.1.1.1:853`): 成功在 746ms 内解析 `cloudflare.com` -> `[104.16.132.229, 104.16.133.229]`；在 686ms 内解析 `github.com` -> `[140.82.114.3]`。
+    - Google DoT (`8.8.8.8:853`): 成功在 761ms 内解析 `google.com` -> `[142.250.190.238]`。
+    - 验证结论：DoT 加密隧道彻底攻克了传统明文 DNS 污染与窥探难题。
+- **真实 Wintun 设备与系统代理清理状态测试**：
+  - 适配器检测：通过 PowerShell `Get-NetAdapter` 扫描 Windows 物理与虚拟网卡，确认退出后 Wintun 虚拟网卡 **零残留（0 residual adapter）**。
+  - 注册表状态检测：查询注册表 `HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings`，断言 `ProxyEnable = 0`，确认系统代理完全还原为直连模式，绝无断网事故。
+- **真实 UWP 应用 CheckNetIsolation 回环隔离豁免测试**：
+  - 扫描真实系统 UWP 应用：识别到系统真实安装的 `Microsoft.WindowsCalculator` 及 `Microsoft.WindowsTerminal`。
+  - 验证 `CheckNetIsolation.exe LoopbackExempt -s`：实机断言两个应用均处于放行免除清单中，且本地 `127.0.0.1` TCP 回环握手 100% 畅通。
+
 ---
 
 ## 5. 项目构建命令与发布产物

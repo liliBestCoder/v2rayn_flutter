@@ -1,0 +1,53 @@
+{
+  "timestamp": "2026-09-12T02:22:20+08:00",
+  "dot_comparison_test": {
+    "cloudflare.com": {
+      "no_dot_status": "TIMEOUT / FAILED (UDP 53 blocked or intercepted)",
+      "dot_status": "SUCCESS",
+      "dot_provider": "Cloudflare (1.1.1.1:853)",
+      "tls_version": "TLSv1.3",
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "latency_ms": 746,
+      "resolved_ips": ["104.16.132.229", "104.16.133.229"]
+    },
+    "google.com": {
+      "no_dot_status": "TIMEOUT / FAILED (UDP 53 blocked or intercepted)",
+      "dot_status": "SUCCESS",
+      "dot_provider": "Google (8.8.8.8:853)",
+      "tls_version": "TLSv1.3",
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "latency_ms": 761,
+      "resolved_ips": ["142.250.190.238"]
+    },
+    "github.com": {
+      "no_dot_status": "TIMEOUT / FAILED (UDP 53 blocked or intercepted)",
+      "dot_status": "SUCCESS",
+      "dot_provider": "Cloudflare (1.1.1.1:853)",
+      "tls_version": "TLSv1.3",
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "latency_ms": 686,
+      "resolved_ips": ["140.82.114.3"]
+    }
+  },
+  "tun_wintun_cleanup_test": {
+    "wintun_adapter_residual": 0,
+    "wintun_device_status": "CLEAN (no orphan virtual adapter)",
+    "registry_proxy_enable": 0,
+    "system_proxy_status": "RESTORED_DIRECT"
+  },
+  "uwp_loopback_exempt_test": {
+    "tested_apps": [
+      {
+        "name": "Microsoft.WindowsCalculator",
+        "family": "Microsoft.WindowsCalculator_8wekyb3d8bbwe",
+        "is_exempted": true
+      },
+      {
+        "name": "Microsoft.WindowsTerminal",
+        "family": "Microsoft.WindowsTerminal_8wekyb3d8bbwe",
+        "is_exempted": true
+      }
+    ],
+    "loopback_socket_communication": "SUCCESS (127.0.0.1 reachable)"
+  }
+}

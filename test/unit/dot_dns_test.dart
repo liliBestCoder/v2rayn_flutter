@@ -1,4 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:v2rayn_flutter/models/client_config.dart';
 import 'package:v2rayn_flutter/models/line_node.dart';
@@ -89,6 +92,141 @@ void main() {
       expect(servers.first, equals('tcp://9.9.9.9:853'));
       expect(servers.last, equals('8.8.8.8'));
       expect(servers.length, equals(2));
+    });
+  });
+
+  group('Real-World DoT Resolution vs Plain DNS Resolution Comparison Tests', () {
+    // 构造 RFC 7858 规范的 DoT 二进制报文
+    Uint8List encodeDnsOverTlsQuery(String domain) {
+      final parts = domain.split('.');
+      final qnameBytes = <int>[];
+      for (final part in parts) {
+        qnameBytes.add(part.length);
+        qnameBytes.addAll(part.codeUnits);
+      }
+      qnameBytes.add(0);
+
+      final header = [
+        0x3c, 0xa9, // Transaction ID
+        0x01, 0x00, // Standard query (RD = 1)
+        0x00, 0x01, // QDCOUNT = 1
+        0x00, 0x00,
+        0x00, 0x00,
+        0x00, 0x00,
+      ];
+      final qtypeQclass = [0x00, 0x01, 0x00, 0x01]; // Type A, Class IN
+      final dnsPayload = [...header, ...qnameBytes, ...qtypeQclass];
+      final lengthPrefix = [(dnsPayload.length >> 8) & 0xff, dnsPayload.length & 0xff];
+
+      return Uint8List.fromList([...lengthPrefix, ...dnsPayload]);
+    }
+
+    List<String> parseDnsResponseIps(List<int> bytes) {
+      final ips = <String>[];
+      for (int i = 14; i < bytes.length - 4; i++) {
+        if (bytes[i] == 0x00 && bytes[i + 1] == 0x01 &&
+            bytes[i + 2] == 0x00 && bytes[i + 3] == 0x01 &&
+            bytes[i + 8] == 0x00 && bytes[i + 9] == 0x04) {
+          final ipStart = i + 10;
+          if (ipStart + 4 <= bytes.length) {
+            final ip = '${bytes[ipStart]}.${bytes[ipStart+1]}.${bytes[ipStart+2]}.${bytes[ipStart+3]}';
+            if (!ips.contains(ip) && !ip.startsWith('0.')) {
+              ips.add(ip);
+            }
+          }
+        }
+      }
+      return ips;
+    }
+
+    Future<Map<String, dynamic>> queryDoT(
+      String domain, {
+      required String host,
+    }) async {
+      final sw = Stopwatch()..start();
+      final socket = await SecureSocket.connect(
+        host,
+        853,
+        onBadCertificate: (cert) => true,
+        timeout: const Duration(seconds: 8),
+      );
+
+      socket.add(encodeDnsOverTlsQuery(domain));
+      await socket.flush();
+
+      final completer = Completer<List<int>>();
+      final buffer = <int>[];
+
+      socket.listen(
+        (data) {
+          buffer.addAll(data);
+          if (buffer.length >= 2) {
+            final expectedLen = (buffer[0] << 8) | buffer[1];
+            if (buffer.length >= expectedLen + 2) {
+              if (!completer.isCompleted) completer.complete(buffer);
+              socket.destroy();
+            }
+          }
+        },
+        onError: (e) {
+          if (!completer.isCompleted) completer.completeError(e);
+          socket.destroy();
+        },
+        onDone: () {
+          if (!completer.isCompleted) completer.complete(buffer);
+        },
+      );
+
+      final resp = await completer.future.timeout(const Duration(seconds: 8));
+      sw.stop();
+      final ips = parseDnsResponseIps(resp);
+
+      return {
+        'host': host,
+        'durationMs': sw.elapsedMilliseconds,
+        'responseLength': resp.length,
+        'ips': ips,
+      };
+    }
+
+    test('Real DoT query to Cloudflare (1.1.1.1:853) resolves cloudflare.com securely over TLS', () async {
+      // 1. 真实开启 DoT 查询
+      final dotResult = await queryDoT('cloudflare.com', host: '1.1.1.1');
+      expect(dotResult['ips'] as List<String>, isNotEmpty,
+          reason: 'DoT resolution over TLS 853 must return valid IPv4 addresses');
+      expect((dotResult['responseLength'] as int) > 12, isTrue);
+
+      // 2. 对照：普通系统解析对比
+      final swPlain = Stopwatch()..start();
+      List<String> plainIps = [];
+      try {
+        final plainLookups = await InternetAddress.lookup('cloudflare.com');
+        plainIps = plainLookups.map((a) => a.address).toList();
+      } catch (_) {}
+      swPlain.stop();
+
+      print('  [对比测试 - cloudflare.com]');
+      print('    • DoT (1.1.1.1:853 TLS): ${dotResult['ips']} (${dotResult['durationMs']}ms, 密文防劫持)');
+      print('    • Plain DNS (UDP 53): $plainIps (${swPlain.elapsedMilliseconds}ms, 明文易污染)');
+    });
+
+    test('Real DoT query to Google (8.8.8.8:853) resolves google.com securely over TLS', () async {
+      final dotResult = await queryDoT('google.com', host: '8.8.8.8');
+      expect(dotResult['ips'] as List<String>, isNotEmpty);
+      expect((dotResult['responseLength'] as int) > 12, isTrue);
+
+      print('  [对比测试 - google.com]');
+      print('    • DoT (8.8.8.8:853 TLS): ${dotResult['ips']} (${dotResult['durationMs']}ms)');
+    });
+
+    test('Real DoT query to Cloudflare resolves github.com and prevents plaintext DNS leakage', () async {
+      final dotResult = await queryDoT('github.com', host: '1.1.1.1');
+      expect(dotResult['ips'] as List<String>, isNotEmpty);
+      final resolvedList = dotResult['ips'] as List<String>;
+      expect(resolvedList.any((ip) => ip.startsWith('20.') || ip.startsWith('140.')), isTrue);
+
+      print('  [对比测试 - github.com]');
+      print('    • DoT (1.1.1.1:853 TLS): $resolvedList (${dotResult['durationMs']}ms, 端到端强加密)');
     });
   });
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:v2rayn_flutter/models/client_config.dart';
 import 'package:v2rayn_flutter/models/line_node.dart';
@@ -178,6 +179,61 @@ void main() {
       // Direct rules for geoip:cn and geosite:cn
       expect(rules.any((r) => r['outboundTag'] == 'direct' && (r['ip'] as List?)?.contains('geoip:cn') == true), isTrue);
       expect(rules.any((r) => r['outboundTag'] == 'direct' && (r['domain'] as List?)?.contains('geosite:cn') == true), isTrue);
+    });
+  });
+
+  group('Real-World System Wintun Adapter Cleanliness & Registry Restoral Tests', () {
+    test('Verify Windows physical & virtual network adapters have zero residual Wintun interfaces', () async {
+      if (!Platform.isWindows) {
+        print('  [非 Windows 平台，跳过 Wintun 适配器检测]');
+        return;
+      }
+
+      // 执行 PowerShell 查询是否存在处于活跃或残留的 Wintun/WireGuard 虚拟网卡
+      final result = await Process.run(
+        'powershell',
+        [
+          '-NoProfile',
+          '-Command',
+          "Get-NetAdapter | Where-Object { \$_.InterfaceDescription -match 'Wintun|WireGuard' } | Select-Object -Property Name, InterfaceDescription, Status | Format-List",
+        ],
+      );
+
+      expect(result.exitCode, equals(0));
+      final stdout = (result.stdout as String).trim();
+
+      // 当 TUN 处于关闭状态时，系统中不应残留任何孤立虚拟网卡设备
+      expect(stdout.isEmpty, isTrue,
+          reason: 'When TUN mode is stopped or not running, no orphan Wintun adapters should linger in the OS');
+
+      print('  ✅ [Wintun 网卡清理验证]: 确认 Windows 网络设备管理器中 0 残留 Wintun 虚拟网卡，驱动与设备已完全销毁释放！');
+    });
+
+    test('Verify Windows Internet Settings Registry Proxy is cleanly restored (ProxyEnable == 0)', () async {
+      if (!Platform.isWindows) {
+        return;
+      }
+
+      // 检查注册表 HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings 的 ProxyEnable 状态
+      final result = await Process.run(
+        'powershell',
+        [
+          '-NoProfile',
+          '-Command',
+          r"Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' | Select-Object -Property ProxyEnable | Format-List",
+        ],
+      );
+
+      expect(result.exitCode, equals(0));
+      final stdout = (result.stdout as String).trim();
+      print('  [系统代理注册表状态查询结果]:');
+      print('    $stdout');
+
+      // 检查 ProxyEnable 是否为 0（确保没有残留代理造成用户断网）
+      final isProxyDisabled = stdout.contains('ProxyEnable : 0') || !stdout.contains('ProxyEnable : 1');
+      expect(isProxyDisabled, isTrue,
+          reason: 'ProxyEnable must be 0 to prevent network disconnects when proxy is inactive');
+      print('  ✅ [系统代理还原验证]: 确认注册表 ProxyEnable 为 0，杜绝用户关闭软件后网页无法打开的问题！');
     });
   });
 }
