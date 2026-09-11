@@ -229,4 +229,97 @@ void main() {
       print('    • DoT (1.1.1.1:853 TLS): $resolvedList (${dotResult['durationMs']}ms, 端到端强加密)');
     });
   });
+
+  group('Real Xray-Core Process E2E DoT Resolution Verification', () {
+    test('Xray process starts with DoT and resolves domain using internal DoT TCP client', () async {
+      final xrayExe = File('windows/runner/resources/bin/xray/xray.exe');
+      if (!await xrayExe.exists() || !Platform.isWindows) {
+        print('  [Xray 二进制文件未找到或非 Windows 环境，跳过进程测试]');
+        return;
+      }
+
+      final tempConfig = File('test/temp_xray_dot_test.json');
+      const testPort = 20858;
+      final config = {
+        'log': {'loglevel': 'debug'},
+        'dns': {
+          'servers': ['tcp://1.1.1.1:853']
+        },
+        'inbounds': [
+          {
+            'tag': 'socks-in',
+            'port': testPort,
+            'listen': '127.0.0.1',
+            'protocol': 'socks',
+            'settings': {'auth': 'noauth', 'udp': true}
+          }
+        ],
+        'outbounds': [
+          {
+            'tag': 'direct',
+            'protocol': 'freedom',
+            'streamSettings': {
+              'sockopt': {'domainStrategy': 'UseIP'}
+            }
+          }
+        ]
+      };
+
+      await tempConfig.writeAsString(jsonEncode(config));
+
+      final process = await Process.start(
+        xrayExe.path,
+        ['run', '-c', tempConfig.path],
+      );
+
+      final xrayLogs = <String>[];
+      final subscription = process.stdout
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .listen((line) {
+        xrayLogs.add(line);
+      });
+
+      // 等待 Xray 启动监听
+      await Future.delayed(const Duration(milliseconds: 800));
+
+      // 发起 SOCKS5 请求触发 Xray 内部 DNS 解析目标域名 cloudflare.com
+      try {
+        final socket = await Socket.connect('127.0.0.1', testPort, timeout: const Duration(seconds: 3));
+        // SOCKS5 握手
+        socket.add([0x05, 0x01, 0x00]);
+        await socket.flush();
+
+        // 请求连接目标域名 cloudflare.com:80
+        final domainBytes = ascii.encode('cloudflare.com');
+        socket.add([0x05, 0x01, 0x00, 0x03, domainBytes.length, ...domainBytes, 0x00, 0x50]);
+        await socket.flush();
+
+        await Future.delayed(const Duration(milliseconds: 1200));
+        await socket.close();
+      } catch (e) {
+        print('  Socket error: $e');
+      }
+
+      process.kill();
+      await subscription.cancel();
+      if (await tempConfig.exists()) {
+        await tempConfig.delete();
+      }
+
+      // 验证 Xray 内部日志记录
+      final hasTcpDnsInit = xrayLogs.any((l) => l.contains('DNS: created TCP client initialized for tcp://1.1.1.1:853'));
+      final hasDnsQuery = xrayLogs.any((l) => l.contains('TCP//1.1.1.1:853 querying DNS for: cloudflare.com'));
+      final hasDnsAnswer = xrayLogs.any((l) => l.contains('got answer: cloudflare.com'));
+
+      print('  🔍 [Xray 进程实机实测断言]:');
+      print('    • Xray 初始化 DoT 客户端: $hasTcpDnsInit');
+      print('    • Xray 调度 DoT 真实解析: $hasDnsQuery');
+      print('    • Xray 成功接收 DoT 解析结果: $hasDnsAnswer');
+
+      expect(hasTcpDnsInit, isTrue, reason: 'Xray must initialize TCP client for DoT 853');
+      expect(hasDnsQuery, isTrue, reason: 'Xray must query cloudflare.com via configured DoT server');
+      expect(hasDnsAnswer, isTrue, reason: 'Xray must receive DNS answer from DoT server');
+    });
+  });
 }
