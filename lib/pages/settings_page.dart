@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../app_state.dart';
 import '../app_toast.dart';
 import '../services/uwp_loopback_service.dart';
+import '../theme/luxwap_theme.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -368,13 +369,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   height: 28,
                   child: FilledButton(
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xff2a80ff),
+                      backgroundColor: LuxwapColors.brand500,
                       foregroundColor: Colors.white,
                       textStyle: const TextStyle(
                           fontSize: 12, fontWeight: FontWeight.bold),
                       padding: const EdgeInsets.symmetric(horizontal: 10),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: LuxwapRadius.rLg),
                     ),
                     onPressed: _exemptUwpLoopback,
                     child: const Text('一键解除'),
@@ -409,7 +410,7 @@ class _SectionTitle extends StatelessWidget {
       style: const TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.bold,
-        color: Color(0xff1b1b1b),
+        color: LuxwapColors.neutral900,
       ),
     );
   }
@@ -471,8 +472,8 @@ class _GeoUpdateButton extends StatelessWidget {
                     fontSize: 8,
                     fontWeight: FontWeight.w700,
                     color: error == null
-                        ? const Color(0xff2b77ff)
-                        : const Color(0xffd32f2f),
+                        ? LuxwapColors.brand500
+                        : LuxwapColors.stateError,
                   ),
                 ),
               ),
@@ -514,7 +515,7 @@ class _SettingRow extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xff333333),
+                    color: LuxwapColors.neutral900,
                   ),
                 ),
                 if (subtitle.isNotEmpty) ...[
@@ -525,7 +526,7 @@ class _SettingRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 11,
-                      color: Color(0xff888888),
+                      color: LuxwapColors.neutral500,
                     ),
                   ),
                 ],
@@ -575,10 +576,10 @@ class _DropdownText extends StatelessWidget {
         children: [
           Text(
             value,
-            style: const TextStyle(fontSize: 12, color: Color(0xff111111), fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 12, color: LuxwapColors.neutral900, fontWeight: FontWeight.w500),
           ),
           const SizedBox(width: 2),
-          const Icon(Icons.arrow_drop_down, size: 15, color: Color(0xff111111)),
+          const Icon(Icons.arrow_drop_down, size: 15, color: LuxwapColors.neutral900),
         ],
       ),
     );
@@ -642,7 +643,7 @@ class _EditableDnsFieldState extends State<_EditableDnsField> {
             child: Text(
               widget.controller.text,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 12, color: Color(0xff111111), fontWeight: FontWeight.w500),
+              style: const TextStyle(fontSize: 12, color: LuxwapColors.neutral900, fontWeight: FontWeight.w500),
             ),
           ),
         ),
@@ -668,7 +669,7 @@ class _EditableDnsFieldState extends State<_EditableDnsField> {
             border: InputBorder.none,
             contentPadding: EdgeInsets.zero,
           ),
-          style: const TextStyle(fontSize: 12, color: Color(0xff111111), fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 12, color: LuxwapColors.neutral900, fontWeight: FontWeight.w500),
         ),
       ),
     );
@@ -693,7 +694,7 @@ class _MiniSwitch extends StatelessWidget {
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(100),
-          color: value ? const Color(0xff2a80ff) : const Color(0xffd1d5db),
+          color: value ? LuxwapColors.brand500 : LuxwapColors.neutral400,
         ),
         alignment: value ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
@@ -732,7 +733,7 @@ class _DashPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xff9f9f9f)
+      ..color = LuxwapColors.neutral300
       ..strokeWidth = 0.8;
     double x = 0;
     while (x < size.width) {

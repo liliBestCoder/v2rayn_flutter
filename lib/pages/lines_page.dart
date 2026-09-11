@@ -11,6 +11,8 @@ import '../app_state.dart';
 import '../models/client_config.dart';
 import '../models/line_node.dart';
 import '../services/xray_config_builder.dart';
+import '../theme/luxwap_theme.dart';
+import '../widgets/luxwap_icon.dart';
 
 class LinesPage extends StatefulWidget {
   const LinesPage({super.key});
@@ -413,16 +415,16 @@ class _LinesPageState extends State<LinesPage> {
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xff1b1b1b))),
+                        color: LuxwapColors.neutral900)),
                 const Spacer(),
                 _ToolbarButton(
                     label: '筛选',
-                    iconAsset: 'assets/images/select.png',
+                    iconWidget: const LuxwapIcon(LuxwapIcons.down, size: 12, color: LuxwapColors.brand500),
                     onTap: _showFilterMenu),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 _ToolbarButton(
                     label: '刷新',
-                    iconAsset: 'assets/images/fresh.png',
+                    iconWidget: const LuxwapIcon(LuxwapIcons.refresh, size: 12, color: LuxwapColors.brand500),
                     onTap: _load),
               ],
             ),
@@ -844,11 +846,13 @@ class _StatusBar extends StatelessWidget {
       height: 48,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-          color: const Color(0xff23cc66),
-          borderRadius: BorderRadius.circular(6)),
+        color: connected ? LuxwapColors.stateSuccess : LuxwapColors.brand500,
+        borderRadius: LuxwapRadius.rMd,
+        boxShadow: LuxwapShadows.card,
+      ),
       child: Row(
         children: [
-          Image.asset('assets/images/rocket.png', width: 18, height: 18),
+          const LuxwapIcon(LuxwapIcons.rocket, size: 18, color: Colors.white),
           const SizedBox(width: 10),
           Text(
             connected ? '已连接' : '未连接',
@@ -882,7 +886,7 @@ class _StatusBar extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: connected
                     ? const Color(0xffff8a18)
-                    : Colors.white.withValues(alpha: 0.8),
+                    : Colors.white.withValues(alpha: 0.85),
               ),
               child: switching
                   ? const Padding(
@@ -893,7 +897,8 @@ class _StatusBar extends StatelessWidget {
                       ),
                     )
                   : Icon(connected ? Icons.stop : Icons.play_arrow,
-                      color: Colors.white, size: 14),
+                      color: connected ? Colors.white : LuxwapColors.brand500,
+                      size: 14),
             ),
           ),
         ],
@@ -903,31 +908,43 @@ class _StatusBar extends StatelessWidget {
 }
 
 class _ToolbarButton extends StatelessWidget {
-  const _ToolbarButton(
-      {required this.label, required this.iconAsset, required this.onTap});
+  const _ToolbarButton({
+    required this.label,
+    required this.iconWidget,
+    required this.onTap,
+  });
 
   final String label;
-  final String iconAsset;
+  final Widget iconWidget;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: LuxwapRadius.rLg,
       child: Container(
-        width: 54,
-        height: 24,
+        height: 28,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
-            color: const Color(0xfff2f2f4),
-            borderRadius: BorderRadius.circular(8)),
+          color: LuxwapColors.brand50,
+          borderRadius: LuxwapRadius.rLg,
+          border: Border.all(color: LuxwapColors.brand100),
+        ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(iconAsset, width: 11, height: 11),
+            iconWidget,
             const SizedBox(width: 4),
-            Text(label,
-                style: const TextStyle(color: Color(0xff1b1b1b), fontSize: 10)),
+            Text(
+              label,
+              style: const TextStyle(
+                color: LuxwapColors.brand500,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ),
@@ -955,20 +972,24 @@ class _RegionGroup extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            height: 28,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            height: 30,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-                color: const Color(0xfff3f3f5),
-                borderRadius: BorderRadius.circular(4)),
+              color: LuxwapColors.neutral200,
+              borderRadius: LuxwapRadius.rSm,
+            ),
             child: Row(
               children: [
-                Image.asset('assets/images/area.png', width: 13, height: 13),
-                const SizedBox(width: 12),
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xff1b1b1b))),
+                const LuxwapIcon(LuxwapIcons.global, size: 14, color: LuxwapColors.brand500),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: LuxwapColors.neutral900,
+                  ),
+                ),
               ],
             ),
           ),
@@ -1003,17 +1024,20 @@ class _LineRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final crowdColor = node.crowdColor;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 10),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: LuxwapRadius.rMd,
         child: Container(
           height: 52,
           decoration: BoxDecoration(
             border: Border.all(
-                color: selected ? Colors.transparent : const Color(0xffeeeeee)),
-            borderRadius: BorderRadius.circular(6),
-            color: selected ? const Color(0xffeaf1ff) : Colors.white,
+              color: selected ? LuxwapColors.brand500 : LuxwapColors.borderLight,
+              width: selected ? 1.2 : 1.0,
+            ),
+            borderRadius: LuxwapRadius.rMd,
+            color: selected ? LuxwapColors.brand50 : Colors.white,
+            boxShadow: selected ? LuxwapShadows.card : null,
           ),
           child: Stack(
             children: [
@@ -1025,16 +1049,30 @@ class _LineRow extends StatelessWidget {
                     width: 48,
                     child: Center(
                       child: Container(
-                        width: 17,
-                        height: 17,
+                        width: 18,
+                        height: 18,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
+                          color: selected ? LuxwapColors.brand500 : Colors.transparent,
                           border: Border.all(
-                              color: selected
-                                  ? const Color(0xff2b77ff)
-                                  : const Color(0xffe1e1e1),
-                              width: selected ? 3 : 1),
+                            color: selected
+                                ? LuxwapColors.brand500
+                                : LuxwapColors.neutral400,
+                            width: selected ? 2 : 1.2,
+                          ),
                         ),
+                        child: selected
+                            ? Center(
+                                child: Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              )
+                            : null,
                       ),
                     ),
                   ),
@@ -1047,7 +1085,7 @@ class _LineRow extends StatelessWidget {
                       style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xff1b1b1b)),
+                          color: LuxwapColors.neutral900),
                     ),
                   ),
                   const Spacer(),
@@ -1078,7 +1116,7 @@ class _DelayText extends StatelessWidget {
       return const Text('测试中',
           textAlign: TextAlign.right,
           style: TextStyle(
-              color: Color(0xff286afc),
+              color: LuxwapColors.brand500,
               fontSize: 11,
               fontWeight: FontWeight.bold));
     }
@@ -1086,7 +1124,7 @@ class _DelayText extends StatelessWidget {
       return const Text('-',
           textAlign: TextAlign.right,
           style: TextStyle(
-              color: Color(0xff286afc),
+              color: LuxwapColors.brand500,
               fontSize: 11,
               fontWeight: FontWeight.bold));
     }
@@ -1094,7 +1132,7 @@ class _DelayText extends StatelessWidget {
       return const Text('超时',
           textAlign: TextAlign.right,
           style: TextStyle(
-              color: Color(0xff286afc),
+              color: LuxwapColors.brand500,
               fontSize: 11,
               fontWeight: FontWeight.bold));
     }
@@ -1105,12 +1143,12 @@ class _DelayText extends StatelessWidget {
           TextSpan(
               text: '${node.delayMs}',
               style: const TextStyle(
-                  color: Color(0xff286afc),
+                  color: LuxwapColors.brand500,
                   fontSize: 12,
                   fontWeight: FontWeight.bold)),
           const TextSpan(
               text: ' /ms',
-              style: TextStyle(color: Color(0xff1b1b1b), fontSize: 10)),
+              style: TextStyle(color: LuxwapColors.neutral900, fontSize: 10)),
         ],
       ),
     );

@@ -13,6 +13,8 @@ import 'lines_page.dart';
 import 'personal_center_page.dart';
 import 'settings_page.dart';
 import 'trade_manager_page.dart';
+import '../theme/luxwap_theme.dart';
+import '../widgets/luxwap_icon.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -90,7 +92,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
               onSelect: _select,
               onHelp: () => _select(6),
             ),
-            Container(width: 1, color: const Color(0xffe5e8ef)),
+            Container(width: 1, color: LuxwapColors.divider),
             Expanded(
               child: Column(
                 children: [
@@ -212,7 +214,16 @@ class _Sidebar extends StatelessWidget {
           Column(
             children: [
               const SizedBox(height: 42),
-              Image.asset('assets/images/logo.png', width: 64, height: 64),
+              Container(
+                width: 56,
+                height: 56,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: LuxwapColors.brand50,
+                  borderRadius: LuxwapRadius.rMd,
+                ),
+                child: const LuxwapIcon('icon-logo-blue', size: 40),
+              ),
               const SizedBox(height: 36),
               _NavButton(
                   index: 0, selected: selected, label: '线路', onTap: onSelect),
@@ -238,7 +249,7 @@ class _Sidebar extends StatelessWidget {
               width: 4,
               height: 26,
               decoration: const BoxDecoration(
-                color: Color(0xff2b77ff),
+                color: LuxwapColors.brand500,
                 borderRadius:
                     BorderRadius.horizontal(right: Radius.circular(3)),
               ),
@@ -284,23 +295,23 @@ class _NavButton extends StatelessWidget {
       child: Center(
         child: InkWell(
           onTap: () => onTap(index),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: LuxwapRadius.rSm,
           child: Container(
             width: 94,
             height: 30,
             decoration: BoxDecoration(
-              color: active ? const Color(0xffe8f0ff) : const Color(0xfff6f6f7),
-              borderRadius: BorderRadius.circular(6),
+              color: active ? LuxwapColors.brand50 : LuxwapColors.neutral50,
+              borderRadius: LuxwapRadius.rSm,
             ),
             child: Center(
               child: Text(
                 label,
                 style: TextStyle(
                   color: active
-                      ? const Color(0xff2b77ff)
-                      : const Color(0xff1b1b1b),
+                      ? LuxwapColors.brand500
+                      : LuxwapColors.neutral800,
                   fontSize: 12,
-                  fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                  fontWeight: active ? FontWeight.w500 : FontWeight.w400,
                 ),
               ),
             ),
@@ -333,8 +344,8 @@ class _UserHeader extends StatelessWidget {
     return Container(
       height: 138,
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xffedf0f5))),
-        color: Colors.white,
+        border: Border(bottom: BorderSide(color: LuxwapColors.divider)),
+        color: LuxwapColors.neutral0,
       ),
       padding: const EdgeInsets.fromLTRB(24, 16, 30, 0),
       child: Row(
@@ -398,11 +409,11 @@ class _UserHeader extends StatelessWidget {
             width: 285,
             height: 64,
             decoration: BoxDecoration(
-              color: const Color(0xff3b77fd),
-              borderRadius: BorderRadius.circular(8),
+              color: LuxwapColors.brand500,
+              borderRadius: LuxwapRadius.rMd,
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xff3b77fd).withValues(alpha: 0.25),
+                  color: LuxwapColors.brand500.withValues(alpha: 0.25),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -442,9 +453,9 @@ class _UserHeader extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       padding: EdgeInsets.zero,
                       backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xff2b61ff),
+                      foregroundColor: LuxwapColors.brand500,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15)),
+                          borderRadius: LuxwapRadius.rLg),
                     ),
                     onPressed: onRenew,
                     child: const Text(

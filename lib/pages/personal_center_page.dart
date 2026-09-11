@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../app_state.dart';
 import '../app_toast.dart';
+import '../theme/luxwap_theme.dart';
 import 'change_password_dialog.dart';
 
 class PersonalCenterPage extends StatelessWidget {
@@ -24,15 +25,16 @@ class PersonalCenterPage extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Color(0xff1b1b1b),
+              color: LuxwapColors.neutral900,
             ),
           ),
           const SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: const Color(0xffdddddd)),
-              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: LuxwapColors.borderLight),
+              borderRadius: LuxwapRadius.rMd,
+              boxShadow: LuxwapShadows.card,
             ),
             child: Column(
               children: [
@@ -43,7 +45,7 @@ class PersonalCenterPage extends StatelessWidget {
                     tooltip: '复制用户ID',
                     icon: const Icon(
                       Icons.copy,
-                      size: 24,
+                      size: 20,
                       color: Color(0xff8d91a3),
                     ),
                     onPressed: () {
@@ -91,18 +93,18 @@ class PersonalCenterPage extends StatelessWidget {
           const SizedBox(height: 20),
           Center(
             child: SizedBox(
-              width: 115,
-              height: 34,
+              width: 120,
+              height: 36,
               child: FilledButton(
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xff2a80ff),
+                  backgroundColor: LuxwapColors.brand500,
                   foregroundColor: Colors.white,
                   textStyle: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: LuxwapRadius.rLg,
                   ),
                 ),
                 onPressed: () => _showLogoutDialog(context),
@@ -430,10 +432,10 @@ class _ProfileRow extends StatelessWidget {
                         height: 32,
                         child: TextButton(
                           style: TextButton.styleFrom(
-                            backgroundColor: const Color(0xfff7f7f8),
-                            foregroundColor: const Color(0xff1b1b1b),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
+                            backgroundColor: LuxwapColors.neutral200,
+                            foregroundColor: LuxwapColors.neutral900,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: LuxwapRadius.rSm,
                             ),
                             padding: EdgeInsets.zero,
                           ),
@@ -457,7 +459,7 @@ class _ProfileRow extends StatelessWidget {
               left: 15,
               right: 15,
               bottom: 0,
-              child: Divider(height: 1, color: Color(0xffeeeeee)),
+              child: Divider(height: 1, color: LuxwapColors.borderLight),
             ),
         ],
       ),
@@ -473,9 +475,10 @@ class _PointsCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: const Color(0xfff8faff),
-        border: Border.all(color: const Color(0xffdbe5f7)),
-        borderRadius: BorderRadius.circular(8),
+        color: LuxwapColors.brand50,
+        border: Border.all(color: LuxwapColors.brand100),
+        borderRadius: LuxwapRadius.rMd,
+        boxShadow: LuxwapShadows.card,
       ),
       child: Row(
         children: [
@@ -499,7 +502,7 @@ class _PointsCard extends StatelessWidget {
                     const Text(
                       '我的积分：',
                       style:
-                          TextStyle(fontSize: 14, color: Color(0xff555555)),
+                          TextStyle(fontSize: 14, color: LuxwapColors.neutral600),
                     ),
                     const Text(
                       '1000',
@@ -514,16 +517,15 @@ class _PointsCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color:
-                            const Color(0xff2a80ff).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        color: LuxwapColors.brand500.withValues(alpha: 0.12),
+                        borderRadius: LuxwapRadius.rLg,
                       ),
                       child: const Text(
                         'LV1 会员',
                         style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xff2a80ff)),
+                            color: LuxwapColors.brand500),
                       ),
                     ),
                   ],
@@ -533,7 +535,7 @@ class _PointsCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: LuxwapRadius.rSm,
                         child: const LinearProgressIndicator(
                           value: 1000 / 3000,
                           minHeight: 6,
@@ -547,7 +549,7 @@ class _PointsCard extends StatelessWidget {
                     const Text(
                       '1000 / 3000',
                       style:
-                          TextStyle(fontSize: 11, color: Color(0xff888888)),
+                          TextStyle(fontSize: 11, color: LuxwapColors.neutral500),
                     ),
                   ],
                 ),
@@ -561,8 +563,8 @@ class _PointsCard extends StatelessWidget {
               foregroundColor: Colors.white,
               padding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18)),
+              shape: const RoundedRectangleBorder(
+                  borderRadius: LuxwapRadius.rLg),
             ),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -596,8 +598,9 @@ class _FeatureCard extends StatelessWidget {
     return Container(
       height: 85,
       decoration: BoxDecoration(
-        color: const Color(0xffeaeaec),
-        borderRadius: BorderRadius.circular(4),
+        color: LuxwapColors.neutral200,
+        borderRadius: LuxwapRadius.rMd,
+        border: Border.all(color: LuxwapColors.borderLight),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Row(
@@ -610,13 +613,13 @@ class _FeatureCard extends StatelessWidget {
                 Text(
                   title,
                   style:
-                      const TextStyle(fontSize: 18, color: Color(0xff2a2a2a)),
+                      const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: LuxwapColors.neutral900),
                 ),
                 const SizedBox(height: 5),
                 Text(
                   subtitle,
                   style:
-                      const TextStyle(fontSize: 10, color: Color(0xffa7a7a8)),
+                      const TextStyle(fontSize: 10, color: LuxwapColors.neutral500),
                 ),
               ],
             ),

@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 import '../app_state.dart';
 import '../app_toast.dart';
+import '../theme/luxwap_theme.dart';
+import '../widgets/luxwap_icon.dart';
 import 'help_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -480,7 +482,7 @@ class _LoginPageState extends State<LoginPage> {
                     width: 382,
                     height: 200,
                     decoration: const BoxDecoration(
-                      color: Color(0xff2a80ff),
+                      color: LuxwapColors.brand500,
                       borderRadius:
                           BorderRadius.vertical(bottom: Radius.circular(30)),
                     ),
@@ -505,9 +507,8 @@ class _LoginPageState extends State<LoginPage> {
                     top: 30,
                     child: Column(
                       children: [
-                        Image.asset('assets/images/icon_logo.png',
-                            width: 64, height: 64),
-                        const SizedBox(height: 4),
+                        const LuxwapIcon('icon-logo-white', size: 60),
+                        const SizedBox(height: 6),
                         const Text(
                           'Luxwap',
                           style: TextStyle(
@@ -657,8 +658,8 @@ class _LoginPageState extends State<LoginPage> {
             title,
             style: TextStyle(
               fontSize: 18,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? const Color(0xff1b1b1b) : const Color(0xff8c8c8c),
+              fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+              color: isSelected ? LuxwapColors.neutral800 : LuxwapColors.neutral500,
             ),
           ),
           const SizedBox(height: 4),
@@ -666,7 +667,7 @@ class _LoginPageState extends State<LoginPage> {
             width: 28,
             height: 3,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xff2a80ff) : Colors.transparent,
+              color: isSelected ? LuxwapColors.brand500 : Colors.transparent,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -702,7 +703,7 @@ class _LoginPageState extends State<LoginPage> {
               }),
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
-                foregroundColor: const Color(0xff2a80ff),
+                foregroundColor: LuxwapColors.brand500,
                 textStyle: const TextStyle(fontSize: 12),
               ),
               child: const Text('忘记密码？'),
@@ -935,15 +936,15 @@ class _LoginPageState extends State<LoginPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('登录即代表同意 ', style: TextStyle(fontSize: 10.5, color: Color(0xff999999))),
+              const Text('登录即代表同意 ', style: TextStyle(fontSize: 10.5, color: LuxwapColors.neutral500)),
               InkWell(
                 onTap: () => showHelpDialog(context, initialTab: 0),
-                child: const Text('《使用指南》', style: TextStyle(fontSize: 10.5, color: Color(0xff2a80ff))),
+                child: const Text('《使用指南》', style: TextStyle(fontSize: 10.5, color: LuxwapColors.brand500)),
               ),
-              const Text('与 ', style: TextStyle(fontSize: 10.5, color: Color(0xff999999))),
+              const Text('与 ', style: TextStyle(fontSize: 10.5, color: LuxwapColors.neutral500)),
               InkWell(
                 onTap: () => showHelpDialog(context, initialTab: 1),
-                child: const Text('《隐私协议》', style: TextStyle(fontSize: 10.5, color: Color(0xff2a80ff))),
+                child: const Text('《隐私协议》', style: TextStyle(fontSize: 10.5, color: LuxwapColors.brand500)),
               ),
             ],
           ),
@@ -961,7 +962,7 @@ class _LoginPageState extends State<LoginPage> {
           mode = 0;
         }),
         style: TextButton.styleFrom(
-          foregroundColor: const Color(0xff2a80ff),
+          foregroundColor: LuxwapColors.brand500,
           textStyle: const TextStyle(fontSize: 13),
           padding: EdgeInsets.zero,
           minimumSize: const Size(0, 28),
@@ -978,27 +979,31 @@ class _LoginPageState extends State<LoginPage> {
     bool obscure = false,
   }) {
     return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: const Color(0xfff4f6fb),
-        borderRadius: BorderRadius.circular(10),
+        color: LuxwapColors.neutral0,
+        borderRadius: LuxwapRadius.rSm,
+        border: Border.all(color: LuxwapColors.border),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: const Color(0xff52627a)),
-          const SizedBox(width: 6),
+          Icon(icon, size: 18, color: LuxwapColors.neutral500),
+          const SizedBox(width: 8),
           Expanded(
             child: TextField(
               controller: controller,
               obscureText: obscure,
               decoration: InputDecoration(
                 border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
                 hintText: hint,
                 hintStyle:
-                    const TextStyle(fontSize: 14, color: Color(0xff333333)),
+                    const TextStyle(fontSize: 14, color: LuxwapColors.neutral400),
               ),
-              style: const TextStyle(fontSize: 14, color: Color(0xff1b1b1b)),
+              style: const TextStyle(fontSize: 14, color: LuxwapColors.neutral800),
             ),
           ),
         ],
@@ -1011,34 +1016,37 @@ class _LoginPageState extends State<LoginPage> {
     required String hint,
   }) {
     return Container(
-      height: 42,
+      height: 46,
       decoration: BoxDecoration(
-        color: const Color(0xfff4f6fb),
-        borderRadius: BorderRadius.circular(8),
+        color: LuxwapColors.neutral0,
+        borderRadius: LuxwapRadius.rSm,
+        border: Border.all(color: LuxwapColors.border),
       ),
       child: TextField(
         controller: controller,
         decoration: InputDecoration(
           border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
           contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           hintText: hint,
-          hintStyle: const TextStyle(fontSize: 12, color: Color(0xff9ca3af)),
+          hintStyle: const TextStyle(fontSize: 13, color: LuxwapColors.neutral400),
         ),
-        style: const TextStyle(fontSize: 13, color: Color(0xff1b1b1b)),
+        style: const TextStyle(fontSize: 13, color: LuxwapColors.neutral800),
       ),
     );
   }
 
   Widget _primaryButton(String text, VoidCallback onPressed) {
     return SizedBox(
-      height: 40,
+      height: 48,
       child: FilledButton(
         style: FilledButton.styleFrom(
-          backgroundColor: const Color(0xff2a80ff),
+          backgroundColor: LuxwapColors.brand500,
           foregroundColor: Colors.white,
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          shape: RoundedRectangleBorder(borderRadius: LuxwapRadius.rMd),
         ),
         onPressed: loading || oauthLoading ? null : onPressed,
         child: Text(text),
@@ -1048,13 +1056,13 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _secondaryButton(String text, VoidCallback onPressed) {
     return SizedBox(
-      height: 40,
+      height: 48,
       child: FilledButton(
         style: FilledButton.styleFrom(
-          backgroundColor: const Color(0xffe8f0fe),
-          foregroundColor: const Color(0xff2a80ff),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          backgroundColor: LuxwapColors.brand50,
+          foregroundColor: LuxwapColors.brand500,
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          shape: RoundedRectangleBorder(borderRadius: LuxwapRadius.rMd),
         ),
         onPressed: loading || oauthLoading ? null : onPressed,
         child: Text(text),

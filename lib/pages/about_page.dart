@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_toast.dart';
+import '../theme/luxwap_theme.dart';
 import 'help_page.dart';
 
 class AboutPage extends StatefulWidget {
@@ -48,9 +49,9 @@ class _AboutPageState extends State<AboutPage> {
                           const Text(
                             '关于 Luxwap',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xff111111),
+                              color: LuxwapColors.neutral900,
                             ),
                           ),
                           const SizedBox(width: 128),
@@ -62,10 +63,10 @@ class _AboutPageState extends State<AboutPage> {
                                   showAppToast('当前已是最新版本', success: true),
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
-                                backgroundColor: const Color(0xfff6f6f8),
-                                foregroundColor: const Color(0xff111111),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(6)),
+                                backgroundColor: LuxwapColors.neutral200,
+                                foregroundColor: LuxwapColors.neutral900,
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius: LuxwapRadius.rSm),
                               ),
                               icon: const Icon(Icons.track_changes, size: 13),
                               label: const Text(
@@ -83,7 +84,7 @@ class _AboutPageState extends State<AboutPage> {
                           const Text(
                             '稳定版本：V2.1.3.20250818_release',
                             style:
-                                TextStyle(fontSize: 10, color: Color(0xff111111)),
+                                TextStyle(fontSize: 11, color: LuxwapColors.neutral600),
                           ),
                           const SizedBox(width: 24),
                           InkWell(
@@ -91,8 +92,8 @@ class _AboutPageState extends State<AboutPage> {
                             child: const Text(
                               '使用与帮助指南',
                               style: TextStyle(
-                                fontSize: 10,
-                                color: Color(0xff2b77ff),
+                                fontSize: 11,
+                                color: LuxwapColors.brand500,
                                 decoration: TextDecoration.underline,
                               ),
                             ),
@@ -103,8 +104,8 @@ class _AboutPageState extends State<AboutPage> {
                             child: const Text(
                               '隐私保护协议',
                               style: TextStyle(
-                                fontSize: 10,
-                                color: Color(0xff2b77ff),
+                                fontSize: 11,
+                                color: LuxwapColors.brand500,
                                 decoration: TextDecoration.underline,
                               ),
                             ),
@@ -115,33 +116,34 @@ class _AboutPageState extends State<AboutPage> {
                       const Text(
                         '版本说明',
                         style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xff111111)),
+                            color: LuxwapColors.neutral900),
                       ),
                       const SizedBox(height: 12),
                       const Text(
                         '本软件持续迭代优化，如需获取最新版本及反馈问题，请联系支持团队。',
                         style: TextStyle(
-                            fontSize: 10,
-                            color: Color(0xff111111),
+                            fontSize: 11,
+                            color: LuxwapColors.neutral700,
                             height: 1.5),
                       ),
                       const SizedBox(height: 30),
                       const Text(
                         '反馈',
                         style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xff111111)),
+                            color: LuxwapColors.neutral900),
                       ),
                       const SizedBox(height: 10),
                       Container(
                         width: contentWidth,
                         height: 170,
                         decoration: BoxDecoration(
-                          color: const Color(0xfff6f6f8),
-                          borderRadius: BorderRadius.circular(12),
+                          color: LuxwapColors.neutral200,
+                          borderRadius: LuxwapRadius.rSm,
+                          border: Border.all(color: LuxwapColors.borderLight),
                         ),
                         child: TextField(
                           controller: feedbackController,
@@ -151,12 +153,12 @@ class _AboutPageState extends State<AboutPage> {
                           decoration: const InputDecoration(
                             hintText: '反馈内容',
                             hintStyle: TextStyle(
-                                fontSize: 10, color: Color(0xff777777)),
+                                fontSize: 11, color: LuxwapColors.neutral500),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.fromLTRB(16, 14, 16, 14),
                           ),
                           style: const TextStyle(
-                              fontSize: 11, color: Color(0xff111111)),
+                              fontSize: 12, color: LuxwapColors.neutral900),
                         ),
                       ),
                       const SizedBox(height: 34),
@@ -164,21 +166,21 @@ class _AboutPageState extends State<AboutPage> {
                         width: contentWidth,
                         child: Center(
                           child: SizedBox(
-                            width: 78,
+                            width: 84,
                             height: 30,
                             child: TextButton(
                               onPressed: _sendFeedback,
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
-                                backgroundColor: const Color(0xffe8f0ff),
-                                foregroundColor: const Color(0xff2b77ff),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
+                                backgroundColor: LuxwapColors.brand50,
+                                foregroundColor: LuxwapColors.brand500,
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius: LuxwapRadius.rLg),
                               ),
                               child: const Text(
                                 '发送',
                                 style: TextStyle(
-                                    fontSize: 10, fontWeight: FontWeight.w600),
+                                    fontSize: 11, fontWeight: FontWeight.w600),
                               ),
                             ),
                           ),

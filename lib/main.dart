@@ -7,6 +7,7 @@ import 'pages/login_page.dart';
 import 'pages/main_shell.dart';
 import 'services/api_service.dart';
 import 'services/token_store.dart';
+import 'theme/luxwap_theme.dart';
 
 void main() {
   runApp(const LuxwapApp());
@@ -58,15 +59,13 @@ class _LuxwapAppState extends State<LuxwapApp> {
     final currentLoggedIn = appState.isLoggedIn;
     if (_lastLoggedIn != currentLoggedIn) {
       _lastLoggedIn = currentLoggedIn;
-      _syncWindowSize();
+      _syncWindowSize(currentLoggedIn);
     }
   }
 
   Future<void> _bootstrap() async {
     await appState.loadSession();
-    _lastLoggedIn = appState.isLoggedIn;
-    await _syncWindowSize();
-    await _syncCloseToTray();
+    _syncWindowSize(appState.isLoggedIn);
     if (mounted) {
       setState(() => loading = false);
     }
@@ -78,23 +77,11 @@ class _LuxwapAppState extends State<LuxwapApp> {
     super.dispose();
   }
 
-  Future<void> _syncWindowSize() async {
-    final loggedIn = appState.isLoggedIn;
+  Future<void> _syncWindowSize(bool loggedIn) async {
     try {
-      await _windowChannel.invokeMethod('setSize', {
-        'width': loggedIn ? 1194 : 440,
-        'height': loggedIn ? 850 : 720,
-        'center': true,
-      });
-    } catch (_) {
-      // The window channel is only available in packaged desktop builds.
-    }
-  }
-
-  Future<void> _syncCloseToTray() async {
-    try {
-      await _windowChannel.invokeMethod('setCloseToTray', {
-        'enabled': appState.clientConfig.closeToTray,
+      await _windowChannel.invokeMethod('setWindowSize', {
+        'width': 960,
+        'height': 680,
       });
     } catch (_) {}
   }
@@ -107,15 +94,7 @@ class _LuxwapAppState extends State<LuxwapApp> {
         scaffoldMessengerKey: rootScaffoldMessengerKey,
         debugShowCheckedModeBanner: false,
         title: 'Luxwap',
-        theme: ThemeData(
-          scaffoldBackgroundColor: const Color(0xfff6f8fc),
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xff2a80ff),
-            primary: const Color(0xff2a80ff),
-          ),
-          useMaterial3: true,
-          fontFamily: 'Microsoft YaHei',
-        ),
+        theme: buildLuxwapThemeData(),
         home: AnimatedBuilder(
           animation: appState,
           builder: (context, _) {

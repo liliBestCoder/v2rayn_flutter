@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_toast.dart';
+import '../theme/luxwap_theme.dart';
 
 /// 弹出帮助与文档对话框
 Future<void> showHelpDialog(BuildContext context, {int initialTab = 0}) {
@@ -115,26 +116,26 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
   Widget _buildHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
-      color: const Color(0xfff8fafc),
+      color: LuxwapColors.pageBackground,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.help_outline_rounded, color: Color(0xff2b77ff), size: 24),
+              const Icon(Icons.help_outline_rounded, color: LuxwapColors.brand500, size: 24),
               const SizedBox(width: 10),
               const Text(
                 '帮助与文档中心',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xff111827),
+                  color: LuxwapColors.neutral900,
                 ),
               ),
               const Spacer(),
               if (widget.isDialog && widget.onClose != null)
                 IconButton(
-                  icon: const Icon(Icons.close, color: Color(0xff64748b), size: 20),
+                  icon: const Icon(Icons.close, color: LuxwapColors.neutral500, size: 20),
                   splashRadius: 18,
                   onPressed: widget.onClose,
                   tooltip: '关闭',
@@ -146,9 +147,9 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
             children: [
               Container(
                 height: 36,
-                decoration: BoxDecoration(
-                  color: const Color(0xffe2e8f0),
-                  borderRadius: BorderRadius.circular(8),
+                decoration: const BoxDecoration(
+                  color: LuxwapColors.neutral200,
+                  borderRadius: LuxwapRadius.rSm,
                 ),
                 padding: const EdgeInsets.all(3),
                 child: TabBar(
@@ -156,20 +157,14 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
                   indicatorSize: TabBarIndicatorSize.tab,
-                  indicator: BoxDecoration(
+                  indicator: const BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(6),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x14000000),
-                        blurRadius: 4,
-                        offset: Offset(0, 1),
-                      ),
-                    ],
+                    borderRadius: LuxwapRadius.rSm,
+                    boxShadow: LuxwapShadows.card,
                   ),
-                  labelColor: const Color(0xff2b77ff),
+                  labelColor: LuxwapColors.brand500,
                   labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                  unselectedLabelColor: const Color(0xff64748b),
+                  unselectedLabelColor: LuxwapColors.neutral600,
                   unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                   tabs: const [
                     Tab(
@@ -201,18 +196,18 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                   height: 36,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xffcbd5e1)),
+                    borderRadius: LuxwapRadius.rSm,
+                    border: Border.all(color: LuxwapColors.borderLight),
                   ),
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: '搜索文档内容 (如: TUN, DoT, 拥堵, FAQ, UWP)...',
-                      hintStyle: const TextStyle(fontSize: 11, color: Color(0xff94a3b8)),
-                      prefixIcon: const Icon(Icons.search, size: 16, color: Color(0xff94a3b8)),
+                      hintStyle: const TextStyle(fontSize: 11, color: LuxwapColors.neutral500),
+                      prefixIcon: const Icon(Icons.search, size: 16, color: LuxwapColors.neutral500),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear, size: 14, color: Color(0xff94a3b8)),
+                              icon: const Icon(Icons.clear, size: 14, color: LuxwapColors.neutral500),
                               onPressed: () => _searchController.clear(),
                               splashRadius: 14,
                             )
@@ -220,7 +215,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     ),
-                    style: const TextStyle(fontSize: 12, color: Color(0xff1e293b)),
+                    style: const TextStyle(fontSize: 12, color: LuxwapColors.neutral900),
                   ),
                 ),
               ),
@@ -248,7 +243,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
-          color: const Color(0xfffafbfc),
+          color: LuxwapColors.pageBackground,
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -263,7 +258,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
             ),
           ),
         ),
-        const Divider(height: 1, color: Color(0xfff1f5f9)),
+        const Divider(height: 1, color: LuxwapColors.borderLight),
         Expanded(
           child: filtered.isEmpty
               ? _buildEmptySearch()
@@ -286,19 +281,19 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
       padding: const EdgeInsets.only(right: 8),
       child: InkWell(
         onTap: () => setState(() => _selectedCategory = cat),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: LuxwapRadius.rLg,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xff2b77ff) : const Color(0xfff1f5f9),
-            borderRadius: BorderRadius.circular(16),
+            color: isSelected ? LuxwapColors.brand500 : LuxwapColors.neutral200,
+            borderRadius: LuxwapRadius.rLg,
           ),
           child: Text(
             title,
             style: TextStyle(
               fontSize: 11,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected ? Colors.white : const Color(0xff475569),
+              color: isSelected ? Colors.white : LuxwapColors.neutral700,
             ),
           ),
         ),
@@ -310,15 +305,9 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xffe2e8f0)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x05000000),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+        borderRadius: LuxwapRadius.rMd,
+        border: Border.all(color: LuxwapColors.borderLight),
+        boxShadow: LuxwapShadows.card,
       ),
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -329,11 +318,11 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
               children: [
                 Container(
                   padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xffeff6ff),
-                    borderRadius: BorderRadius.circular(6),
+                  decoration: const BoxDecoration(
+                    color: LuxwapColors.brand50,
+                    borderRadius: LuxwapRadius.rSm,
                   ),
-                  child: Icon(section.icon, size: 16, color: const Color(0xff2b77ff)),
+                  child: Icon(section.icon, size: 16, color: LuxwapColors.brand500),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -342,19 +331,19 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xff0f172a),
+                      color: LuxwapColors.neutral900,
                     ),
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xfff1f5f9),
-                    borderRadius: BorderRadius.circular(4),
+                  decoration: const BoxDecoration(
+                    color: LuxwapColors.neutral200,
+                    borderRadius: LuxwapRadius.rSm,
                   ),
                   child: Text(
                     section.badge,
-                    style: const TextStyle(fontSize: 10, color: Color(0xff64748b)),
+                    style: const TextStyle(fontSize: 10, color: LuxwapColors.neutral600),
                   ),
                 ),
               ],
@@ -365,7 +354,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
               style: const TextStyle(
                 fontSize: 12,
                 height: 1.6,
-                color: Color(0xff334155),
+                color: LuxwapColors.neutral700,
               ),
             ),
             if (section.extraWidget != null) ...[
@@ -390,17 +379,17 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-          color: const Color(0xfff8fafc),
+          color: LuxwapColors.stateSuccessSurface,
           child: const Row(
             children: [
-              Icon(Icons.shield_outlined, size: 16, color: Color(0xff16a34a)),
+              Icon(Icons.shield_outlined, size: 16, color: LuxwapColors.stateSuccess),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'Luxwap 恪守严格的无访问日志记录原则（No-Logs Policy），绝不记录用户的网络流量与隐私数据。',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Color(0xff166534),
+                    color: LuxwapColors.stateSuccess,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -408,7 +397,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
             ],
           ),
         ),
-        const Divider(height: 1, color: Color(0xfff1f5f9)),
+        const Divider(height: 1, color: LuxwapColors.borderLight),
         Expanded(
           child: displayLines.isEmpty
               ? _buildEmptySearch()
@@ -418,15 +407,16 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xffe2e8f0)),
+                      borderRadius: LuxwapRadius.rMd,
+                      border: Border.all(color: LuxwapColors.borderLight),
+                      boxShadow: LuxwapShadows.card,
                     ),
                     child: SelectableText(
                       _searchQuery.isEmpty ? _privacyContent : displayLines.join('\n'),
                       style: const TextStyle(
                         fontSize: 12,
                         height: 1.7,
-                        color: Color(0xff334155),
+                        color: LuxwapColors.neutral700,
                       ),
                     ),
                   ),
@@ -441,16 +431,16 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.search_off_rounded, size: 48, color: Color(0xffcbd5e1)),
+          const Icon(Icons.search_off_rounded, size: 48, color: LuxwapColors.neutral400),
           const SizedBox(height: 12),
           Text(
             '未找到匹配 "$_searchQuery" 的文档内容',
-            style: const TextStyle(fontSize: 13, color: Color(0xff64748b)),
+            style: const TextStyle(fontSize: 13, color: LuxwapColors.neutral500),
           ),
           const SizedBox(height: 8),
           TextButton(
             onPressed: () => _searchController.clear(),
-            child: const Text('清空搜索条件', style: TextStyle(fontSize: 12, color: Color(0xff2b77ff))),
+            child: const Text('清空搜索条件', style: TextStyle(fontSize: 12, color: LuxwapColors.brand500)),
           ),
         ],
       ),
@@ -479,9 +469,9 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         extraWidget: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xfff8fafc),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xffe2e8f0)),
+            color: LuxwapColors.neutral200,
+            borderRadius: LuxwapRadius.rSm,
+            border: Border.all(color: LuxwapColors.borderLight),
           ),
           child: Column(
             children: [
@@ -572,10 +562,10 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
               icon: const Icon(Icons.copy, size: 13),
               label: const Text('复制客服邮箱', style: TextStyle(fontSize: 11)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xff2b77ff),
+                backgroundColor: LuxwapColors.brand500,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                shape: const RoundedRectangleBorder(borderRadius: LuxwapRadius.rLg),
               ),
             ),
           ],
@@ -601,7 +591,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: const TextStyle(fontSize: 11, color: Color(0xff334155), height: 1.4),
+              style: const TextStyle(fontSize: 11, color: LuxwapColors.neutral700, height: 1.4),
               children: [
                 TextSpan(text: '$title: ', style: const TextStyle(fontWeight: FontWeight.w600)),
                 TextSpan(text: desc),

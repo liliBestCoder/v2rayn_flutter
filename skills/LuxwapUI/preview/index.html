@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LuxwapUI Design System Preview</title>
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--background);
+      color: var(--foreground);
+      margin: 0;
+      padding: var(--spacing-6);
+    }
+    .preview-section {
+      max-width: 960px;
+      margin: 0 auto var(--spacing-6);
+      padding: var(--spacing-6);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+    .preview-title {
+      font-size: var(--heading-4-font-size);
+      font-weight: var(--heading-4-font-weight);
+      line-height: var(--heading-4-line-height);
+      margin: 0 0 var(--spacing-4);
+    }
+    .color-row {
+      display: flex;
+      gap: var(--spacing-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--spacing-4);
+    }
+    .swatch {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: flex-end;
+      padding: var(--spacing-2);
+      font-size: 10px;
+      color: var(--neutral-0);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: background 150ms ease;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border-radius: var(--radius-md);
+      font-size: var(--body-large-font-size);
+      font-weight: var(--body-large-font-weight);
+      height: 52px;
+      padding-inline: var(--spacing-6);
+    }
+    .btn-primary:hover { background: var(--brand-600); }
+    .btn-chip {
+      background: var(--accent);
+      color: var(--accent-foreground);
+      border-radius: var(--radius-full);
+      font-size: var(--body-large-font-size);
+      height: 30px;
+      padding-inline: var(--spacing-3);
+    }
+    .btn-chip:hover { background: var(--brand-100); }
+    .input {
+      width: 100%;
+      max-width: 320px;
+      height: 50px;
+      padding-inline: var(--spacing-4);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-sans);
+      font-size: var(--body-large-font-size);
+      color: var(--foreground);
+      background: var(--background);
+    }
+    .input::placeholder { color: var(--neutral-400); }
+    .input:focus {
+      outline: none;
+      border-color: var(--ring);
+      box-shadow: 0 0 0 2px rgba(40, 106, 252, 0.25);
+    }
+    .type-stack > * {
+      margin: var(--spacing-2) 0;
+    }
+    .card {
+      background: var(--neutral-100);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-6);
+      max-width: 420px;
+    }
+    .card-title {
+      font-size: var(--heading-5-font-size);
+      font-weight: var(--heading-5-font-weight);
+      margin-bottom: var(--spacing-4);
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--spacing-4);
+      margin-bottom: var(--spacing-4);
+    }
+    .stat-value {
+      font-size: 30px;
+      font-weight: 500;
+      line-height: 30px;
+    }
+    .stat-label {
+      font-size: var(--body-large-font-size);
+      color: var(--neutral-600);
+    }
+    .theme-toggle {
+      position: fixed;
+      top: var(--spacing-4);
+      right: var(--spacing-4);
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border: none;
+      border-radius: var(--radius-md);
+      padding: var(--spacing-2) var(--spacing-4);
+      cursor: pointer;
+      font-family: var(--font-sans);
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="document.documentElement.classList.toggle('dark')">切换主题</button>
+
+  <div class="preview-section">
+    <div class="preview-title">Brand Colors</div>
+    <div class="color-row">
+      <div class="swatch" style="background: var(--brand-500)">500</div>
+      <div class="swatch" style="background: var(--brand-400)">400</div>
+      <div class="swatch" style="background: var(--brand-50); color: var(--neutral-800); text-shadow: none">50</div>
+    </div>
+    <div class="preview-title">State Colors</div>
+    <div class="color-row">
+      <div class="swatch" style="background: var(--state-success)">Success</div>
+      <div class="swatch" style="background: var(--state-error)">Error</div>
+      <div class="swatch" style="background: var(--state-warning)">Warning</div>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-title">Typography</div>
+    <div class="type-stack">
+      <div style="font: var(--heading-1-font-weight) var(--heading-1-font-size)/var(--heading-1-line-height) var(--font-sans)">Heading 1 — 20px / 500</div>
+      <div style="font: var(--heading-3-font-weight) var(--heading-3-font-size)/var(--heading-3-line-height) var(--font-sans)">Heading 3 — 18px / 400</div>
+      <div style="font: var(--heading-5-font-weight) var(--heading-5-font-size)/var(--heading-5-line-height) var(--font-sans)">Heading 5 — 16px / 500</div>
+      <div style="font: var(--body-large-font-weight) var(--body-large-font-size)/var(--body-large-line-height) var(--font-sans)">Body Large — 14px / 500</div>
+      <div style="font: var(--body-font-weight) var(--body-font-size)/var(--body-line-height) var(--font-sans)">Body — 12px / 400</div>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-title">Buttons</div>
+    <div style="display: flex; gap: var(--spacing-3); align-items: center; flex-wrap: wrap;">
+      <button class="btn btn-primary">立即购买 ></button>
+      <button class="btn btn-chip">筛选</button>
+      <button class="btn btn-chip">刷新</button>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-title">Input</div>
+    <input class="input" placeholder="请输入账号" />
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-title">Card</div>
+    <div class="card">
+      <div class="card-title">流量套餐信息</div>
+      <div class="stat-grid">
+        <div><div class="stat-value">80GB</div><div class="stat-label">总流量</div></div>
+        <div><div class="stat-value">14.65GB</div><div class="stat-label">已用流量</div></div>
+        <div><div class="stat-value">30天</div><div class="stat-label">有效期</div></div>
+      </div>
+      <button class="btn btn-primary" style="width: 100%">在线充值</button>
+    </div>
+  </div>
+</body>
+</html>

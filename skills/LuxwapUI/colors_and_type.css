@@ -1,0 +1,252 @@
+/**
+ * LuxwapUI Design System Tokens
+ * Source: luxwap.fig / design-spec-luxwap.zip
+ * Style: flat-professional, spacious, cool
+ * Primary language: zh (MiSans), secondary: en (Inter)
+ * Theme modes: light (default), dark (.dark)
+ */
+
+/* @group-priority: brand, neutral, state, accent, green */
+
+:root {
+  /* ===== SOLO-DESIGN CONSUMPTION ALIASES ===== */
+  --luxwap-ui-background: var(--background, #ffffff);
+  --luxwap-ui-foreground: var(--foreground, #1b1b1b);
+  --luxwap-ui-card: var(--card, #ffffff);
+  --luxwap-ui-card-foreground: var(--card-foreground, #1b1b1b);
+  --luxwap-ui-popover: var(--popover, #ffffff);
+  --luxwap-ui-popover-foreground: var(--popover-foreground, #1b1b1b);
+  --luxwap-ui-primary: var(--primary, #286afc);
+  --luxwap-ui-primary-foreground: var(--primary-foreground, #ffffff);
+  --luxwap-ui-secondary: var(--secondary, #f3f6fb);
+  --luxwap-ui-secondary-foreground: var(--secondary-foreground, #3d3d3d);
+  --luxwap-ui-muted: var(--muted, #f7f7f8);
+  --luxwap-ui-muted-foreground: var(--muted-foreground, #666666);
+  --luxwap-ui-accent: var(--accent, #e9f0ff);
+  --luxwap-ui-accent-foreground: var(--accent-foreground, #286afc);
+  --luxwap-ui-destructive: var(--destructive, #ed462b);
+  --luxwap-ui-destructive-foreground: var(--destructive-foreground, #ffffff);
+  --luxwap-ui-success: var(--success, #27a53c);
+  --luxwap-ui-success-foreground: var(--success-foreground, #ffffff);
+  --luxwap-ui-warning: var(--warning, #ff8800);
+  --luxwap-ui-warning-foreground: var(--warning-foreground, #ffffff);
+  --luxwap-ui-border: var(--border, #dfdfdf);
+  --luxwap-ui-input: var(--input, #dfdfdf);
+  --luxwap-ui-ring: var(--ring, #286afc);
+  --luxwap-ui-chart-1: var(--chart-1, #286afc);
+  --luxwap-ui-chart-2: var(--chart-2, #71affc);
+  --luxwap-ui-chart-3: var(--chart-3, #ff383c);
+  --luxwap-ui-chart-4: var(--chart-4, #ff8d28);
+  --luxwap-ui-chart-5: var(--chart-5, #14ae5c);
+
+  /* ===== PRIMITIVE PALETTE ===== */
+
+  /* brand */
+  --brand-50: #e9f0ff;
+  --brand-100: #d4e1ff;
+  --brand-200: #a9c3ff;
+  --brand-300: #7ea5ff;
+  --brand-400: #71affc;
+  --brand-500: #286afc; /* @primary */
+  --brand-600: #1f55c9;
+  --brand-700: #174097;
+  --brand-800: #0f2b65;
+  --brand-900: #081532;
+
+  /* neutral */
+  --neutral-0: #ffffff;
+  --neutral-50: #f7f7f8;
+  --neutral-100: #f3f6fb;
+  --neutral-200: #eaeaea;
+  --neutral-300: #dfdfdf;
+  --neutral-400: #b2b2b2;
+  --neutral-500: #999bab;
+  --neutral-600: #666666;
+  --neutral-700: #3d3d3d;
+  --neutral-800: #1b1b1b;
+  --neutral-900: #000000;
+
+  /* state */
+  --state-success: #27a53c;
+  --state-success-hover: #1f8a31;
+  --state-success-surface: #e8f5eb;
+  --state-success-foreground: #ffffff;
+  --state-error: #ed462b;
+  --state-error-hover: #c93a22;
+  --state-error-surface: #fdece9;
+  --state-error-foreground: #ffffff;
+  --state-warning: #ff8800;
+  --state-warning-hover: #d47100;
+  --state-warning-surface: #fff3e0;
+  --state-warning-foreground: #ffffff;
+
+  /* accent */
+  --accent-red: #ff383c;
+  --accent-red-hover: #ff4245;
+  --accent-orange: #ff8d28;
+  --accent-orange-hover: #ff9230;
+
+  /* green primitives */
+  --green-500: #14ae5c;
+  --green-600: #009951;
+
+  /* figma primitive leftovers */
+  --white-400: rgba(255, 255, 255, 0.4);
+  --gray-400: #b3b3b3;
+  --neutral-icon-bg: #eaeaea;
+
+  /* ===== SEMANTIC ROLES ===== */
+  --background: var(--neutral-0);
+  --foreground: var(--neutral-800);
+  --card: var(--neutral-0);
+  --card-foreground: var(--neutral-800);
+  --popover: var(--neutral-0);
+  --popover-foreground: var(--neutral-800);
+
+  --primary: var(--brand-500);
+  --primary-foreground: var(--neutral-0);
+  --secondary: var(--neutral-100);
+  --secondary-foreground: var(--neutral-700);
+  --muted: var(--neutral-50);
+  --muted-foreground: var(--neutral-600);
+  --accent: var(--brand-50);
+  --accent-foreground: var(--brand-500);
+  --destructive: var(--state-error);
+  --destructive-foreground: var(--state-error-foreground);
+  --success: var(--state-success);
+  --success-foreground: var(--state-success-foreground);
+  --warning: var(--state-warning);
+  --warning-foreground: var(--state-warning-foreground);
+  --border: var(--neutral-300);
+  --input: var(--neutral-300);
+  --ring: var(--brand-500);
+
+  --icon: var(--neutral-800);
+  --icon-muted: var(--neutral-600);
+  --icon-primary: var(--brand-500);
+
+  /* chart */
+  --chart-1: var(--brand-500);
+  --chart-2: var(--brand-400);
+  --chart-3: var(--accent-red);
+  --chart-4: var(--accent-orange);
+  --chart-5: var(--green-500);
+
+  /* ===== TYPOGRAPHY ===== */
+  --font-sans: "MiSans", "PingFang SC", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+  --font-latin: "Inter", "MiSans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", monospace;
+  --tracking-normal: 0em;
+
+  --heading-1-font-family: var(--font-sans);
+  --heading-1-font-size: 20px;
+  --heading-1-font-weight: 500;
+  --heading-1-line-height: 20px;
+
+  --heading-2-font-family: var(--font-sans);
+  --heading-2-font-size: 20px;
+  --heading-2-font-weight: 400;
+  --heading-2-line-height: 20px;
+
+  --heading-3-font-family: var(--font-sans);
+  --heading-3-font-size: 18px;
+  --heading-3-font-weight: 400;
+  --heading-3-line-height: 18px;
+
+  --heading-4-font-family: var(--font-sans);
+  --heading-4-font-size: 18px;
+  --heading-4-font-weight: 500;
+  --heading-4-line-height: 18px;
+
+  --heading-5-font-family: var(--font-sans);
+  --heading-5-font-size: 16px;
+  --heading-5-font-weight: 500;
+  --heading-5-line-height: 16px;
+
+  --heading-6-font-family: var(--font-sans);
+  --heading-6-font-size: 16px;
+  --heading-6-font-weight: 400;
+  --heading-6-line-height: 16px;
+
+  --body-large-font-family: var(--font-sans);
+  --body-large-font-size: 14px;
+  --body-large-font-weight: 500;
+  --body-large-line-height: 14px;
+
+  --body-font-family: var(--font-sans);
+  --body-font-size: 12px;
+  --body-font-weight: 400;
+  --body-line-height: 12px;
+
+  /* generic fallback */
+  --font-family: var(--font-sans);
+  --font-size: var(--body-font-size);
+  --font-weight: var(--body-font-weight);
+  --line-height: var(--body-line-height);
+
+  /* ===== RADIUS ===== */
+  --radius-sm: 5px;
+  --radius-md: 15px;
+  --radius-lg: 30px;
+  --radius-full: 9999px;
+  --radius: var(--radius-sm);
+
+  /* ===== SHADOWS ===== */
+  --shadow-2xs: 0px 2px 4px 0px rgba(0, 0, 0, 0.25);
+  --shadow-xs: 0px 2px 6px 0px rgba(0, 0, 0, 0.18);
+  --shadow-sm: 0px 3px 6px 0px rgba(0, 0, 0, 0.161);
+
+  /* ===== SPACING ===== */
+  --spacing-base: 2px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 24px;
+  --spacing-6: 32px;
+  --spacing-7: 48px;
+  --spacing-8: 64px;
+  --spacing-9: 96px;
+  --spacing: var(--spacing-base);
+
+  /* observed component spacing */
+  --spacing-observed-sm: 10px;
+  --spacing-observed-md: 61px;
+  --spacing-observed-lg: 66px;
+}
+
+/* ===== DARK MODE SEMANTIC ROLES ===== */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #f7f7f8;
+  --card: #141414;
+  --card-foreground: #f7f7f8;
+  --popover: #1b1b1b;
+  --popover-foreground: #f7f7f8;
+
+  --primary: var(--brand-400);
+  --primary-foreground: #0a0a0a;
+  --secondary: #1b1b1b;
+  --secondary-foreground: #f7f7f8;
+  --muted: #1b1b1b;
+  --muted-foreground: #999bab;
+  --accent: #1f2b47;
+  --accent-foreground: var(--brand-400);
+  --destructive: #ff5c45;
+  --destructive-foreground: #ffffff;
+  --success: #34c759;
+  --success-foreground: #0a0a0a;
+  --warning: #ff9f0a;
+  --warning-foreground: #0a0a0a;
+  --border: #2c2c2e;
+  --input: #2c2c2e;
+  --ring: var(--brand-400);
+
+  --icon: #f7f7f8;
+  --icon-muted: #999bab;
+  --icon-primary: var(--brand-400);
+
+  --shadow-2xs: 0px 2px 4px 0px rgba(0, 0, 0, 0.45);
+  --shadow-xs: 0px 2px 6px 0px rgba(0, 0, 0, 0.40);
+  --shadow-sm: 0px 3px 6px 0px rgba(0, 0, 0, 0.36);
+}
