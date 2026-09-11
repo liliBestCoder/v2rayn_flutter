@@ -17,7 +17,8 @@ class PersonalCenterPage extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       child: ListView(
         children: [
-          const SizedBox(height: 20),
+          const _PointsCard(),
+          const SizedBox(height: 24),
           const Text(
             '个人资料',
             style: TextStyle(
@@ -110,30 +111,46 @@ class PersonalCenterPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 30),
-          const Wrap(
-            spacing: 40,
-            runSpacing: 15,
-            alignment: WrapAlignment.center,
+          const Column(
             children: [
-              _FeatureCard(
-                title: '高匿匿名',
-                subtitle: 'HTTPS/CHACHA20加密访问',
-                iconAsset: 'assets/images/privacy_icon.png',
+              Row(
+                children: [
+                  Expanded(
+                    child: _FeatureCard(
+                      title: '高匿匿名',
+                      subtitle: 'HTTPS/CHACHA20加密访问',
+                      iconAsset: 'assets/images/privacy_icon.png',
+                    ),
+                  ),
+                  SizedBox(width: 20),
+                  Expanded(
+                    child: _FeatureCard(
+                      title: '隧道自由',
+                      subtitle: '灵活调节线路',
+                      iconAsset: 'assets/images/tunel_icon.png',
+                    ),
+                  ),
+                ],
               ),
-              _FeatureCard(
-                title: '隧道自由',
-                subtitle: '灵活调节线路',
-                iconAsset: 'assets/images/tunel_icon.png',
-              ),
-              _FeatureCard(
-                title: '弹性并发',
-                subtitle: '超大带宽，弹性并发',
-                iconAsset: 'assets/images/concurrency_icon.png',
-              ),
-              _FeatureCard(
-                title: '安全稳定',
-                subtitle: '数据传输稳定可靠',
-                iconAsset: 'assets/images/guard_icon.png',
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _FeatureCard(
+                      title: '弹性并发',
+                      subtitle: '超大带宽，弹性并发',
+                      iconAsset: 'assets/images/concurrency_icon.png',
+                    ),
+                  ),
+                  SizedBox(width: 20),
+                  Expanded(
+                    child: _FeatureCard(
+                      title: '安全稳定',
+                      subtitle: '数据传输稳定可靠',
+                      iconAsset: 'assets/images/guard_icon.png',
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -448,6 +465,121 @@ class _ProfileRow extends StatelessWidget {
   }
 }
 
+class _PointsCard extends StatelessWidget {
+  const _PointsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xfff8faff),
+        border: Border.all(color: const Color(0xffdbe5f7)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xfffff4e5),
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: const Icon(Icons.stars_rounded,
+                color: Color(0xffff9800), size: 28),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text(
+                      '我的积分：',
+                      style:
+                          TextStyle(fontSize: 14, color: Color(0xff555555)),
+                    ),
+                    const Text(
+                      '1000',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xffff8a18),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color:
+                            const Color(0xff2a80ff).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        'LV1 会员',
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xff2a80ff)),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: const LinearProgressIndicator(
+                          value: 1000 / 3000,
+                          minHeight: 6,
+                          backgroundColor: Color(0xffe2e8f0),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Color(0xffffa133)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      '1000 / 3000',
+                      style:
+                          TextStyle(fontSize: 11, color: Color(0xff888888)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 20),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xffff8a18),
+              foregroundColor: Colors.white,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18)),
+            ),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('积分兑换功能开发中')),
+              );
+            },
+            icon: const Icon(Icons.redeem, size: 16),
+            label: const Text('积分兑换',
+                style:
+                    TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _FeatureCard extends StatelessWidget {
   const _FeatureCard({
     required this.title,
@@ -462,7 +594,6 @@ class _FeatureCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 320,
       height: 85,
       decoration: BoxDecoration(
         color: const Color(0xffeaeaec),

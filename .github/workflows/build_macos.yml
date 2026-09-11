@@ -2,9 +2,9 @@ name: Build macOS
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, fix/ui-and-bugs ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, fix/ui-and-bugs ]
   workflow_dispatch:
 
 jobs:

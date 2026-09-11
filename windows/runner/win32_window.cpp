@@ -179,7 +179,16 @@ Win32Window::MessageHandler(HWND hwnd,
                             WPARAM const wparam,
                             LPARAM const lparam) noexcept {
   switch (message) {
+    case WM_CLOSE: {
+      if (close_to_tray_) {
+        ShowWindow(hwnd, SW_HIDE);
+        return 0;
+      }
+      CleanSystemProxy();
+      break;
+    }
     case WM_DESTROY:
+      CleanSystemProxy();
       window_handle_ = nullptr;
       Destroy();
       if (quit_on_close_) {
@@ -272,6 +281,39 @@ void Win32Window::OnDestroy() {
   // No-op; provided for subclasses.
 }
 
+void Win32Window::SetCloseToTray(bool close_to_tray) {
+  close_to_tray_ = close_to_tray;
+}
+
+bool Win32Window::GetCloseToTray() const {
+  return close_to_tray_;
+}
+
+void Win32Window::CleanSystemProxy() {
+  HKEY hKey;
+  if (RegOpenKeyExW(HKEY_CURRENT_USER,
+                    L"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings",
+                    0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS) {
+    DWORD disable = 0;
+    RegSetValueExW(hKey, L"ProxyEnable", 0, REG_DWORD, (const BYTE*)&disable,
+                   sizeof(disable));
+    RegDeleteValueW(hKey, L"ProxyServer");
+    RegCloseKey(hKey);
+
+    typedef BOOL(WINAPI * PFN_InternetSetOptionW)(HANDLE, DWORD, LPVOID, DWORD);
+    HMODULE wininet = LoadLibraryW(L"wininet.dll");
+    if (wininet) {
+      PFN_InternetSetOptionW pfn =
+          (PFN_InternetSetOptionW)GetProcAddress(wininet, "InternetSetOptionW");
+      if (pfn) {
+        pfn(NULL, 39 /* INTERNET_OPTION_SETTINGS_CHANGED */, NULL, 0);
+        pfn(NULL, 37 /* INTERNET_OPTION_REFRESH */, NULL, 0);
+      }
+      FreeLibrary(wininet);
+    }
+  }
+}
+
 void Win32Window::UpdateTheme(HWND const window) {
   DWORD light_mode;
   DWORD light_mode_size = sizeof(light_mode);
@@ -285,4 +327,11 @@ void Win32Window::UpdateTheme(HWND const window) {
     DwmSetWindowAttribute(window, DWMWA_USE_IMMERSIVE_DARK_MODE,
                           &enable_dark_mode, sizeof(enable_dark_mode));
   }
+
+  // Use UI light grey #F6F8FC for the title bar on Windows 11
+  // DWMWA_CAPTION_COLOR = 35, DWMWA_TEXT_COLOR = 36
+  COLORREF caption_color = RGB(246, 248, 252);
+  COLORREF text_color = RGB(27, 27, 27);
+  DwmSetWindowAttribute(window, 35, &caption_color, sizeof(caption_color));
+  DwmSetWindowAttribute(window, 36, &text_color, sizeof(text_color));
 }

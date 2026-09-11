@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:math';
 import 'dart:io';
 
@@ -387,18 +387,6 @@ class _UserHeader extends StatelessWidget {
                       icon: Icons.receipt_long_outlined,
                       onPressed: onTrade,
                     ),
-                    const SizedBox(width: 12),
-                    _HeaderActionButton(
-                      label: '积分兑换会员',
-                      color: const Color(0xffff8a18),
-                      background: const Color(0xfffff2e3),
-                      icon: Icons.stars_outlined,
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('积分兑换会员')),
-                        );
-                      },
-                    ),
                   ],
                 ),
               ],
@@ -406,13 +394,20 @@ class _UserHeader extends StatelessWidget {
           ),
           const Spacer(),
           Container(
-            width: 250,
-            height: 56,
+            width: 285,
+            height: 64,
             decoration: BoxDecoration(
               color: const Color(0xff3b77fd),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xff3b77fd).withValues(alpha: 0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            padding: const EdgeInsets.only(left: 16, right: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
                 Expanded(
@@ -426,35 +421,35 @@ class _UserHeader extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
                         '使用流量：$usedTraffic (MB)',
                         style:
-                            const TextStyle(color: Colors.white, fontSize: 9),
+                            const TextStyle(color: Colors.white, fontSize: 11),
                       ),
                     ],
                   ),
                 ),
                 SizedBox(
-                  width: 58,
-                  height: 26,
+                  width: 62,
+                  height: 30,
                   child: FilledButton(
                     style: FilledButton.styleFrom(
                       padding: EdgeInsets.zero,
                       backgroundColor: Colors.white,
                       foregroundColor: const Color(0xff2b61ff),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
+                          borderRadius: BorderRadius.circular(15)),
                     ),
                     onPressed: onRenew,
                     child: const Text(
                       '续费',
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                   ),
                 ),

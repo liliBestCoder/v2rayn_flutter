@@ -9,41 +9,72 @@ import 'services/api_service.dart';
 import 'services/token_store.dart';
 
 void main() {
-  runApp(const V2rayNFlutterApp());
+  runApp(const LuxwapApp());
 }
 
-class V2rayNFlutterApp extends StatefulWidget {
-  const V2rayNFlutterApp({super.key});
+class LuxwapApp extends StatefulWidget {
+  const LuxwapApp({super.key});
 
   @override
-  State<V2rayNFlutterApp> createState() => _V2rayNFlutterAppState();
+  State<LuxwapApp> createState() => _LuxwapAppState();
 }
 
-class _V2rayNFlutterAppState extends State<V2rayNFlutterApp> {
+class _LuxwapAppState extends State<LuxwapApp> {
   static const _windowChannel = MethodChannel('luxwap/window');
 
   late final ApiService api;
   late final AppState appState;
   bool loading = true;
+  bool? _lastLoggedIn;
 
   @override
   void initState() {
     super.initState();
     api = ApiService();
     appState = AppState(api: api, tokenStore: TokenStore());
-    appState.addListener(_syncWindowSize);
+    appState.addListener(_onAppStateChanged);
+    _setupWindowChannelHandler();
     _bootstrap();
+  }
+
+  void _setupWindowChannelHandler() {
+    _windowChannel.setMethodCallHandler((call) async {
+      if (call.method == 'onTrayAction') {
+        final action = call.arguments?.toString();
+        if (action == 'closeToTray_true') {
+          await appState.updateClientConfig(
+            appState.clientConfig.copyWith(closeToTray: true),
+          );
+        } else if (action == 'closeToTray_false') {
+          await appState.updateClientConfig(
+            appState.clientConfig.copyWith(closeToTray: false),
+          );
+        }
+      }
+    });
+  }
+
+  void _onAppStateChanged() {
+    final currentLoggedIn = appState.isLoggedIn;
+    if (_lastLoggedIn != currentLoggedIn) {
+      _lastLoggedIn = currentLoggedIn;
+      _syncWindowSize();
+    }
   }
 
   Future<void> _bootstrap() async {
     await appState.loadSession();
+    _lastLoggedIn = appState.isLoggedIn;
     await _syncWindowSize();
-    setState(() => loading = false);
+    await _syncCloseToTray();
+    if (mounted) {
+      setState(() => loading = false);
+    }
   }
 
   @override
   void dispose() {
-    appState.removeListener(_syncWindowSize);
+    appState.removeListener(_onAppStateChanged);
     super.dispose();
   }
 
@@ -51,13 +82,21 @@ class _V2rayNFlutterAppState extends State<V2rayNFlutterApp> {
     final loggedIn = appState.isLoggedIn;
     try {
       await _windowChannel.invokeMethod('setSize', {
-        'width': loggedIn ? 1194 : 420,
-        'height': loggedIn ? 850 : 760,
+        'width': loggedIn ? 1194 : 440,
+        'height': loggedIn ? 850 : 720,
         'center': true,
       });
     } catch (_) {
       // The window channel is only available in packaged desktop builds.
     }
+  }
+
+  Future<void> _syncCloseToTray() async {
+    try {
+      await _windowChannel.invokeMethod('setCloseToTray', {
+        'enabled': appState.clientConfig.closeToTray,
+      });
+    } catch (_) {}
   }
 
   @override
@@ -67,7 +106,7 @@ class _V2rayNFlutterAppState extends State<V2rayNFlutterApp> {
       child: MaterialApp(
         scaffoldMessengerKey: rootScaffoldMessengerKey,
         debugShowCheckedModeBanner: false,
-        title: 'v2rayN',
+        title: 'Luxwap',
         theme: ThemeData(
           scaffoldBackgroundColor: const Color(0xfff6f8fc),
           colorScheme: ColorScheme.fromSeed(

@@ -1,0 +1,68 @@
+{
+  "timestamp": "2026-09-11T08:34:08.046Z",
+  "node": "vless://${uuid}@103.94.185.18:443?encryption=none&fp=chrome&pbk=in1Xx9fLt8JnupY-",
+  "uuid": "60fbe84f-f3c2-4307-83d4-44ee2bf798d3",
+  "proxyPort": 10899,
+  "cases": [
+    {
+      "proxyType": "http",
+      "targetUrl": "https://www.google.com",
+      "exitCode": 35,
+      "httpCode": 0,
+      "timeTotal": 1.134455,
+      "success": false,
+      "error": "curl exit code 35 (Connection failed/Reset)",
+      "targetName": "Google"
+    },
+    {
+      "proxyType": "http",
+      "targetUrl": "https://www.youtube.com",
+      "exitCode": 35,
+      "httpCode": 0,
+      "timeTotal": 1.177924,
+      "success": false,
+      "error": "curl exit code 35 (Connection failed/Reset)",
+      "targetName": "YouTube"
+    },
+    {
+      "proxyType": "http",
+      "targetUrl": "https://chatgpt.com",
+      "exitCode": 35,
+      "httpCode": 0,
+      "timeTotal": 1.238725,
+      "success": false,
+      "error": "curl exit code 35 (Connection failed/Reset)",
+      "targetName": "ChatGPT"
+    },
+    {
+      "proxyType": "socks5",
+      "targetUrl": "https://www.google.com",
+      "exitCode": 35,
+      "httpCode": 0,
+      "timeTotal": 2.708911,
+      "success": false,
+      "error": "curl exit code 35 (Connection failed/Reset)",
+      "targetName": "Google"
+    },
+    {
+      "proxyType": "socks5",
+      "targetUrl": "https://www.youtube.com",
+      "exitCode": 35,
+      "httpCode": 0,
+      "timeTotal": 2.591759,
+      "success": false,
+      "error": "curl exit code 35 (Connection failed/Reset)",
+      "targetName": "YouTube"
+    },
+    {
+      "proxyType": "socks5",
+      "targetUrl": "https://chatgpt.com",
+      "exitCode": 35,
+      "httpCode": 0,
+      "timeTotal": 0.896003,
+      "success": false,
+      "error": "curl exit code 35 (Connection failed/Reset)",
+      "targetName": "ChatGPT"
+    }
+  ]
+}

@@ -17,6 +17,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final outerDns = TextEditingController(text: '8.8.8.8');
   final innerDns = TextEditingController(text: '223.5.5.5');
   final globalDns = TextEditingController(text: '8.8.8.8');
+  final dotDns = TextEditingController(text: '');
 
   bool passByIp = true;
   bool passByDomain = true;
@@ -24,6 +25,8 @@ class _SettingsPageState extends State<SettingsPage> {
   bool passByLanDomain = false;
   bool blockAds = false;
   bool vpnRoute = true;
+  bool tunEnabled = true;
+  bool closeToTray = true;
   bool geoUpdating = false;
   int? geoPercent;
   String geoLabel = '';
@@ -42,12 +45,15 @@ class _SettingsPageState extends State<SettingsPage> {
     outerDns.text = config.outerDns;
     innerDns.text = config.innerDns;
     globalDns.text = config.globalDns;
+    dotDns.text = config.dotDns;
     passByIp = config.passByIp;
     passByDomain = config.passByDomain;
     passByLanIp = config.passByLanIp;
     passByLanDomain = config.passByLanDomain;
     blockAds = config.blockAds;
     vpnRoute = config.vpnRoute;
+    tunEnabled = config.tunEnabled;
+    closeToTray = config.closeToTray;
     routeStrategy = config.routeStrategy;
     language = config.language;
     configLoaded = true;
@@ -58,6 +64,7 @@ class _SettingsPageState extends State<SettingsPage> {
     outerDns.dispose();
     innerDns.dispose();
     globalDns.dispose();
+    dotDns.dispose();
     super.dispose();
   }
 
@@ -110,8 +117,36 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> _exemptUwpLoopback() async {
+    if (!Platform.isWindows) {
+      showAppToast('当前平台不支持该功能');
+      return;
+    }
+    showAppToast('正在解除 UWP 回环限制...');
+    try {
+      final res = await Process.run('powershell', [
+        '-NoProfile',
+        '-ExecutionPolicy',
+        'Bypass',
+        '-Command',
+        r'Get-AppxPackage | ForEach-Object { & CheckNetIsolation LoopbackExempt -a -p=$($_.PackageFamilyName) }',
+      ]);
+      if (res.exitCode == 0) {
+        showAppToast('已成功解除 UWP 应用回环代理限制！', success: true);
+      } else {
+        showAppToast('解除完成');
+      }
+    } catch (e) {
+      showAppToast('执行失败：$e');
+    }
+  }
+
   Future<void> _saveConfig({bool notify = false}) async {
     final state = AppScope.of(context);
+    try {
+      const MethodChannel('luxwap/window')
+          .invokeMethod('setCloseToTray', closeToTray);
+    } catch (_) {}
     await state.updateClientConfig(
       state.clientConfig.copyWith(
         routeStrategy: routeStrategy,
@@ -122,6 +157,9 @@ class _SettingsPageState extends State<SettingsPage> {
         passByLanDomain: passByLanDomain,
         blockAds: blockAds,
         vpnRoute: vpnRoute,
+        tunEnabled: tunEnabled,
+        closeToTray: closeToTray,
+        dotDns: dotDns.text.trim(),
         outerDns:
             outerDns.text.trim().isEmpty ? '8.8.8.8' : outerDns.text.trim(),
         innerDns:
@@ -263,6 +301,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 onChanged: (v) => _setAndSave(() => blockAds = v),
               ),
             ),
+            _SettingRow(
+              title: 'TUN 虚拟网卡模式',
+              subtitle: '接管系统全局流量（默认开启）',
+              trailing: _MiniSwitch(
+                value: tunEnabled,
+                onChanged: (v) => _setAndSave(() => tunEnabled = v),
+              ),
+            ),
             const SizedBox(height: 16),
             const _SectionTitle('DNS配置'),
             const SizedBox(height: 8),
@@ -272,6 +318,14 @@ class _SettingsPageState extends State<SettingsPage> {
               trailing: _MiniSwitch(
                 value: vpnRoute,
                 onChanged: (v) => _setAndSave(() => vpnRoute = v),
+              ),
+            ),
+            _SettingRow(
+              title: 'DoT (DNS over TLS)',
+              subtitle: '加密 DNS 查询，例如 tcp://1.1.1.1:853',
+              trailing: _EditableDnsField(
+                controller: dotDns,
+                onChanged: () => _saveConfig(notify: true),
               ),
             ),
             _SettingRow(
@@ -298,10 +352,43 @@ class _SettingsPageState extends State<SettingsPage> {
                 onChanged: () => _saveConfig(notify: true),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
+            const _SectionTitle('常规与系统设置'),
+            const SizedBox(height: 8),
             _SettingRow(
-              title: '语言',
-              subtitle: '',
+              title: '点击关闭 (X) 按钮',
+              subtitle: '窗口关闭时的行为动作',
+              trailing: _DropdownText(
+                value: closeToTray ? '最小化到托盘' : '直接退出',
+                values: const ['最小化到托盘', '直接退出'],
+                onSelected: (value) => _setAndSave(
+                    () => closeToTray = (value == '最小化到托盘')),
+              ),
+            ),
+            if (Platform.isWindows)
+              _SettingRow(
+                title: '解除 UWP 应用回环限制',
+                subtitle: '解决 Win10/11 微软商店及 UWP 应用无法通过代理联网',
+                trailing: SizedBox(
+                  height: 28,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xff2a80ff),
+                      foregroundColor: Colors.white,
+                      textStyle: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.bold),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onPressed: _exemptUwpLoopback,
+                    child: const Text('一键解除'),
+                  ),
+                ),
+              ),
+            _SettingRow(
+              title: '界面语言',
+              subtitle: '切换系统显示语言',
               trailing: _DropdownText(
                 value: language,
                 values: const ['简体中文', 'English'],
@@ -325,9 +412,9 @@ class _SectionTitle extends StatelessWidget {
     return Text(
       text,
       style: const TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w700,
-        color: Color(0xff111111),
+        fontSize: 15,
+        fontWeight: FontWeight.bold,
+        color: Color(0xff1b1b1b),
       ),
     );
   }
@@ -415,12 +502,12 @@ class _SettingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: subtitle.isEmpty ? 34 : 48,
+      height: subtitle.isEmpty ? 38 : 52,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            width: 168,
+            width: 240,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -430,21 +517,20 @@ class _SettingRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xff555555),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xff333333),
                   ),
                 ),
                 if (subtitle.isNotEmpty) ...[
-                  const SizedBox(height: 7),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xffb2b2b2),
+                      fontSize: 11,
+                      color: Color(0xff888888),
                     ),
                   ),
                 ],
@@ -485,7 +571,7 @@ class _DropdownText extends StatelessWidget {
             (item) => PopupMenuItem<String>(
               value: item,
               height: 30,
-              child: Text(item, style: const TextStyle(fontSize: 10)),
+              child: Text(item, style: const TextStyle(fontSize: 12)),
             ),
           )
           .toList(),
@@ -494,7 +580,7 @@ class _DropdownText extends StatelessWidget {
         children: [
           Text(
             value,
-            style: const TextStyle(fontSize: 10, color: Color(0xff111111)),
+            style: const TextStyle(fontSize: 12, color: Color(0xff111111), fontWeight: FontWeight.w500),
           ),
           const SizedBox(width: 2),
           const Icon(Icons.arrow_drop_down, size: 15, color: Color(0xff111111)),
@@ -561,7 +647,7 @@ class _EditableDnsFieldState extends State<_EditableDnsField> {
             child: Text(
               widget.controller.text,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 10, color: Color(0xff111111)),
+              style: const TextStyle(fontSize: 12, color: Color(0xff111111), fontWeight: FontWeight.w500),
             ),
           ),
         ),
@@ -587,7 +673,7 @@ class _EditableDnsFieldState extends State<_EditableDnsField> {
             border: InputBorder.none,
             contentPadding: EdgeInsets.zero,
           ),
-          style: const TextStyle(fontSize: 10, color: Color(0xff111111)),
+          style: const TextStyle(fontSize: 12, color: Color(0xff111111), fontWeight: FontWeight.w500),
         ),
       ),
     );
@@ -604,35 +690,31 @@ class _MiniSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => onChanged(!value),
-      borderRadius: BorderRadius.circular(8),
-      child: SizedBox(
-        width: 32,
+      borderRadius: BorderRadius.circular(100),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 140),
+        width: 38,
         height: 20,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              width: 22,
-              height: 8,
-              decoration: BoxDecoration(
-                color: const Color(0xffdddddd),
-                borderRadius: BorderRadius.circular(2),
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(100),
+          color: value ? const Color(0xff2a80ff) : const Color(0xffd1d5db),
+        ),
+        alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          width: 16,
+          height: 16,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 2,
+                offset: Offset(0, 1),
               ),
-            ),
-            AnimatedAlign(
-              duration: const Duration(milliseconds: 120),
-              alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-              child: Container(
-                width: 11,
-                height: 11,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color:
-                      value ? const Color(0xff4396f4) : const Color(0xff999999),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

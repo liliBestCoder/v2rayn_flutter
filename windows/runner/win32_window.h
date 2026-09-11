@@ -52,6 +52,13 @@ class Win32Window {
   // If true, closing this window will quit the application.
   void SetQuitOnClose(bool quit_on_close);
 
+  // If true, clicking X will hide the window to tray instead of quitting.
+  void SetCloseToTray(bool close_to_tray);
+  bool GetCloseToTray() const;
+
+  // Static helper to cleanly restore Windows Internet proxy settings.
+  static void CleanSystemProxy();
+
   // Return a RECT representing the bounds of the current client area.
   RECT GetClientArea();
 
@@ -91,6 +98,7 @@ class Win32Window {
   static void UpdateTheme(HWND const window);
 
   bool quit_on_close_ = false;
+  bool close_to_tray_ = true;
 
   // window handle for top level window.
   HWND window_handle_ = nullptr;

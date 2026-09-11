@@ -38,6 +38,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
     ::DispatchMessage(&msg);
   }
 
+  Win32Window::CleanSystemProxy();
   ::CoUninitialize();
   return EXIT_SUCCESS;
 }

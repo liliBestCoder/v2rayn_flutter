@@ -1,26 +1,67 @@
+import 'package:flutter/material.dart';
+
 class LineNode {
   const LineNode({
+    this.id = '',
     required this.name,
-    required this.keyword,
+    this.keyword = '',
     required this.region,
-    required this.raw,
+    this.raw = '',
+    this.remark,
     this.delayMs,
     this.testingDelay = false,
+    this.load,
   });
 
+  final String id;
   final String name;
   final String keyword;
   final String region;
   final String raw;
+  final String? remark;
   final int? delayMs;
   final bool testingDelay;
+  final int? load;
+
+  int get effectiveLoad {
+    if (load != null) return load!;
+    if (remark != null) {
+      final match = RegExp(r'(?:负载|load)[:\s]*(\d+)', caseSensitive: false).firstMatch(remark!);
+      if (match != null) {
+        final parsed = int.tryParse(match.group(1) ?? '');
+        if (parsed != null) return parsed;
+      }
+    }
+    if (delayMs != null && !testingDelay) {
+      if (delayMs! < 0) return 95;
+      if (delayMs! <= 120) return 45;
+      if (delayMs! <= 250) return 75;
+      return 90;
+    }
+    return 30;
+  }
+
+  Color get crowdColor {
+    final l = effectiveLoad;
+    if (l < 60) {
+      return const Color(0xff18ad3e);
+    } else if (l <= 85) {
+      return const Color(0xffff9822);
+    } else {
+      return const Color(0xffff2d2d);
+    }
+  }
 
   String get host {
     try {
-      return Uri.parse(raw).host;
+      final uri = Uri.parse(raw);
+      if (uri.hasAuthority && uri.host.isNotEmpty) {
+        return uri.host;
+      }
     } catch (_) {
       return '';
     }
+    return '';
   }
 
   int get port {
@@ -30,37 +71,48 @@ class LineNode {
         return uri.port;
       }
     } catch (_) {
-      // Use the default below for malformed subscription lines.
+      return 0;
     }
-    return 443;
+    return 0;
   }
 
   LineNode copyWith({
+    String? id,
     String? name,
     String? keyword,
     String? region,
     String? raw,
+    String? remark,
     int? delayMs,
     bool? testingDelay,
+    int? load,
   }) {
     return LineNode(
+      id: id ?? this.id,
       name: name ?? this.name,
       keyword: keyword ?? this.keyword,
       region: region ?? this.region,
       raw: raw ?? this.raw,
+      remark: remark ?? this.remark,
       delayMs: delayMs ?? this.delayMs,
       testingDelay: testingDelay ?? this.testingDelay,
+      load: load ?? this.load,
     );
   }
 
   factory LineNode.fromSubscriptionLine(String raw) {
     final remark = _remarkFromUri(raw);
     final parts = remark.split('@split@');
+    int? parsedLoad;
+    if (parts.length > 3) {
+      parsedLoad = int.tryParse(parts[3].trim());
+    }
     return LineNode(
       name: parts.isNotEmpty && parts[0].isNotEmpty ? parts[0] : _hostFromUri(raw),
       keyword: parts.length > 1 ? parts[1] : '',
       region: _regionName(parts.length > 2 ? parts[2] : ''),
       raw: raw,
+      load: parsedLoad,
     );
   }
 

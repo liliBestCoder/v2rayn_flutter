@@ -51,6 +51,15 @@ class MainFlutterWindow: NSWindow {
         }
         self.setFrame(frame, display: true, animate: true)
         result(nil)
+      case "cleanProxy", "setCloseToTray":
+        result(nil)
+      case "show":
+        self.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        result(nil)
+      case "hide":
+        self.orderOut(nil)
+        result(nil)
       default:
         result(FlutterMethodNotImplemented)
       }

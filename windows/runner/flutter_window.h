@@ -33,6 +33,13 @@ class FlutterWindow : public Win32Window {
 
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
       window_channel_;
+
+  NOTIFYICONDATAW tray_data_{};
+  bool tray_initialized_ = false;
+
+  void InitTray();
+  void RemoveTray();
+  void HandleTrayMenu(HWND hwnd);
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_

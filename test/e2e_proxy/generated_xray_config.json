@@ -1,0 +1,73 @@
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "dns": {
+    "servers": [
+      "8.8.8.8",
+      "1.1.1.1",
+      "localhost"
+    ]
+  },
+  "inbounds": [
+    {
+      "tag": "mixed-in",
+      "listen": "127.0.0.1",
+      "port": 10899,
+      "protocol": "mixed"
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "proxy",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "103.94.185.18",
+            "port": 443,
+            "users": [
+              {
+                "id": "60fbe84f-f3c2-4307-83d4-44ee2bf798d3",
+                "encryption": "none",
+                "level": 0
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "show": false,
+          "fingerprint": "chrome",
+          "serverName": "www.tesla.com",
+          "publicKey": "in1Xx9fLt8JnupY-qFXonhAvNxy_5o7CZiervtDSUig",
+          "shortId": "c2fa336e84e275",
+          "spiderX": "/lMcoLHce6KjlApj"
+        }
+      }
+    },
+    {
+      "tag": "direct",
+      "protocol": "freedom"
+    },
+    {
+      "tag": "block",
+      "protocol": "blackhole"
+    }
+  ],
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "type": "field",
+        "domain": [
+          "geosite:category-ads-all"
+        ],
+        "outboundTag": "block"
+      }
+    ]
+  }
+}

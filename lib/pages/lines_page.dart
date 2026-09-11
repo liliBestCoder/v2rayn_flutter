@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../app_state.dart';
 import '../models/client_config.dart';
@@ -41,7 +42,7 @@ class _LinesPageState extends State<LinesPage> {
   }
 
   Future<void> _initialize() async {
-    await _cleanupBundledXrayProcesses();
+    await _cleanupBundledCoreProcesses();
     if (!mounted) {
       return;
     }
@@ -160,24 +161,24 @@ class _LinesPageState extends State<LinesPage> {
     });
     Process? process;
     try {
-      final xray = _xrayPath();
+      final corePath = _luxwapCorePath();
       await _speedtestLog(
-          'xray=$xray exists=${await File(xray).exists()} inbounds=${inbounds.length}');
-      if (!await File(xray).exists()) {
+          'luxwap_core=$corePath exists=${await File(corePath).exists()} inbounds=${inbounds.length}');
+      if (!await File(corePath).exists()) {
         return source
             .map((node) => node.copyWith(delayMs: -1, testingDelay: false))
             .toList();
       }
       process = await Process.start(
-        xray,
+        corePath,
         ['run', '-c', 'stdin:'],
         runInShell: false,
         workingDirectory: File(Platform.resolvedExecutable).parent.path,
-        environment: _xrayAssetEnvironment(),
+        environment: _luxwapCoreAssetEnvironment(),
       );
       speedtestProcess = process;
       process.exitCode.then((code) {
-        _speedtestLog('xray exitCode=$code');
+        _speedtestLog('luxwap_core exitCode=$code');
       });
       final stdoutBuffer = StringBuffer();
       final stderrBuffer = StringBuffer();
@@ -189,7 +190,7 @@ class _LinesPageState extends State<LinesPage> {
       await Future<void>.delayed(const Duration(milliseconds: 1000));
       if (await _hasProcessExited(process)) {
         await _speedtestLog(
-            'xray parent exited; continue probing ports stdout=${stdoutBuffer.toString()} stderr=${stderrBuffer.toString()}');
+            'luxwap_core parent exited; continue probing ports stdout=${stdoutBuffer.toString()} stderr=${stderrBuffer.toString()}');
       }
 
       final measured = await Future.wait(entries.map((entry) async {
@@ -216,30 +217,38 @@ class _LinesPageState extends State<LinesPage> {
     }
   }
 
-  String _xrayDir() {
+  String _luxwapCoreDir() {
     final exeDir = File(Platform.resolvedExecutable).parent.path;
     if (Platform.isMacOS) {
       // macOS .app bundle: Contents/MacOS/app → Contents/Resources/
       final resDir = '${File(exeDir).parent.path}${Platform.pathSeparator}Resources';
+      final coreDir = '$resDir${Platform.pathSeparator}bin${Platform.pathSeparator}luxwap_core';
+      if (Directory(coreDir).existsSync()) return coreDir;
       return '$resDir${Platform.pathSeparator}bin${Platform.pathSeparator}xray';
     }
+    final coreDir = '$exeDir${Platform.pathSeparator}bin${Platform.pathSeparator}luxwap_core';
+    if (Directory(coreDir).existsSync()) return coreDir;
     return '$exeDir${Platform.pathSeparator}bin${Platform.pathSeparator}xray';
   }
 
-  String _xrayPath() {
-    final binName = Platform.isWindows ? 'xray.exe' : 'xray';
-    final dir = _xrayDir();
+  String _luxwapCorePath() {
+    final primaryName = Platform.isWindows ? 'luxwap_core.exe' : 'luxwap_core';
+    final fallbackName = Platform.isWindows ? 'xray.exe' : 'xray';
+    final dir = _luxwapCoreDir();
     if (Platform.isMacOS) {
-      // Pick the xray matching the current CPU architecture
       final arch = _macCpuArch();
-      final path =
-          '$dir${Platform.pathSeparator}$arch${Platform.pathSeparator}$binName';
-      if (File(path).existsSync()) return path;
-      // Fallback: try the other architecture
+      final p1 = '$dir${Platform.pathSeparator}$arch${Platform.pathSeparator}$primaryName';
+      if (File(p1).existsSync()) return p1;
+      final p2 = '$dir${Platform.pathSeparator}$arch${Platform.pathSeparator}$fallbackName';
+      if (File(p2).existsSync()) return p2;
       final other = arch == 'arm64' ? 'amd64' : 'arm64';
-      return '$dir${Platform.pathSeparator}$other${Platform.pathSeparator}$binName';
+      final p3 = '$dir${Platform.pathSeparator}$other${Platform.pathSeparator}$primaryName';
+      if (File(p3).existsSync()) return p3;
+      return '$dir${Platform.pathSeparator}$other${Platform.pathSeparator}$fallbackName';
     }
-    return '$dir${Platform.pathSeparator}$binName';
+    final p1 = '$dir${Platform.pathSeparator}$primaryName';
+    if (File(p1).existsSync()) return p1;
+    return '$dir${Platform.pathSeparator}$fallbackName';
   }
 
   String _macCpuArch() {
@@ -247,10 +256,12 @@ class _LinesPageState extends State<LinesPage> {
     return 'amd64';
   }
 
-  Map<String, String> _xrayAssetEnvironment() {
+  Map<String, String> _luxwapCoreAssetEnvironment() {
+    final dir = _luxwapCoreDir();
     return {
-      'XRAY_LOCATION_ASSET': _xrayDir(),
-      'V2RAY_LOCATION_ASSET': _xrayDir(),
+      'LUXWAP_CORE_LOCATION_ASSET': dir,
+      'XRAY_LOCATION_ASSET': dir,
+      'V2RAY_LOCATION_ASSET': dir,
     };
   }
 
@@ -409,10 +420,10 @@ class _LinesPageState extends State<LinesPage> {
   Future<Directory> _appDataDir() async {
     if (Platform.isWindows) {
       final appData = Platform.environment['APPDATA'] ?? Directory.current.path;
-      return Directory('$appData\v2rayn_flutter');
+      return Directory('$appData\\luxwap');
     }
     final appSupportDir = await getApplicationSupportDirectory();
-    return Directory('${appSupportDir.path}${Platform.pathSeparator}v2rayn_flutter');
+    return Directory('${appSupportDir.path}${Platform.pathSeparator}luxwap');
   }
 
   @override
@@ -524,8 +535,8 @@ class _LinesPageState extends State<LinesPage> {
     }
 
     await _stopProxy(updateState: false);
-    await _cleanupBundledXrayProcesses();
-    final config = await _buildXrayRuntimeConfig(
+    await _cleanupBundledCoreProcesses();
+    final config = await _buildLuxwapCoreRuntimeConfig(
       node,
       state.clientConfig,
       state.userInfo?.country,
@@ -533,20 +544,20 @@ class _LinesPageState extends State<LinesPage> {
     if (config == null) {
       return;
     }
-    final xray = _xrayPath();
-    if (!await File(xray).exists()) {
+    final corePath = _luxwapCorePath();
+    if (!await File(corePath).exists()) {
       return;
     }
 
     coreProcess = await Process.start(
-      xray,
+      corePath,
       ['run', '-c', 'stdin:'],
       runInShell: false,
       workingDirectory: File(Platform.resolvedExecutable).parent.path,
-      environment: _xrayAssetEnvironment(),
+      environment: _luxwapCoreAssetEnvironment(),
     );
     coreProcess!.exitCode.then((code) {
-      _speedtestLog('runtime xray exitCode=$code');
+      _speedtestLog('runtime luxwap_core exitCode=$code');
     });
     coreProcess!.stdin.write(config);
     await coreProcess!.stdin.flush();
@@ -559,7 +570,7 @@ class _LinesPageState extends State<LinesPage> {
     });
     final proxyReady = await _waitTcpPort(10809);
     if (!proxyReady) {
-      await _speedtestLog('runtime xray proxy port 10809 not ready');
+      await _speedtestLog('runtime luxwap_core proxy port 10809 not ready');
       await _killProcess(coreProcess);
       coreProcess = null;
       return;
@@ -626,15 +637,24 @@ class _LinesPageState extends State<LinesPage> {
     }
   }
 
-  Future<void> _cleanupBundledXrayProcesses() async {
+  Future<void> _cleanupBundledCoreProcesses() async {
     if (Platform.isWindows) {
+      try {
+        await Process.run('taskkill', ['/f', '/im', 'luxwap_core.exe'])
+            .timeout(const Duration(seconds: 5));
+      } catch (_) {}
       try {
         await Process.run('taskkill', ['/f', '/im', 'xray.exe'])
             .timeout(const Duration(seconds: 5));
       } catch (_) {}
     } else {
       try {
-        await Process.run('pkill', ['-f', 'xray']).timeout(const Duration(seconds: 5));
+        await Process.run('pkill', ['-f', 'luxwap_core'])
+            .timeout(const Duration(seconds: 5));
+      } catch (_) {}
+      try {
+        await Process.run('pkill', ['-f', 'xray'])
+            .timeout(const Duration(seconds: 5));
       } catch (_) {}
     }
   }
@@ -745,6 +765,11 @@ class _LinesPageState extends State<LinesPage> {
 
   Future<void> _setWindowsProxy(bool enable) async {
     if (Platform.isWindows) {
+      if (!enable) {
+        try {
+          MethodChannel('luxwap/window').invokeMethod('cleanProxy');
+        } catch (_) {}
+      }
       final script = enable
           ? r'''
 $path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings'
@@ -769,8 +794,22 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
         '-Command',
         script + notify,
       ]);
+    } else if (Platform.isMacOS) {
+      for (final iface in ['Wi-Fi', 'Ethernet', 'Thunderbolt Bridge']) {
+        try {
+          if (enable) {
+            await Process.run('networksetup', ['-setwebproxy', iface, '127.0.0.1', '10809']);
+            await Process.run('networksetup', ['-setwebproxystate', iface, 'on']);
+            await Process.run('networksetup', ['-setsocksfirewallproxy', iface, '127.0.0.1', '10808']);
+            await Process.run('networksetup', ['-setsocksfirewallproxystate', iface, 'on']);
+          } else {
+            await Process.run('networksetup', ['-setwebproxystate', iface, 'off']);
+            await Process.run('networksetup', ['-setsocksfirewallproxystate', iface, 'off']);
+          }
+        } catch (_) {}
+      }
     } else {
-      final iface = Platform.isMacOS ? 'Wi-Fi' : 'eth0';
+      const iface = 'eth0';
       if (enable) {
         await Process.run('networksetup', ['-setwebproxy', iface, '127.0.0.1', '10809']);
         await Process.run('networksetup', ['-setwebproxystate', iface, 'on']);
@@ -783,7 +822,7 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
     }
   }
 
-  Future<String?> _buildXrayRuntimeConfig(
+  Future<String?> _buildLuxwapCoreRuntimeConfig(
     LineNode node,
     ClientConfig clientConfig,
     String? userCountry,
@@ -805,6 +844,43 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
     final countryCode = _normalizeCountryCode(userCountry);
     final isChina = countryCode == 'cn';
 
+    final inbounds = <Map<String, dynamic>>[
+      {
+        'tag': 'http-in',
+        'listen': '127.0.0.1',
+        'port': 10809,
+        'protocol': 'http',
+        'settings': {'timeout': 0},
+      },
+      {
+        'tag': 'socks-in',
+        'listen': '127.0.0.1',
+        'port': 10808,
+        'protocol': 'socks',
+        'settings': {'auth': 'noauth', 'udp': true},
+      },
+      {
+        'tag': 'api',
+        'listen': '127.0.0.1',
+        'port': statsPort,
+        'protocol': 'dokodemo-door',
+        'settings': {'address': '127.0.0.1'},
+      },
+    ];
+
+    if (clientConfig.tunEnabled) {
+      inbounds.add({
+        'tag': 'tun-in',
+        'port': 0,
+        'protocol': 'tun',
+        'settings': {
+          'name': Platform.isMacOS ? 'utun10' : 'wintun',
+          'desc': 'Wintun',
+          'mtu': 1500,
+        },
+      });
+    }
+
     final config = {
       'log': {'loglevel': 'warning'},
       'dns': _buildDnsConfig(clientConfig, isChina),
@@ -816,29 +892,7 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
           'statsOutboundDownlink': true,
         }
       },
-      'inbounds': [
-        {
-          'tag': 'http-in',
-          'listen': '127.0.0.1',
-          'port': 10809,
-          'protocol': 'http',
-          'settings': {'timeout': 0},
-        },
-        {
-          'tag': 'socks-in',
-          'listen': '127.0.0.1',
-          'port': 10808,
-          'protocol': 'socks',
-          'settings': {'auth': 'noauth', 'udp': true},
-        },
-        {
-          'tag': 'api',
-          'listen': '127.0.0.1',
-          'port': statsPort,
-          'protocol': 'dokodemo-door',
-          'settings': {'address': '127.0.0.1'},
-        },
-      ],
+      'inbounds': inbounds,
       'outbounds': [
         proxyOutbound,
         {'tag': 'direct', 'protocol': 'freedom'},
@@ -870,6 +924,9 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
 
   Map<String, dynamic> _buildDnsConfig(ClientConfig config, bool isChina) {
     final servers = <dynamic>[];
+    if (config.dotDns.trim().isNotEmpty) {
+      servers.add(config.dotDns.trim());
+    }
     if (config.vpnRoute) {
       if (isChina) {
         servers.add({
@@ -1134,11 +1191,7 @@ class _LineRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final crowdColor = switch (index % 3) {
-      0 => const Color(0xff18ad3e),
-      1 => const Color(0xffff9822),
-      _ => const Color(0xffff2d2d),
-    };
+    final crowdColor = node.crowdColor;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(

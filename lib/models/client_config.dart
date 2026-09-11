@@ -9,6 +9,9 @@ class ClientConfig {
     this.passByLanDomain = false,
     this.blockAds = false,
     this.vpnRoute = true,
+    this.tunEnabled = true,
+    this.closeToTray = true,
+    this.dotDns = '',
     this.outerDns = '8.8.8.8',
     this.innerDns = '223.5.5.5',
     this.globalDns = '8.8.8.8',
@@ -23,6 +26,9 @@ class ClientConfig {
   final bool passByLanDomain;
   final bool blockAds;
   final bool vpnRoute;
+  final bool tunEnabled;
+  final bool closeToTray;
+  final String dotDns;
   final String outerDns;
   final String innerDns;
   final String globalDns;
@@ -38,6 +44,9 @@ class ClientConfig {
     bool? passByLanDomain,
     bool? blockAds,
     bool? vpnRoute,
+    bool? tunEnabled,
+    bool? closeToTray,
+    String? dotDns,
     String? outerDns,
     String? innerDns,
     String? globalDns,
@@ -53,6 +62,9 @@ class ClientConfig {
       passByLanDomain: passByLanDomain ?? this.passByLanDomain,
       blockAds: blockAds ?? this.blockAds,
       vpnRoute: vpnRoute ?? this.vpnRoute,
+      tunEnabled: tunEnabled ?? this.tunEnabled,
+      closeToTray: closeToTray ?? this.closeToTray,
+      dotDns: dotDns ?? this.dotDns,
       outerDns: outerDns ?? this.outerDns,
       innerDns: innerDns ?? this.innerDns,
       globalDns: globalDns ?? this.globalDns,
@@ -70,6 +82,9 @@ class ClientConfig {
       passByLanDomain: json['passByLanDomain'] as bool? ?? false,
       blockAds: json['blockAds'] as bool? ?? false,
       vpnRoute: json['vpnRoute'] as bool? ?? true,
+      tunEnabled: json['tunEnabled'] as bool? ?? true,
+      closeToTray: json['closeToTray'] as bool? ?? true,
+      dotDns: json['dotDns']?.toString() ?? '',
       outerDns: json['outerDns']?.toString() ?? '8.8.8.8',
       innerDns: json['innerDns']?.toString() ?? '223.5.5.5',
       globalDns: json['globalDns']?.toString() ?? '8.8.8.8',
@@ -87,6 +102,9 @@ class ClientConfig {
       'passByLanDomain': passByLanDomain,
       'blockAds': blockAds,
       'vpnRoute': vpnRoute,
+      'tunEnabled': tunEnabled,
+      'closeToTray': closeToTray,
+      'dotDns': dotDns,
       'outerDns': outerDns,
       'innerDns': innerDns,
       'globalDns': globalDns,

@@ -464,156 +464,212 @@ class _LoginPageState extends State<LoginPage> {
       _registerCodePanel(),
     ];
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: SizedBox(
-          width: 382,
-          height: 760,
-          child: Stack(
-            alignment: Alignment.topCenter,
-            children: [
-              Container(
-                width: 382,
-                height: 200,
-                decoration: const BoxDecoration(
-                  color: Color(0xff2a80ff),
-                  borderRadius:
-                      BorderRadius.vertical(bottom: Radius.circular(30)),
-                ),
-              ),
-              Positioned(
-                top: 20,
-                right: 26,
-                child: TextButton.icon(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    textStyle: const TextStyle(fontSize: 11),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    minimumSize: Size.zero,
-                  ),
-                  icon: const Icon(Icons.language, size: 13),
-                  label: const Text('语言'),
-                ),
-              ),
-              Positioned(
-                top: 30,
-                child: Column(
-                  children: [
-                    Image.asset('assets/images/icon_logo.png',
-                        width: 64, height: 64),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Luxwap',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+      backgroundColor: const Color(0xfff4f6fb),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          child: Center(
+            child: SizedBox(
+              width: 382,
+              height: 760,
+              child: Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  Container(
+                    width: 382,
+                    height: 200,
+                    decoration: const BoxDecoration(
+                      color: Color(0xff2a80ff),
+                      borderRadius:
+                          BorderRadius.vertical(bottom: Radius.circular(30)),
                     ),
-                  ],
-                ),
-              ),
-              Positioned(
-                top: 150,
-                child: Container(
-                  width: 320,
-                  height: 500,
-                  padding: const EdgeInsets.all(30),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.10),
-                        blurRadius: 22,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (mode != 3)
-                        Text(
-                          mode == 0
-                              ? '账号登录'
-                              : mode == 1
-                                  ? '账号注册'
-                                  : '重置密码',
-                          style: const TextStyle(
-                            fontSize: 18,
+                  Positioned(
+                    top: 20,
+                    right: 26,
+                    child: TextButton.icon(
+                      onPressed: () {},
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        textStyle: const TextStyle(fontSize: 11),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        minimumSize: Size.zero,
+                      ),
+                      icon: const Icon(Icons.language, size: 13),
+                      label: const Text('语言'),
+                    ),
+                  ),
+                  Positioned(
+                    top: 30,
+                    child: Column(
+                      children: [
+                        Image.asset('assets/images/icon_logo.png',
+                            width: 64, height: 64),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Luxwap',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xff1b1b1b),
                           ),
                         ),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 160),
-                        child: notice == null
-                            ? SizedBox(height: mode == 3 ? 0 : 20)
-                            : Padding(
-                                key: ValueKey(notice),
-                                padding:
-                                    const EdgeInsets.only(top: 10, bottom: 8),
-                                child: Container(
-                                  constraints:
-                                      const BoxConstraints(minHeight: 32),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xfffff7e6),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                        color: const Color(0xffffd591)),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.info_outline,
-                                          size: 16, color: Color(0xffd46b08)),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          notice!,
-                                          style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xff873800)),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    top: 146,
+                    child: Container(
+                      width: 330,
+                      height: 520,
+                      padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 22,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (mode == 0 || mode == 1)
+                            Row(
+                              children: [
+                                _buildTabItem(
+                                  title: '账号登录',
+                                  isSelected: mode == 0,
+                                  onTap: () => setState(() {
+                                    notice = null;
+                                    mode = 0;
+                                  }),
                                 ),
+                                const SizedBox(width: 24),
+                                _buildTabItem(
+                                  title: '账号注册',
+                                  isSelected: mode == 1,
+                                  onTap: () => setState(() {
+                                    notice = null;
+                                    mode = 1;
+                                  }),
+                                ),
+                              ],
+                            )
+                          else if (mode == 2)
+                            const Text(
+                              '重置密码',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xff1b1b1b),
                               ),
+                            ),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 160),
+                            child: notice == null
+                                ? SizedBox(height: mode == 3 ? 0 : 16)
+                                : Padding(
+                                    key: ValueKey(notice),
+                                    padding:
+                                        const EdgeInsets.only(top: 8, bottom: 8),
+                                    child: Container(
+                                      constraints:
+                                          const BoxConstraints(minHeight: 32),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xfffff7e6),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                            color: const Color(0xffffd591)),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.info_outline,
+                                              size: 16, color: Color(0xffd46b08)),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              notice!,
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Color(0xff873800)),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                          ),
+                          Expanded(child: panels[mode]),
+                          if (loading) const LinearProgressIndicator(minHeight: 2),
+                        ],
                       ),
-                      Expanded(child: panels[mode]),
-                      if (loading) const LinearProgressIndicator(minHeight: 2),
-                    ],
+                    ),
                   ),
-                ),
+                  if (oauthLoading)
+                    Container(
+                      width: 382,
+                      height: 760,
+                      color: Colors.black.withValues(alpha: 0.45),
+                      child: const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 150,
+                            child: LinearProgressIndicator(),
+                          ),
+                          SizedBox(height: 12),
+                          Text('登录中...',
+                              style: TextStyle(color: Colors.white, fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                ],
               ),
-              if (oauthLoading)
-                Container(
-                  width: 382,
-                  height: 760,
-                  color: Colors.black.withValues(alpha: 0.45),
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 150,
-                        child: LinearProgressIndicator(),
-                      ),
-                      SizedBox(height: 12),
-                      Text('登录中...',
-                          style: TextStyle(color: Colors.white, fontSize: 14)),
-                    ],
-                  ),
-                ),
-            ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTabItem({
+    required String title,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              color: isSelected ? const Color(0xff1b1b1b) : const Color(0xff8c8c8c),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            width: 28,
+            height: 3,
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xff2a80ff) : Colors.transparent,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -622,11 +678,15 @@ class _LoginPageState extends State<LoginPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _input(controller: loginEmail, hint: '请输入邮箱', icon: Icons.mail_outline),
+        _input(
+          controller: loginEmail,
+          hint: '用户名/账号',
+          icon: Icons.person_outline,
+        ),
         const SizedBox(height: 10),
         _input(
           controller: loginPassword,
-          hint: '请输入密码',
+          hint: '密码',
           icon: Icons.lock_outline,
           obscure: true,
         ),
@@ -667,19 +727,24 @@ class _LoginPageState extends State<LoginPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _input(
-            controller: registerEmail, hint: '请输入邮箱', icon: Icons.mail_outline),
+          controller: registerEmail,
+          hint: '用户名/账号 (邮箱)',
+          icon: Icons.person_outline,
+        ),
         const SizedBox(height: 10),
         _input(
-            controller: registerPassword,
-            hint: '请输入密码',
-            icon: Icons.lock_outline,
-            obscure: true),
+          controller: registerPassword,
+          hint: '密码',
+          icon: Icons.lock_outline,
+          obscure: true,
+        ),
         const SizedBox(height: 10),
         _input(
-            controller: registerConfirm,
-            hint: '请再次输入密码',
-            icon: Icons.lock_outline,
-            obscure: true),
+          controller: registerConfirm,
+          hint: '请再次输入密码',
+          icon: Icons.lock_outline,
+          obscure: true,
+        ),
         const SizedBox(height: 20),
         _primaryButton('验证邮箱', _sendRegisterCode),
         const SizedBox(height: 16),

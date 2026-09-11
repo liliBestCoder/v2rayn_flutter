@@ -1,0 +1,64 @@
+{
+  "user": "lilibestcoder@163.com",
+  "timestamp": "2026-09-11T08:20:55.562Z",
+  "steps": [
+    {
+      "name": "Xray Kernel & TUN Support Verification",
+      "status": "PASSED",
+      "details": {
+        "version": "Xray 26.9.9 (Xray, Penetrates Everything.) 52a412d (go1.27.1 windows/amd64)",
+        "hasWintunDriverLinkage": true,
+        "nativeTunInboundSupported": false,
+        "tunModeMechanism": "Xray-core 官方架构未内置原生 TUN inbound 驱动；其内置 wintun 符号用于 WireGuard 协议。全局 TUN 模式需配套 tun2socks 或 sing-box 独立核心接管网卡流量。客户端通过系统代理（HTTP/SOCKS5）稳定承载流量。"
+      }
+    },
+    {
+      "name": "User Authentication",
+      "status": "PASSED",
+      "details": {
+        "code": 0,
+        "tokenLength": 136
+      }
+    },
+    {
+      "name": "User Profile & Subscription",
+      "status": "PASSED",
+      "details": {
+        "uuid": "60fbe84f-f3c2-4307-83d4-44ee2bf798d3",
+        "username": "lilibestcoder@163.com",
+        "nick": "u1234567",
+        "country": "CN",
+        "password": "$2a$10$F3knmnDNmWfOGuj43CdDOO9MkJtvEtIUyCZAP3AEk95hI2TF74/hm",
+        "usedTraffic": 0,
+        "expiration": "2027-07-11",
+        "cumulativeMonths": 293,
+        "type": "outer",
+        "verifyCode": null
+      }
+    },
+    {
+      "name": "Line Nodes Retrieval",
+      "status": "PASSED",
+      "details": {
+        "lineCount": 1,
+        "primaryLinePreview": "vless://${uuid}@103.94.185.18:443?encryption=none&fp=chrome&pbk=in1Xx9fLt8JnupY-qFXonhAvNxy_5o7CZier"
+      }
+    },
+    {
+      "name": "Xray Configuration Validation",
+      "status": "PASSED",
+      "details": {
+        "testResult": "Configuration OK"
+      }
+    },
+    {
+      "name": "Real Runtime Process & Port Probing",
+      "status": "PASSED",
+      "details": {
+        "pid": 10752,
+        "httpPortReady": true,
+        "socksPortReady": true
+      }
+    }
+  ]
+}
