@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../app_state.dart';
 import '../app_toast.dart';
+import 'help_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -929,6 +930,22 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('登录即代表同意 ', style: TextStyle(fontSize: 10.5, color: Color(0xff999999))),
+              InkWell(
+                onTap: () => showHelpDialog(context, initialTab: 0),
+                child: const Text('《使用指南》', style: TextStyle(fontSize: 10.5, color: Color(0xff2a80ff))),
+              ),
+              const Text('与 ', style: TextStyle(fontSize: 10.5, color: Color(0xff999999))),
+              InkWell(
+                onTap: () => showHelpDialog(context, initialTab: 1),
+                child: const Text('《隐私协议》', style: TextStyle(fontSize: 10.5, color: Color(0xff2a80ff))),
+              ),
+            ],
           ),
         ],
       ),

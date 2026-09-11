@@ -35,6 +35,7 @@
 | 9 | **设置增加 DoT (DNS over TLS)** | 缺少 DoT 配置选项 | `ClientConfig` 增加 `dotDns` 字段；设置页提供 DoT 可编辑配置项；生成代理核心配置时自动作为优先 DNS 注入 | `lib/models/client_config.dart`<br>`lib/pages/settings_page.dart`<br>`lib/pages/lines_page.dart` |
 | 10 | **解除 Win10/11 UWP 应用回环代理限制** | Windows 商店及 UWP 应用默认受沙盒限制无法走本地代理 | 设置页新增「系统工具」区块与「一键解除」按钮（带 `Platform.isWindows` 保护），一键执行 `CheckNetIsolation LoopbackExempt` 批处理豁免 | `lib/pages/settings_page.dart` |
 | 11 | **TUN 开关默认 True 及变量品牌更名** | TUN 开关未独立受控；变量仍沿用旧名 | `ClientConfig` 增加 `tunEnabled`（默认 `true`）；设置页新增 TUN 模式胶囊开关；全面将变量与路径 `v2rayN` -> `luxwap`，核心 `xray` -> `luxwap_core`（保留向后兼容寻址与 macOS 架构自适应） | `lib/models/client_config.dart`<br>`lib/pages/settings_page.dart`<br>`lib/pages/lines_page.dart` |
+| 12 | **帮助中心与隐私文档交互完整接入** | 帮助菜单原错误弹出 DNS 设置弹窗；已编写的帮助指南与隐私协议未在客户端中呈现 | 新建 `HelpPage` 与 `showHelpDialog`：集成《客户端使用与帮助指南》及《用户隐私保护协议》双 Tab 视图、支持关键词搜索与分类标签；主导航栏「帮助」与「关于/登录页」均深度接入 | `lib/pages/help_page.dart`<br>`lib/pages/main_shell.dart`<br>`lib/pages/about_page.dart`<br>`lib/pages/login_page.dart` |
 
 ---
 
@@ -65,7 +66,7 @@
 
 ## 4. 全套测试用例体系与执行方式
 
-### 4.1 Flutter 单元 / 组件 / 变异测试（19 个用例全部通过）
+### 4.1 Flutter 单元 / 组件 / 变异测试（25 个用例全部通过）
 运行命令：
 ```powershell
 flutter test
@@ -80,6 +81,7 @@ flutter test
   - `client_config_test.dart`: 默认值、序列化与反序列化容错
   - `line_node_test.dart`: 显式 load 计算、remark 正则解析、拥堵红黄绿三色区间断言、VLESS URI 容错
 - **组件测试** (`test/widget/`)：
+  - `help_page_test.dart`: 帮助与文档中心双 Tab 切换、搜索过滤、分类胶囊点选、弹窗模式与关于页互通（6 个用例）
   - `login_page_test.dart`: 双 Tab 切换与表单挂载
   - `personal_center_test.dart`: 置顶积分卡片与 2x2 网格
   - `settings_page_test.dart`: TUN 开关、DoT 输入、UWP 工具按钮

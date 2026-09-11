@@ -8,6 +8,7 @@ import '../app_state.dart';
 import 'about_page.dart';
 import 'activity_page.dart';
 import 'dns_settings_page.dart';
+import 'help_page.dart';
 import 'lines_page.dart';
 import 'personal_center_page.dart';
 import 'settings_page.dart';
@@ -33,6 +34,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     TradeManagerPage(),
     ActivityPage(),
     AboutPage(),
+    HelpPage(),
   ];
 
   @override
@@ -86,16 +88,13 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
             _Sidebar(
               selected: selected,
               onSelect: _select,
-              onHelp: () => showDialog(
-                context: context,
-                builder: (_) => const DnsSettingsPage(),
-              ),
+              onHelp: () => _select(6),
             ),
             Container(width: 1, color: const Color(0xffe5e8ef)),
             Expanded(
               child: Column(
                 children: [
-                  if (selected != 4 && selected != 5)
+                  if (selected != 4 && selected != 5 && selected != 6)
                     _UserHeader(
                       onTrade: () => setState(() => selected = 3),
                       onRenew: () { _startPaymentPolling(); _openRenewPage(); },
@@ -225,7 +224,7 @@ class _Sidebar extends StatelessWidget {
                   index: 6,
                   selected: selected,
                   label: '帮助',
-                  onTap: (_) => onHelp()),
+                  onTap: onSelect),
               _NavButton(
                   index: 5, selected: selected, label: '关于', onTap: onSelect),
               _NavButton(
@@ -341,55 +340,57 @@ class _UserHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 310,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  nick,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xff1b1b1b),
+          Flexible(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 310),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nick,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff1b1b1b),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '登录邮箱：$username',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style:
-                      const TextStyle(color: Color(0xff777777), fontSize: 11),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Text(
-                      '账号等级：',
-                      style: TextStyle(color: Color(0xff777777), fontSize: 11),
-                    ),
-                    Text(
-                      level,
-                      style: const TextStyle(fontSize: 12, height: 1),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    _HeaderActionButton(
-                      label: '交易记录',
-                      color: const Color(0xff24a848),
-                      background: const Color(0xffe9f7ee),
-                      icon: Icons.receipt_long_outlined,
-                      onPressed: onTrade,
-                    ),
-                  ],
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    '登录邮箱：$username',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style:
+                        const TextStyle(color: Color(0xff777777), fontSize: 11),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Text(
+                        '账号等级：',
+                        style: TextStyle(color: Color(0xff777777), fontSize: 11),
+                      ),
+                      Text(
+                        level,
+                        style: const TextStyle(fontSize: 12, height: 1),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      _HeaderActionButton(
+                        label: '交易记录',
+                        color: const Color(0xff24a848),
+                        background: const Color(0xffe9f7ee),
+                        icon: Icons.receipt_long_outlined,
+                        onPressed: onTrade,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
           const Spacer(),

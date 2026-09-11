@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_toast.dart';
+import 'help_page.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -77,10 +78,38 @@ class _AboutPageState extends State<AboutPage> {
                         ],
                       ),
                       const SizedBox(height: 14),
-                      const Text(
-                        '稳定版本：V2.1.3.20250818_release',
-                        style:
-                            TextStyle(fontSize: 10, color: Color(0xff111111)),
+                      Row(
+                        children: [
+                          const Text(
+                            '稳定版本：V2.1.3.20250818_release',
+                            style:
+                                TextStyle(fontSize: 10, color: Color(0xff111111)),
+                          ),
+                          const SizedBox(width: 24),
+                          InkWell(
+                            onTap: () => showHelpDialog(context, initialTab: 0),
+                            child: const Text(
+                              '使用与帮助指南',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Color(0xff2b77ff),
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          InkWell(
+                            onTap: () => showHelpDialog(context, initialTab: 1),
+                            child: const Text(
+                              '隐私保护协议',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Color(0xff2b77ff),
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 36),
                       const Text(
