@@ -1,6 +1,6 @@
 class ClientConfig {
   const ClientConfig({
-    this.selectedLineRaw,
+    this.selectedLineName,
     this.routeStrategy = 'AsIs',
     this.language = '简体中文',
     this.passByIp = true,
@@ -17,7 +17,7 @@ class ClientConfig {
     this.globalDns = '8.8.8.8',
   });
 
-  final String? selectedLineRaw;
+  final String? selectedLineName;
   final String routeStrategy;
   final String language;
   final bool passByIp;
@@ -34,8 +34,8 @@ class ClientConfig {
   final String globalDns;
 
   ClientConfig copyWith({
-    String? selectedLineRaw,
-    bool clearSelectedLineRaw = false,
+    String? selectedLineName,
+    bool clearSelectedLineName = false,
     String? routeStrategy,
     String? language,
     bool? passByIp,
@@ -52,8 +52,9 @@ class ClientConfig {
     String? globalDns,
   }) {
     return ClientConfig(
-      selectedLineRaw:
-          clearSelectedLineRaw ? null : selectedLineRaw ?? this.selectedLineRaw,
+      selectedLineName: clearSelectedLineName
+          ? null
+          : selectedLineName ?? this.selectedLineName,
       routeStrategy: routeStrategy ?? this.routeStrategy,
       language: language ?? this.language,
       passByIp: passByIp ?? this.passByIp,
@@ -73,7 +74,7 @@ class ClientConfig {
 
   factory ClientConfig.fromJson(Map<String, dynamic> json) {
     return ClientConfig(
-      selectedLineRaw: json['selectedLineRaw']?.toString(),
+      selectedLineName: json['selectedLineName']?.toString(),
       routeStrategy: json['routeStrategy']?.toString() ?? 'AsIs',
       language: json['language']?.toString() ?? '简体中文',
       passByIp: json['passByIp'] as bool? ?? true,
@@ -93,7 +94,7 @@ class ClientConfig {
 
   Map<String, dynamic> toJson() {
     return {
-      'selectedLineRaw': selectedLineRaw,
+      'selectedLineName': selectedLineName,
       'routeStrategy': routeStrategy,
       'language': language,
       'passByIp': passByIp,

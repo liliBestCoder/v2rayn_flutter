@@ -73,5 +73,19 @@ void main() {
       expect(parsed.closeToTray, isTrue, reason: 'Missing closeToTray should default to true');
       expect(parsed.dotDns, equals(''), reason: 'Missing dotDns should default to empty string');
     });
+
+    test('selectedLineName serializes cleanly and selectedLineRaw is strictly omitted', () {
+      const config = ClientConfig(
+        selectedLineName: '香港 01 优质专线',
+      );
+
+      final json = config.toJson();
+      expect(json['selectedLineName'], equals('香港 01 优质专线'));
+      expect(json.containsKey('selectedLineRaw'), isFalse,
+          reason: 'Raw vless link must never be serialized to disk config.json');
+
+      final reconstructed = ClientConfig.fromJson(json);
+      expect(reconstructed.selectedLineName, equals('香港 01 优质专线'));
+    });
   });
 }

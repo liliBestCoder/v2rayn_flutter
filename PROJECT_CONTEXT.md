@@ -337,3 +337,14 @@ node test/e2e_real_verification/real_verification_suite.mjs
    - 成功构建发布版本：`build\windows\x64\runner\Release\luxwap.exe`。
 5. **质量保证**：
    - 全项目 76 项自动化单元/集成测试 100% 通过。
+
+### 10.5 彻底消除敏感协议链接落盘（2026-09-13 实施记录）
+1. **`selectedLineRaw` 改造为 `selectedLineName`**：
+   - `ClientConfig` 移除 `selectedLineRaw` 字段序列化，全面引入 `selectedLineName`；
+   - 本地 `%APPDATA%\luxwap\config.json` 磁盘文件中**绝不再记录任何 `vless://`、UUID、节点 IP/域名或私钥参数**，仅保存节点展示名（如“香港 01”）；
+   - `lines_page.dart` 加载节点列表时通过 `node.name == savedName` 内存匹配恢复高亮，既保留了记住上次选中国家/线路的体验，又做到了 100% 协议安全无痕。
+2. **DNS 路由设置文案精准化**：
+   - `settings_page.dart` 将历史遗留的 `启用VPN路由  端口：10853` 修正为 `智能 DNS 分流解析`（副标题：中国域名使用国内DNS，境外域名使用海外/DoT加密解析），彻底去除不存在的 `10853` 端口误导。
+3. **全量断言测试与编译**：
+   - `client_config_test.dart` 增加针对 `selectedLineRaw` 严格不落盘的专项断言；
+   - 重新编译 Release：`build\windows\x64\runner\Release\luxwap.exe`。

@@ -309,8 +309,8 @@ class _SettingsPageState extends State<SettingsPage> {
             const _SectionTitle('DNS配置'),
             const SizedBox(height: 8),
             _SettingRow(
-              title: '启用VPN路由  端口：10853',
-              subtitle: '启用分流DNS，配置会在重启代理后生效',
+              title: '智能 DNS 分流解析',
+              subtitle: '中国域名使用国内DNS，境外域名使用海外/DoT加密解析',
               trailing: _MiniSwitch(
                 value: vpnRoute,
                 onChanged: (v) => _setAndSave(() => vpnRoute = v),

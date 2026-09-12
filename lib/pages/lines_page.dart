@@ -63,7 +63,7 @@ class _LinesPageState extends State<LinesPage> {
     setState(() => loading = true);
     final result = await state.api.lineList(token);
     final loaded = <LineNode>[];
-    final savedRaw = state.clientConfig.selectedLineRaw;
+    final savedName = state.clientConfig.selectedLineName;
     if (result.success && result.data != null) {
       final data = result.data;
       final list = data is String
@@ -87,8 +87,8 @@ class _LinesPageState extends State<LinesPage> {
     if (!mounted) {
       return;
     }
-    final selected =
-        loaded.any((node) => node.raw == savedRaw) ? savedRaw : null;
+    final matchedNode = loaded.where((node) => node.name == savedName).firstOrNull;
+    final selected = matchedNode?.raw ?? (loaded.isNotEmpty ? loaded.first.raw : null);
     setState(() {
       nodes = loaded;
       selectedRaw = selected;
@@ -891,7 +891,7 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
     setState(() => selectedRaw = node.raw);
     final state = AppScope.of(context);
     await state.updateClientConfig(
-      state.clientConfig.copyWith(selectedLineRaw: node.raw),
+      state.clientConfig.copyWith(selectedLineName: node.name),
     );
     if (connected && prevRaw != node.raw) {
       await _startProxy();
