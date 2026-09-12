@@ -59,6 +59,13 @@ class Win32Window {
   // Static helper to cleanly restore Windows Internet proxy settings.
   static void CleanSystemProxy();
 
+  // Static helper to set/clean the active TUN node direct route (/32).
+  static void SetTunNodeRoute(const std::string& node_ip);
+  static void CleanTunNodeRoute();
+
+  // Static helper to terminate all core proxy processes (luxwap_core, xray).
+  static void KillCoreProcesses();
+
   // Return a RECT representing the bounds of the current client area.
   RECT GetClientArea();
 

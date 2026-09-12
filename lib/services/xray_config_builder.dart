@@ -95,6 +95,7 @@ class XrayConfigBuilder {
     required bool tunEnabled,
     int? statsPort,
     bool? isWindows,
+    ClientConfig? clientConfig,
   }) {
     final effectiveIsWindows = isWindows ?? Platform.isWindows;
     final effectiveStatsPort = statsPort ?? 10890;
@@ -123,14 +124,26 @@ class XrayConfigBuilder {
     ];
 
     if (tunEnabled) {
+      final outerDns = (clientConfig?.outerDns.isNotEmpty == true)
+          ? clientConfig!.outerDns
+          : '8.8.8.8';
+      final innerDns = (clientConfig?.innerDns.isNotEmpty == true)
+          ? clientConfig!.innerDns
+          : '223.5.5.5';
+      final dnsList = {outerDns, innerDns, '1.1.1.1'}.toList();
+
       inbounds.add({
         'tag': 'tun-in',
         'port': 0,
         'protocol': 'tun',
         'settings': {
-          'name': effectiveIsWindows ? 'wintun' : 'utun10',
-          'desc': 'Wintun',
+          'name': effectiveIsWindows ? 'luxwap-tun' : 'utun10',
+          'desc': 'Luxwap TUN Adapter',
           'mtu': 1500,
+          'gateway': ['172.19.0.1/24'],
+          'autoSystemRoutingTable': ['0.0.0.0/1', '128.0.0.0/1'],
+          'autoOutboundsInterface': '',
+          'DNS': dnsList,
         },
       });
     }
@@ -144,6 +157,24 @@ class XrayConfigBuilder {
     bool isChina,
   ) {
     final rules = <Map<String, dynamic>>[];
+    // Prevent packet storm loop on TUN interface:
+    // 1. Drop NetBIOS UDP broadcast traffic (ports 137, 138, 139) which Windows floods on all NICs
+    rules.add({
+      'type': 'field',
+      'outboundTag': 'block',
+      'port': '137,138,139',
+      'network': 'udp',
+    });
+    // 2. Drop multicast, subnet broadcast, and TUN adapter's own IP subnet
+    rules.add({
+      'type': 'field',
+      'outboundTag': 'block',
+      'ip': [
+        '224.0.0.0/4',
+        '255.255.255.255/32',
+        '172.19.0.0/24',
+      ],
+    });
     if (config.blockAds) {
       rules.add({
         'type': 'field',
@@ -200,6 +231,7 @@ class XrayConfigBuilder {
       tunEnabled: clientConfig.tunEnabled,
       statsPort: statsPort,
       isWindows: isWindows,
+      clientConfig: clientConfig,
     );
 
     return {

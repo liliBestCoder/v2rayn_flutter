@@ -232,7 +232,7 @@ void main() {
 
   group('Real Xray-Core Process E2E DoT Resolution Verification', () {
     test('Xray process starts with DoT and resolves domain using internal DoT TCP client', () async {
-      final xrayExe = File('windows/runner/resources/bin/xray/xray.exe');
+      final xrayExe = File('windows/runner/resources/bin/luxwap_core/luxwap_core.exe');
       if (!await xrayExe.exists() || !Platform.isWindows) {
         print('  [Xray 二进制文件未找到或非 Windows 环境，跳过进程测试]');
         return;

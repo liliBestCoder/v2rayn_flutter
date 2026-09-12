@@ -151,3 +151,173 @@ node test/e2e_real_verification/real_verification_suite.mjs
 - **文档产物**：
   - `docs/help_guide.md`：AI 撰写的使用与故障排查指南
   - `docs/privacy_policy.md`：AI 撰写的用户隐私保护协议
+
+---
+
+## 6. TUN 模式实机建立与稳定性关键突破（2026-09-12 阶段总结）
+
+### 6.1 根因一：`cleanProxy` 导致的“同胞误杀”（最致命 Bug）
+- **现象**：点击连接后 100ms 内，界面弹出 SnackBar：`TUN 虚拟网卡创建失败，请确保以管理员权限运行`。
+- **根因链路**：
+  1. TUN 虚拟网卡接管系统流量时，前端按设计调用 `_setSystemProxy(false)` 关闭系统代理（防止双重代理与回路冲突）。
+  2. `_setSystemProxy(false)` 通过 MethodChannel `luxwap/window` 调用原生 `cleanProxy`。
+  3. Windows 原生 C++ `win32_window.cpp` 的 `CleanSystemProxy()` 中直接调用了 `KillCoreProcesses()`（执行了 `taskkill /F /IM xray.exe`）。
+  4. **结果**：刚拉起 `xray.exe`，紧接着关闭系统代理，原生 C++ 却把刚启动的 `xray.exe` 杀死了！300ms 后前端发现内核不存在，误判定为权限不足。
+- **修复方案**：
+  - Windows 原生层：`CleanSystemProxy()` 仅清理注册表 `ProxyEnable=0` 与 WinINet 刷新，彻底移除内部的 `KillCoreProcesses()`；进程终止仅在窗口关闭、托盘退出或显式调用 `killCore` 时执行。
+  - macOS 原生层：同样将 `cleanSystemProxyOnly()`（调用 `networksetup ... off`）与 `killCoreProcesses()`（调用 `pkill -9`）严格分离。
+  - Dart 侧：在退出登录与组件销毁时定向调用 `killCore`。
+
+### 6.2 根因二：NetBIOS 与 TUN 本地子网广播风暴阻断
+- **现象**：Windows 网卡启用后周期性向 `172.19.0.255:137` 发送 NetBIOS 探测包；原规则将局域网判定为直连从宿主机发出，被 TUN 重新捕获，2 秒内产生 48,000+ 报文打满 Windows 短暂端口（49152-65535）与缓冲区导致崩溃。
+- **修复方案**：
+  - 在 `xray_config_builder.dart` 最顶端加入局域网广播防环路黑洞：
+    - `port: "137,138,139", network: "udp"` -> `block`
+    - `ip: ["224.0.0.0/4", "255.255.255.255/32", "172.19.0.0/24"]` -> `block`
+
+### 6.3 驱动分发与虚拟网卡命名统一
+- Windows 虚拟网卡名称锁定为 `luxwap-tun`（适配器描述为 `Luxwap TUN Adapter Tunnel`），驱动为 `wintun.dll`（已同时部署于 Release 根目录及 `bin/xray/` 目录）。
+- macOS 虚拟网卡名称锁定为 `utun10`。
+- 测试覆盖率：全套 62 项 Flutter 单元/E2E 测试 100% 通过，成功构建 Release 生产包。
+
+---
+
+## 7. 实机 `route print` 路由表现状深度剖析与诊断
+
+用户实机执行 `route print` 输出的活动路由表如下：
+```text
+活动路由:
+网络目标        网络掩码          网关       接口   跃点数
+          0.0.0.0          0.0.0.0     10.0.168.253     10.0.168.183     15
+          0.0.0.0          0.0.0.0    198.19.31.253    198.19.27.172   9999
+          0.0.0.0        128.0.0.0            在链路上        172.19.0.1      0
+       10.0.168.0    255.255.255.0            在链路上      10.0.168.183    271
+     10.0.168.183  255.255.255.255            在链路上      10.0.168.183    271
+     10.0.168.255  255.255.255.255            在链路上      10.0.168.183    271
+       100.64.0.0      255.192.0.0    198.19.31.253    198.19.27.172    271
+  100.100.100.200  255.255.255.255    198.19.31.253    198.19.27.172    271
+        127.0.0.0        255.0.0.0            在链路上         127.0.0.1    331
+        127.0.0.1  255.255.255.255            在链路上         127.0.0.1    331
+  127.255.255.255  255.255.255.255            在链路上         127.0.0.1    331
+  127.255.255.255  255.255.255.255            在链路上        172.19.0.1    256
+        128.0.0.0        128.0.0.0            在链路上        172.19.0.1      0
+       172.19.0.0    255.255.255.0            在链路上        172.19.0.1    256
+       172.19.0.1  255.255.255.255            在链路上        172.19.0.1    256
+     172.19.0.255  255.255.255.255            在链路上        172.19.0.1    256
+       198.18.0.0    255.255.240.0    198.19.31.253    198.19.27.172    271
+      198.19.16.0    255.255.240.0            在链路上     198.19.27.172    271
+    198.19.27.172  255.255.255.255            在链路上     198.19.27.172    271
+    198.19.31.255  255.255.255.255            在链路上     198.19.27.172    271
+```
+
+### 7.1 验证已成功落地的部分
+1. **虚拟网卡已成功创建并激活**：
+   - 接口列表中清晰展示 `32...........................Luxwap TUN Adapter Tunnel`。
+   - 虚拟 IP `172.19.0.1` 及子网掩码 `255.255.255.0` 已正确绑定至 `luxwap-tun`。
+2. **全局流量劫持已生效（0/1 + 128/1 经典 VPN 路由拆分）**：
+   - `0.0.0.0 / 128.0.0.0`（即 `0.0.0.0/1`，涵盖 `0.0.0.0`~`127.255.255.255`）指向 `172.19.0.1`，跃点数 0。
+   - `128.0.0.0 / 128.0.0.0`（即 `128.0.0.0/1`，涵盖 `128.0.0.0`~`255.255.255.255`）指向 `172.19.0.1`，跃点数 0。
+   - 这两个 `/1` 路由掩码长于默认物理网关的 `/0`（`0.0.0.0/0` 跃点数 15），因此系统所有外网 TCP/UDP 报文都会被优先转发入 TUN 虚拟网卡。
+
+---
+
+## 8. 导致“TUN 开启后无法上网”的致命路由缺陷（用户的判断 100% 正确）
+
+用户提出“**这个tun的路由表初始话的还是不对吧**”，分析结果表明：**该路由表确实存在致命缺失！**
+
+### 致命缺陷一：缺少远端代理节点（VPS 服务器）IP 的直连物理网关主机路由（路由黑洞回环）
+- **现象**：开启 TUN 后，浏览器和所有软件断网，无法打开任何网页。
+- **技术根因**：
+  1. 用户的物理默认网关为 `10.0.168.253`（物理网卡 `10.0.168.183`）。
+  2. 假定当前选择的节点 IP 为 `103.94.185.18`（或任何公网 IP）。
+  3. 内核 Xray 的 Outbound 需要与 `103.94.185.18:443` 建立加密 TCP 握手。
+  4. 当 Xray 发出握手包时，Windows 操作系统查询 IPv4 路由表：
+     - 最长前缀匹配：`103.94.185.18` 命中了 `0.0.0.0/128.0.0.0`（跃点数 0，接口 `172.19.0.1`）！
+     - **Windows 把发往代理服务器本身的连接报文，又重新塞回了 `luxwap-tun` 虚拟网卡中！**
+     - Xray 在底层自身捕获了发给自己的报文，造成无法与真正的远端 VPS 服务器通信，所有向外流量瞬间陷入黑洞死锁！
+  5. **行业标准解法**：
+     在启动 TUN 时，必须为当前连接节点的物理公网 IP 添加一条精准的 `/32` 主机路由，显式指定走物理网关：
+     ```cmd
+     route add <node_ip> mask 255.255.255.255 10.0.168.253 metric 1
+     ```
+     断开连接时：
+     ```cmd
+     route delete <node_ip>
+     ```
+
+### 致命缺陷二：Xray 内核未绑定物理出站网卡（`autoOutboundsInterface` 为空）
+- **根因**：
+  在 `xray_config_builder.dart` 中，TUN 入站配置目前写为：
+  ```json
+  "settings": {
+    "name": "luxwap-tun",
+    "gateway": ["172.19.0.1/24"],
+    "autoSystemRoutingTable": ["0.0.0.0/1", "128.0.0.0/1"],
+    "autoOutboundsInterface": ""
+  }
+  ```
+  `autoOutboundsInterface` 留空，导致 Xray 内核没有利用 Windows API 将自己的出站 Socket 绑定到真实的物理以太网卡（`Red Hat VirtIO Ethernet Adapter #3`）。
+
+### 致命缺陷三：DNS 提前解析与递归依赖
+- 如果节点配置的地址是域名（例如 `hk01.luxwap.com`），在 TUN 劫持了全网流量后，若 DNS 请求也必须通过代理，而此时代理尚未与服务器连通，则解析不到节点 IP，陷入先有鸡还是先有蛋的死锁。
+- 启动 TUN 前，必须在宿主机上通过系统 DNS（或直接通过本地解析）提前将节点域名解析为 IP，并将该 IP 的直连路由下发至系统路由表。
+
+---
+
+## 9. TUN 节点直连路由（/32）与生命周期闭环落地（2026-09-12 实施记录）
+
+依据 Xray-core 官方文档 `proxy/tun/README.md` 的 Approach 1 规范，已完整实现节点公网 IP 的 `/32` 主机直连路由动态管理，彻底解决 TUN 路由回环死锁问题：
+
+### 9.1 核心改动模块
+1. **新建路由管理器** (`lib/services/tun_route_manager.dart`)：
+   - 动态提取系统物理默认网关（Windows `route print 0.0.0.0` / macOS `route -n get default`）；
+   - 下发直连主机路由（Windows `route add <node_ip> mask 255.255.255.255 <gateway> metric 1` / macOS `route add -host <node_ip> <gateway>`）；
+   - 断开或切换节点时自动清理（Windows `route delete <node_ip>` / macOS `route delete -host <node_ip>`）；
+   - 切换节点时先删后增，支持多线路平滑切换。
+2. **连接生命周期闭环** (`lib/pages/lines_page.dart`)：
+   - `_startProxy()`：在核心拉起前，提取节点 IP 并调用 `TunRouteManager.addDirectNodeRoute(node.host)`；
+   - `_stopProxy()`：核心终止后立即调用 `TunRouteManager.removeDirectNodeRoute()`；
+   - `coreProcess.exitCode` 崩溃监听与 `dispose()` 钩子兜底释放。
+3. **原生层退出兜底防护**：
+   - Windows 原生层 (`windows/runner/win32_window.cpp` / `flutter_window.cpp`)：通过 MethodChannel `setTunNodeRoute` 记录节点 IP，在 `WM_CLOSE` / `WM_DESTROY` 及托盘退出时调用 `CleanTunNodeRoute()` 执行 `route delete` 兜底；
+   - macOS 原生层 (`macos/Runner/AppDelegate.swift` / `MainFlutterWindow.swift`)：在 `applicationWillTerminate` 钩子中执行 `route delete -host` 兜底。
+
+---
+
+## 10. TUN 模式下 Chrome 断网根因排查与二次终极修复（2026-09-12 实施记录）
+
+### 10.1 根因复盘
+实测开启 TUN 模式后 Chrome 仍无法联网，通过排查 `ipconfig /all`、`route print` 与 `%APPDATA%\luxwap\speedtest.log`，定位到两大根因：
+1. **Friendly Fire 2.0（原生层误删路由）**：
+   - 在 `lines_page.dart` 启动 TUN 模式后，为了避免 TUN 与系统代理双重代理产生冲突，调用了 `_setSystemProxy(false)`。
+   - `_setSystemProxy(false)` 触发 MethodChannel `cleanProxy` -> C++ `Win32Window::CleanSystemProxy()`。
+   - 在 `win32_window.cpp` 第 339 行，`CleanSystemProxy()` 内部误调用了 `CleanTunNodeRoute()`！
+   - **后果**：刚下发成功的节点 `/32` 直连路由（`route add 103.94.185.18 ...`）在 200ms 后被 `CleanTunNodeRoute()` 瞬间删除！导致发往节点 `103.94.185.18:443` 的底层握手报文全部回环进 `luxwap-tun`（日志记录大量 `from tcp:172.19.0.1:xxx accepted tcp:103.94.185.18:443 [tun-in >> proxy]`），引发彻底死锁。
+2. **多网卡 DNS 优先级竞争**：
+   - 阿里云无影云桌面存在双 VirtIO 网卡，配置了内部 DNS `100.100.2.136`（跃点数 15）。
+   - `luxwap-tun` 创建后默认跃点数为 25，Windows Smart Multi-Homed Name Resolution 同时向两张网卡发起 DNS 查询，内网 DNS 以极快速度返回拒绝/NXDOMAIN，拦截了外网域名解析。
+
+### 10.2 终极修复落地方案
+1. **原生 C++ 完全解耦** (`windows/runner/win32_window.cpp` & `flutter_window.cpp` & `main.cpp`)：
+   - 从 `CleanSystemProxy()` 中彻底剔除 `CleanTunNodeRoute()`，确保开关系统代理绝不影响 TUN 节点路由。
+   - 在 `flutter_window.cpp` 新增独立的 `cleanTunNodeRoute` MethodChannel 接口，仅在 TUN 显式断开时触发。
+   - 在 `WM_CLOSE`、`WM_DESTROY`、托盘菜单退出及 `main.cpp` 退出时显式调用 `CleanTunNodeRoute()` 进行兜底清理。
+2. **TUN 网卡跃点数自动优化** (`TunRouteManager.optimizeTunInterface`)：
+   - TUN 虚拟网卡创建后自动调用 `netsh interface ip set interface "luxwap-tun" metric=1`，使 TUN 虚拟网卡优先级（跃点数 1）高于物理网卡（跃点数 15），确保系统及 Chrome 优先使用 TUN 的 Clean DNS (`8.8.8.8`)。
+3. **路由增强与防御性防护** (`lib/services/tun_route_manager.dart`)：
+   - `parseWindowsDefaultGateway`：遍历所有默认路由，按最小 Metric 选取真实物理外网网关（避开 9999 跃点数的管理内网网关）。
+   - `resolveHostToIp`：支持节点地址为域名时的预解析，避免因域名导致 `route add` 命令报错。
+
+### 10.3 内核绝对统一锁定与残留清理（2026-09-13 实施记录）
+1. **绝对锁定 `luxwap_core.exe`**：
+   - 彻底移除 `fallbackName` 及任何回退至 `xray.exe` 的代码逻辑，统一使用 `luxwap_core.exe`（macOS 为 `luxwap_core`）。
+   - `lines_page.dart` 中 `_luxwapCoreDir()` 仅返回 `bin/luxwap_core` 目录。
+2. **彻底清理 `resources/bin` 与构建产物中的 `xray` 残留**：
+   - 更新 `windows/CMakeLists.txt`，将 `wintun.dll` 的安装源路径切换为 `runner/resources/bin/luxwap_core/wintun.dll`；
+   - 物理删除 `windows/runner/resources/bin/xray/`、`macos/Runner/Resources/bin/xray/`、`build/windows/x64/runner/Release/bin/xray/` 目录以及各目录中的 `xray.exe`；
+   - 资源与发布目录只保留专有命名：`bin/luxwap_core/`，内部包含 `luxwap_core.exe`、`wintun.dll`、`geoip.dat`、`geosite.dat`。
+3. **断开体验精致化**：
+   - 识别用户主动断开操作，彻底剔除原本突兀的 `(code -1)` 黑色底部报错横幅，实现静默顺畅退出。
+4. **全量测试与 Release 构建**：
+   - `tun_routing_test.dart` 扩充至 32 项全维度断言，全量通过（100% Pass）；
+   - 重新完成 Release 二进制构建：`build\windows\x64\runner\Release\v2rayn_flutter.exe`。

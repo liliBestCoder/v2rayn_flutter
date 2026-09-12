@@ -185,10 +185,14 @@ Win32Window::MessageHandler(HWND hwnd,
         return 0;
       }
       CleanSystemProxy();
+      CleanTunNodeRoute();
+      KillCoreProcesses();
       break;
     }
     case WM_DESTROY:
       CleanSystemProxy();
+      CleanTunNodeRoute();
+      KillCoreProcesses();
       window_handle_ = nullptr;
       Destroy();
       if (quit_on_close_) {
@@ -294,6 +298,43 @@ void Win32Window::SetCloseToTray(bool close_to_tray) {
 
 bool Win32Window::GetCloseToTray() const {
   return close_to_tray_;
+}
+
+void Win32Window::KillCoreProcesses() {
+  STARTUPINFOA si = { sizeof(si) };
+  si.cb = sizeof(si);
+  si.dwFlags = STARTF_USESHOWWINDOW;
+  si.wShowWindow = SW_HIDE;
+  PROCESS_INFORMATION pi = { 0 };
+  char cmd[] = "cmd.exe /c taskkill /F /T /IM luxwap_core.exe /IM xray.exe >nul 2>nul";
+  if (CreateProcessA(NULL, cmd, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
+    WaitForSingleObject(pi.hProcess, 1500);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+  }
+}
+
+static std::string g_active_tun_node_ip;
+
+void Win32Window::SetTunNodeRoute(const std::string& node_ip) {
+  g_active_tun_node_ip = node_ip;
+}
+
+void Win32Window::CleanTunNodeRoute() {
+  if (!g_active_tun_node_ip.empty()) {
+    std::string cmd = "cmd.exe /c route delete " + g_active_tun_node_ip + " >nul 2>nul";
+    STARTUPINFOA si = { sizeof(si) };
+    si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESHOWWINDOW;
+    si.wShowWindow = SW_HIDE;
+    PROCESS_INFORMATION pi = { 0 };
+    if (CreateProcessA(NULL, cmd.data(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
+      WaitForSingleObject(pi.hProcess, 1000);
+      CloseHandle(pi.hProcess);
+      CloseHandle(pi.hThread);
+    }
+    g_active_tun_node_ip.clear();
+  }
 }
 
 void Win32Window::CleanSystemProxy() {

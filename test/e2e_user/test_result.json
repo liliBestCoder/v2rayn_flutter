@@ -1,6 +1,6 @@
 {
   "user": "lilibestcoder@163.com",
-  "timestamp": "2026-09-11T08:20:55.562Z",
+  "timestamp": "2026-09-11T20:37:57.956Z",
   "steps": [
     {
       "name": "Xray Kernel & TUN Support Verification",
@@ -24,7 +24,7 @@
       "name": "User Profile & Subscription",
       "status": "PASSED",
       "details": {
-        "uuid": "60fbe84f-f3c2-4307-83d4-44ee2bf798d3",
+        "uuid": "dbc4a0d2-29da-4d00-8734-de14425c3309",
         "username": "lilibestcoder@163.com",
         "nick": "u1234567",
         "country": "CN",
@@ -55,7 +55,7 @@
       "name": "Real Runtime Process & Port Probing",
       "status": "PASSED",
       "details": {
-        "pid": 10752,
+        "pid": 15944,
         "httpPortReady": true,
         "socksPortReady": true
       }

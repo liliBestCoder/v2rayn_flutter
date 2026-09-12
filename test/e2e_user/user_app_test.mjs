@@ -10,7 +10,7 @@ const execFileAsync = promisify(execFile);
 const API_BASE = 'http://101.201.215.20:8000';
 const USERNAME = 'lilibestcoder@163.com';
 const PASSWORD = '123456';
-const XRAY_PATH = path.resolve('windows/runner/resources/bin/xray/xray.exe');
+const XRAY_PATH = path.resolve('windows/runner/resources/bin/luxwap_core/luxwap_core.exe');
 
 async function httpRequest(urlPath, method = 'GET', headers = {}, body = null) {
   return new Promise((resolve, reject) => {

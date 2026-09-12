@@ -1,5 +1,6 @@
-import 'dart:io' show Platform;
+import 'dart:io' show Platform, Process;
 
+import 'package:flutter/services.dart' show MethodChannel;
 import 'package:flutter/widgets.dart';
 
 import 'models/client_config.dart';
@@ -97,7 +98,36 @@ class AppState extends ChangeNotifier {
     token = null;
     userInfo = null;
     await tokenStore.clear();
+    await cleanupNetwork();
     notifyListeners();
+  }
+
+  Future<void> cleanupNetwork() async {
+    try {
+      const MethodChannel('luxwap/window').invokeMethod('cleanProxy');
+    } catch (_) {}
+    try {
+      const MethodChannel('luxwap/window').invokeMethod('killCore');
+    } catch (_) {}
+    if (Platform.isWindows) {
+      try {
+        await Process.run('taskkill', ['/f', '/im', 'luxwap_core.exe'])
+            .timeout(const Duration(seconds: 2));
+      } catch (_) {}
+      try {
+        await Process.run('taskkill', ['/f', '/im', 'xray.exe'])
+            .timeout(const Duration(seconds: 2));
+      } catch (_) {}
+    } else {
+      try {
+        await Process.run('pkill', ['-f', 'luxwap_core'])
+            .timeout(const Duration(seconds: 2));
+      } catch (_) {}
+      try {
+        await Process.run('pkill', ['-f', 'xray'])
+            .timeout(const Duration(seconds: 2));
+      } catch (_) {}
+    }
   }
 
   static String _deviceId() {

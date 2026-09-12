@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import '../app_state.dart';
 import '../models/client_config.dart';
 import '../models/line_node.dart';
+import '../services/tun_route_manager.dart';
 import '../services/xray_config_builder.dart';
 import '../theme/luxwap_theme.dart';
 import '../widgets/luxwap_icon.dart';
@@ -37,6 +38,7 @@ class _LinesPageState extends State<LinesPage> {
   int? lastProxyUpKb;
   int? lastProxyDownKb;
   String speedText = '↑ 0kb/s  ↓ 0kb/s';
+  bool _userInitiatedStop = false;
 
   @override
   void initState() {
@@ -225,33 +227,24 @@ class _LinesPageState extends State<LinesPage> {
     if (Platform.isMacOS) {
       // macOS .app bundle: Contents/MacOS/app → Contents/Resources/
       final resDir = '${File(exeDir).parent.path}${Platform.pathSeparator}Resources';
-      final coreDir = '$resDir${Platform.pathSeparator}bin${Platform.pathSeparator}luxwap_core';
-      if (Directory(coreDir).existsSync()) return coreDir;
-      return '$resDir${Platform.pathSeparator}bin${Platform.pathSeparator}xray';
+      return '$resDir${Platform.pathSeparator}bin${Platform.pathSeparator}luxwap_core';
     }
-    final coreDir = '$exeDir${Platform.pathSeparator}bin${Platform.pathSeparator}luxwap_core';
-    if (Directory(coreDir).existsSync()) return coreDir;
-    return '$exeDir${Platform.pathSeparator}bin${Platform.pathSeparator}xray';
+    return '$exeDir${Platform.pathSeparator}bin${Platform.pathSeparator}luxwap_core';
   }
 
   String _luxwapCorePath() {
-    final primaryName = Platform.isWindows ? 'luxwap_core.exe' : 'luxwap_core';
-    final fallbackName = Platform.isWindows ? 'xray.exe' : 'xray';
+    final coreName = Platform.isWindows ? 'luxwap_core.exe' : 'luxwap_core';
     final dir = _luxwapCoreDir();
     if (Platform.isMacOS) {
       final arch = _macCpuArch();
-      final p1 = '$dir${Platform.pathSeparator}$arch${Platform.pathSeparator}$primaryName';
+      final p1 = '$dir${Platform.pathSeparator}$arch${Platform.pathSeparator}$coreName';
       if (File(p1).existsSync()) return p1;
-      final p2 = '$dir${Platform.pathSeparator}$arch${Platform.pathSeparator}$fallbackName';
-      if (File(p2).existsSync()) return p2;
       final other = arch == 'arm64' ? 'amd64' : 'arm64';
-      final p3 = '$dir${Platform.pathSeparator}$other${Platform.pathSeparator}$primaryName';
-      if (File(p3).existsSync()) return p3;
-      return '$dir${Platform.pathSeparator}$other${Platform.pathSeparator}$fallbackName';
+      final p2 = '$dir${Platform.pathSeparator}$other${Platform.pathSeparator}$coreName';
+      if (File(p2).existsSync()) return p2;
+      return p1;
     }
-    final p1 = '$dir${Platform.pathSeparator}$primaryName';
-    if (File(p1).existsSync()) return p1;
-    return '$dir${Platform.pathSeparator}$fallbackName';
+    return '$dir${Platform.pathSeparator}$coreName';
   }
 
   String _macCpuArch() {
@@ -261,11 +254,18 @@ class _LinesPageState extends State<LinesPage> {
 
   Map<String, String> _luxwapCoreAssetEnvironment() {
     final dir = _luxwapCoreDir();
-    return {
+    final env = {
       'LUXWAP_CORE_LOCATION_ASSET': dir,
       'XRAY_LOCATION_ASSET': dir,
       'V2RAY_LOCATION_ASSET': dir,
     };
+    final sysPath = Platform.environment['PATH'];
+    if (sysPath != null && sysPath.isNotEmpty) {
+      env['PATH'] = '$dir${Platform.isWindows ? ';' : ':'}$sysPath';
+    } else {
+      env['PATH'] = dir;
+    }
+    return env;
   }
 
   Map<String, dynamic>? _buildVlessOutbound(LineNode node, String tag) {
@@ -371,12 +371,18 @@ class _LinesPageState extends State<LinesPage> {
   }
 
   Future<Directory> _appDataDir() async {
+    Directory dir;
     if (Platform.isWindows) {
       final appData = Platform.environment['APPDATA'] ?? Directory.current.path;
-      return Directory('$appData\\luxwap');
+      dir = Directory('$appData\\luxwap');
+    } else {
+      final appSupportDir = await getApplicationSupportDirectory();
+      dir = Directory('${appSupportDir.path}${Platform.pathSeparator}luxwap');
     }
-    final appSupportDir = await getApplicationSupportDirectory();
-    return Directory('${appSupportDir.path}${Platform.pathSeparator}luxwap');
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+    return dir;
   }
 
   @override
@@ -384,6 +390,7 @@ class _LinesPageState extends State<LinesPage> {
     _stopStatsPolling(resetText: false);
     _killProcess(speedtestProcess);
     _stopProxy(updateState: false);
+    _cleanupBundledCoreProcesses();
     super.dispose();
   }
 
@@ -502,6 +509,14 @@ class _LinesPageState extends State<LinesPage> {
       return;
     }
 
+    final isTun = state.clientConfig.tunEnabled;
+    if (isTun && node.host.isNotEmpty) {
+      // 官方 TUN 原理：在 TUN 全局接管生效前，为节点公网 IP 建立物理网关直连主机路由 (/32)，
+      // 杜绝出站握手流量被 0.0.0.0/1 捕获造成 infinite network loop。
+      await TunRouteManager.addDirectNodeRoute(node.host);
+    }
+
+    _userInitiatedStop = false;
     coreProcess = await Process.start(
       corePath,
       ['run', '-c', 'stdin:'],
@@ -511,6 +526,31 @@ class _LinesPageState extends State<LinesPage> {
     );
     coreProcess!.exitCode.then((code) {
       _speedtestLog('runtime luxwap_core exitCode=$code');
+      if (isTun) {
+        TunRouteManager.removeDirectNodeRoute();
+      }
+      if (mounted && connected) {
+        setState(() => connected = false);
+        _stopStatsPolling();
+        if (!_userInitiatedStop) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: const Color(0xFF1F2329),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              margin: const EdgeInsets.only(bottom: 24, left: 32, right: 32),
+              content: const Row(
+                children: [
+                  Icon(Icons.info_outline, color: Color(0xFF71AFFC), size: 18),
+                  SizedBox(width: 8),
+                  Text('网络连接已断开', style: TextStyle(color: Colors.white, fontSize: 13)),
+                ],
+              ),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
     });
     coreProcess!.stdin.write(config);
     await coreProcess!.stdin.flush();
@@ -524,11 +564,36 @@ class _LinesPageState extends State<LinesPage> {
     final proxyReady = await _waitTcpPort(10809);
     if (!proxyReady) {
       await _speedtestLog('runtime luxwap_core proxy port 10809 not ready');
+      if (isTun) {
+        await TunRouteManager.removeDirectNodeRoute();
+      }
       await _killProcess(coreProcess);
       coreProcess = null;
       return;
     }
-    await _setWindowsProxy(true);
+    if (isTun) {
+      // TUN 虚拟网卡模式已由虚拟网卡(Wintun/utun)在网络层接管系统全局流量。
+      // 此时必须确保关闭/清除系统代理，防止 TUN 与系统代理同时存在发生路由冲突或双重代理。
+      await _setSystemProxy(false);
+      // 等待 Wintun / utun 设备就绪并校验进程存活
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      if (await _hasProcessExited(coreProcess)) {
+        await _speedtestLog('runtime luxwap_core exited unexpectedly during tun init');
+        coreProcess = null;
+        await TunRouteManager.removeDirectNodeRoute();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('TUN 虚拟网卡创建失败，请确保以管理员权限运行')),
+          );
+        }
+        return;
+      }
+      // 优化 TUN 虚拟网卡接口跃点数，确保 TUN 虚拟网卡 DNS 优先级高于物理内网 DNS
+      await TunRouteManager.optimizeTunInterface();
+    } else {
+      // 非 TUN 模式（普通代理），通过系统代理指向 127.0.0.1:10809 接管应用层流量。
+      await _setSystemProxy(true);
+    }
     _startStatsPolling();
     if (mounted) {
       setState(() => connected = true);
@@ -536,10 +601,13 @@ class _LinesPageState extends State<LinesPage> {
   }
 
   Future<void> _stopProxy({bool updateState = true}) async {
+    _userInitiatedStop = true;
     _stopStatsPolling();
     await _killProcess(coreProcess);
     coreProcess = null;
-    await _setWindowsProxy(false);
+    await TunRouteManager.removeDirectNodeRoute();
+    await _cleanupBundledCoreProcesses();
+    await _setSystemProxy(false);
     if (updateState && mounted) {
       setState(() => connected = false);
     }
@@ -591,6 +659,9 @@ class _LinesPageState extends State<LinesPage> {
   }
 
   Future<void> _cleanupBundledCoreProcesses() async {
+    try {
+      const MethodChannel('luxwap/window').invokeMethod('killCore');
+    } catch (_) {}
     if (Platform.isWindows) {
       try {
         await Process.run('taskkill', ['/f', '/im', 'luxwap_core.exe'])
@@ -716,7 +787,7 @@ class _LinesPageState extends State<LinesPage> {
     return (up, down);
   }
 
-  Future<void> _setWindowsProxy(bool enable) async {
+  Future<void> _setSystemProxy(bool enable) async {
     if (Platform.isWindows) {
       if (!enable) {
         try {
@@ -748,6 +819,11 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
         script + notify,
       ]);
     } else if (Platform.isMacOS) {
+      if (!enable) {
+        try {
+          const MethodChannel('luxwap/window').invokeMethod('cleanProxy');
+        } catch (_) {}
+      }
       for (final iface in ['Wi-Fi', 'Ethernet', 'Thunderbolt Bridge']) {
         try {
           if (enable) {
@@ -819,11 +895,15 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
   }
 
   Future<void> _selectNode(LineNode node) async {
+    final prevRaw = selectedRaw;
     setState(() => selectedRaw = node.raw);
     final state = AppScope.of(context);
     await state.updateClientConfig(
       state.clientConfig.copyWith(selectedLineRaw: node.raw),
     );
+    if (connected && prevRaw != node.raw) {
+      await _startProxy();
+    }
   }
 }
 

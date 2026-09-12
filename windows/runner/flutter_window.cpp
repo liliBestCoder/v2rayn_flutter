@@ -50,6 +50,33 @@ bool FlutterWindow::OnCreate() {
           return;
         }
 
+        if (method == "killCore") {
+          KillCoreProcesses();
+          result->Success();
+          return;
+        }
+
+        if (method == "setTunNodeRoute") {
+          const auto* args =
+              std::get_if<flutter::EncodableMap>(call.arguments());
+          if (args) {
+            auto it = args->find(flutter::EncodableValue("nodeIp"));
+            if (it != args->end()) {
+              if (const auto* val = std::get_if<std::string>(&it->second)) {
+                Win32Window::SetTunNodeRoute(*val);
+              }
+            }
+          }
+          result->Success();
+          return;
+        }
+
+        if (method == "cleanTunNodeRoute") {
+          Win32Window::CleanTunNodeRoute();
+          result->Success();
+          return;
+        }
+
         if (method == "setCloseToTray") {
           const auto* args =
               std::get_if<flutter::EncodableMap>(call.arguments());
@@ -178,6 +205,8 @@ bool FlutterWindow::OnCreate() {
 void FlutterWindow::OnDestroy() {
   RemoveTray();
   CleanSystemProxy();
+  CleanTunNodeRoute();
+  KillCoreProcesses();
 
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
@@ -266,6 +295,8 @@ void FlutterWindow::HandleTrayMenu(HWND hwnd) {
     }
   } else if (cmd == 5) {
     CleanSystemProxy();
+    CleanTunNodeRoute();
+    KillCoreProcesses();
     RemoveTray();
     DestroyWindow(hwnd);
     PostQuitMessage(0);

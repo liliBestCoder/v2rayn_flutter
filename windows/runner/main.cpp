@@ -45,6 +45,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   }
 
   Win32Window::CleanSystemProxy();
+  Win32Window::CleanTunNodeRoute();
+  Win32Window::KillCoreProcesses();
   ::CoUninitialize();
   return EXIT_SUCCESS;
 }

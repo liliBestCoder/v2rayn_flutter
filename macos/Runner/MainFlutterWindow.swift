@@ -51,7 +51,17 @@ class MainFlutterWindow: NSWindow {
         }
         self.setFrame(frame, display: true, animate: true)
         result(nil)
-      case "cleanProxy", "setCloseToTray":
+      case "cleanProxy":
+        AppDelegate.cleanSystemProxyOnly()
+        result(nil)
+      case "killCore":
+        AppDelegate.killCoreProcesses()
+        result(nil)
+      case "setTunNodeRoute":
+        let args = call.arguments as? [String: Any]
+        AppDelegate.activeTunNodeIp = args?["nodeIp"] as? String
+        result(nil)
+      case "setCloseToTray":
         result(nil)
       case "show":
         self.makeKeyAndOrderFront(nil)
