@@ -63,7 +63,7 @@ class Win32Window {
   static void SetTunNodeRoute(const std::string& node_ip);
   static void CleanTunNodeRoute();
 
-  // Static helper to terminate all core proxy processes (luxwap_core, xray).
+  // Static helper to terminate all core proxy processes (luxwap_core).
   static void KillCoreProcesses();
 
   // Return a RECT representing the bounds of the current client area.

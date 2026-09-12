@@ -114,17 +114,9 @@ class AppState extends ChangeNotifier {
         await Process.run('taskkill', ['/f', '/im', 'luxwap_core.exe'])
             .timeout(const Duration(seconds: 2));
       } catch (_) {}
-      try {
-        await Process.run('taskkill', ['/f', '/im', 'xray.exe'])
-            .timeout(const Duration(seconds: 2));
-      } catch (_) {}
     } else {
       try {
         await Process.run('pkill', ['-f', 'luxwap_core'])
-            .timeout(const Duration(seconds: 2));
-      } catch (_) {}
-      try {
-        await Process.run('pkill', ['-f', 'xray'])
             .timeout(const Duration(seconds: 2));
       } catch (_) {}
     }

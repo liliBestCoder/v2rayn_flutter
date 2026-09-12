@@ -782,7 +782,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         title: '3. TUN 虚拟网卡与全流量接管',
         icon: Icons.stream,
         keywords: ['tun', '虚拟网卡', 'wintun', '游戏', 'cmd', '命令行'],
-        content: 'Luxwap 内置 2026 最新版 Xray-core 26+ 与 Wintun 虚拟驱动。\n'
+        content: 'Luxwap 内置 2026 最新版网络加速核心与 Wintun 虚拟驱动。\n'
             '• TUN 模式默认开启，在系统网络底层建立虚拟 TUN 网卡通道。\n'
             '• 自动接管不遵循系统代理设置的命令行工具 (Git/Curl)、应用商店以及游戏网络，免去单独配置环境变量的繁琐。',
       ),

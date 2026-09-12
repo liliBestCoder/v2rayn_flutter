@@ -4,11 +4,22 @@ import 'package:path_provider/path_provider.dart';
 class TokenStore {
   Future<File> get _file async {
     final appSupportDir = await getApplicationSupportDirectory();
-    final dir = Directory('${appSupportDir.path}${Platform.pathSeparator}v2rayn_flutter');
+    final dir = Directory('${appSupportDir.path}${Platform.pathSeparator}luxwap');
     if (!await dir.exists()) {
       await dir.create(recursive: true);
     }
-    return File('${dir.path}${Platform.pathSeparator}token.txt');
+    final target = File('${dir.path}${Platform.pathSeparator}token.txt');
+    if (!await target.exists()) {
+      final legacyFile = File(
+        '${appSupportDir.path}${Platform.pathSeparator}v2rayn_flutter${Platform.pathSeparator}token.txt',
+      );
+      if (await legacyFile.exists()) {
+        try {
+          await legacyFile.copy(target.path);
+        } catch (_) {}
+      }
+    }
+    return target;
   }
 
   Future<String?> loadToken() async {

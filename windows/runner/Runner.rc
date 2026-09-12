@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "v2rayn_flutter" "\0"
+            VALUE "CompanyName", "Luxwap" "\0"
+            VALUE "FileDescription", "Luxwap" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "v2rayn_flutter" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "v2rayn_flutter.exe" "\0"
-            VALUE "ProductName", "v2rayn_flutter" "\0"
+            VALUE "InternalName", "luxwap" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Luxwap. All rights reserved." "\0"
+            VALUE "OriginalFilename", "luxwap.exe" "\0"
+            VALUE "ProductName", "Luxwap" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

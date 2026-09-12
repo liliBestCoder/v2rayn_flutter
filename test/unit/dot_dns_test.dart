@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:v2rayn_flutter/models/client_config.dart';
 import 'package:v2rayn_flutter/models/line_node.dart';
-import 'package:v2rayn_flutter/services/xray_config_builder.dart';
+import 'package:v2rayn_flutter/services/luxwap_config_builder.dart';
 
 void main() {
   group('DoT (DNS over TLS) Configuration & Injection Tests', () {
@@ -18,7 +18,7 @@ void main() {
         vpnRoute: true,
       );
 
-      final dnsMap = XrayConfigBuilder.buildDnsConfig(config, true);
+      final dnsMap = LuxwapConfigBuilder.buildDnsConfig(config, true);
       final servers = dnsMap['servers'] as List<dynamic>;
 
       expect(servers, isNotEmpty);
@@ -29,24 +29,24 @@ void main() {
 
     test('Multiple DoT formats (tls://, tcp://) and whitespace trimming are supported', () {
       const config1 = ClientConfig(dotDns: '  tls://dns.google:853  ');
-      final dns1 = XrayConfigBuilder.buildDnsConfig(config1, true);
+      final dns1 = LuxwapConfigBuilder.buildDnsConfig(config1, true);
       final servers1 = dns1['servers'] as List<dynamic>;
       expect(servers1.first, equals('tls://dns.google:853'));
 
       const config2 = ClientConfig(dotDns: 'tcp://8.8.4.4:853');
-      final dns2 = XrayConfigBuilder.buildDnsConfig(config2, true);
+      final dns2 = LuxwapConfigBuilder.buildDnsConfig(config2, true);
       final servers2 = dns2['servers'] as List<dynamic>;
       expect(servers2.first, equals('tcp://8.8.4.4:853'));
     });
 
     test('When dotDns is empty or whitespace, no DoT server entry is added', () {
       const emptyConfig = ClientConfig(dotDns: '');
-      final dns1 = XrayConfigBuilder.buildDnsConfig(emptyConfig, true);
+      final dns1 = LuxwapConfigBuilder.buildDnsConfig(emptyConfig, true);
       final servers1 = dns1['servers'] as List<dynamic>;
       expect(servers1.any((s) => s is String && s.contains('853')), isFalse);
 
       const whitespaceConfig = ClientConfig(dotDns: '    ');
-      final dns2 = XrayConfigBuilder.buildDnsConfig(whitespaceConfig, true);
+      final dns2 = LuxwapConfigBuilder.buildDnsConfig(whitespaceConfig, true);
       final servers2 = dns2['servers'] as List<dynamic>;
       expect(servers2.any((s) => s is String && s.contains('853')), isFalse);
     });
@@ -64,7 +64,7 @@ void main() {
         load: 45,
       );
 
-      final jsonStr = XrayConfigBuilder.buildConfigJson(
+      final jsonStr = LuxwapConfigBuilder.buildConfigJson(
         node: node,
         clientConfig: config,
         userCountry: 'cn',
@@ -86,7 +86,7 @@ void main() {
         globalDns: '8.8.8.8',
       );
 
-      final dnsMap = XrayConfigBuilder.buildDnsConfig(config, false);
+      final dnsMap = LuxwapConfigBuilder.buildDnsConfig(config, false);
       final servers = dnsMap['servers'] as List<dynamic>;
 
       expect(servers.first, equals('tcp://9.9.9.9:853'));

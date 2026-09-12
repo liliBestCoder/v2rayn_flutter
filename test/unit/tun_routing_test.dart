@@ -5,12 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:v2rayn_flutter/models/client_config.dart';
 import 'package:v2rayn_flutter/models/line_node.dart';
 import 'package:v2rayn_flutter/services/tun_route_manager.dart';
-import 'package:v2rayn_flutter/services/xray_config_builder.dart';
+import 'package:v2rayn_flutter/services/luxwap_config_builder.dart';
 
 void main() {
   group('TUN Mode Inbound & Settings Verification Tests', () {
     test('When tunEnabled is true, tun-in inbound with port 0 and protocol tun is created', () {
-      final inboundsWindows = XrayConfigBuilder.buildInbounds(
+      final inboundsWindows = LuxwapConfigBuilder.buildInbounds(
         tunEnabled: true,
         statsPort: 10890,
         isWindows: true,
@@ -32,7 +32,7 @@ void main() {
     });
 
     test('On macOS, tun-in adapter name adapts to utun10 with gateway and routing table', () {
-      final inboundsMac = XrayConfigBuilder.buildInbounds(
+      final inboundsMac = LuxwapConfigBuilder.buildInbounds(
         tunEnabled: true,
         statsPort: 10890,
         isWindows: false,
@@ -46,7 +46,7 @@ void main() {
     });
 
     test('When tunEnabled is false, tun-in inbound is completely omitted', () {
-      final inbounds = XrayConfigBuilder.buildInbounds(
+      final inbounds = LuxwapConfigBuilder.buildInbounds(
         tunEnabled: false,
         statsPort: 10890,
       );
@@ -64,7 +64,7 @@ void main() {
   group('Routing Table Rules Verification Tests', () {
     test(r'passByIp rule routes geoip:$countryCode to direct outbound', () {
       const configEnabled = ClientConfig(passByIp: true);
-      final rulesEnabled = XrayConfigBuilder.buildRoutingRules(configEnabled, 'cn', true);
+      final rulesEnabled = LuxwapConfigBuilder.buildRoutingRules(configEnabled, 'cn', true);
       final ipRule = rulesEnabled.firstWhere(
         (r) => r['outboundTag'] == 'direct' && (r['ip'] as List?)?.contains('geoip:cn') == true,
         orElse: () => throw AssertionError('geoip:cn direct rule must exist'),
@@ -72,7 +72,7 @@ void main() {
       expect(ipRule['type'], equals('field'));
 
       const configDisabled = ClientConfig(passByIp: false);
-      final rulesDisabled = XrayConfigBuilder.buildRoutingRules(configDisabled, 'cn', true);
+      final rulesDisabled = LuxwapConfigBuilder.buildRoutingRules(configDisabled, 'cn', true);
       expect(rulesDisabled.any((r) => (r['ip'] as List?)?.contains('geoip:cn') == true), isFalse);
     });
 
@@ -83,7 +83,7 @@ void main() {
       final foreignIps = ['8.8.8.8', '1.1.1.1', '140.82.114.4', '104.244.42.1'];
 
       for (final country in ['cn', 'us', 'hk', 'jp', 'sg']) {
-        final rules = XrayConfigBuilder.buildRoutingRules(const ClientConfig(passByIp: true), country, country == 'cn');
+        final rules = LuxwapConfigBuilder.buildRoutingRules(const ClientConfig(passByIp: true), country, country == 'cn');
         final rule = rules.firstWhere((r) => r['outboundTag'] == 'direct' && (r['ip'] as List?)?.contains('geoip:$country') == true);
         expect(rule['outboundTag'], equals('direct'));
         expect((rule['ip'] as List).contains('geoip:$country'), isTrue);
@@ -94,15 +94,15 @@ void main() {
 
     test('passByDomain rule routes geosite:cn to direct outbound for China users', () {
       const configEnabled = ClientConfig(passByDomain: true);
-      final rulesChina = XrayConfigBuilder.buildRoutingRules(configEnabled, 'cn', true);
+      final rulesChina = LuxwapConfigBuilder.buildRoutingRules(configEnabled, 'cn', true);
       expect(rulesChina.any((r) => (r['domain'] as List?)?.contains('geosite:cn') == true), isTrue);
 
       // Outside China or disabled
       const configDisabled = ClientConfig(passByDomain: false);
-      final rulesDisabled = XrayConfigBuilder.buildRoutingRules(configDisabled, 'cn', true);
+      final rulesDisabled = LuxwapConfigBuilder.buildRoutingRules(configDisabled, 'cn', true);
       expect(rulesDisabled.any((r) => (r['domain'] as List?)?.contains('geosite:cn') == true), isFalse);
 
-      final rulesNonChina = XrayConfigBuilder.buildRoutingRules(configEnabled, 'us', false);
+      final rulesNonChina = LuxwapConfigBuilder.buildRoutingRules(configEnabled, 'us', false);
       expect(rulesNonChina.any((r) => (r['domain'] as List?)?.contains('geosite:cn') == true), isFalse);
     });
 
@@ -110,11 +110,11 @@ void main() {
       final domesticDomains = ['baidu.com', 'taobao.com', 'qq.com', 'bilibili.com', 'weibo.com', 'jd.com', 'alipay.com'];
       final overseasDomains = ['google.com', 'youtube.com', 'github.com', 'twitter.com', 'openai.com', 'wikipedia.org'];
 
-      final rulesChina = XrayConfigBuilder.buildRoutingRules(const ClientConfig(passByDomain: true), 'cn', true);
+      final rulesChina = LuxwapConfigBuilder.buildRoutingRules(const ClientConfig(passByDomain: true), 'cn', true);
       final cnDomainRule = rulesChina.firstWhere((r) => r['outboundTag'] == 'direct' && (r['domain'] as List?)?.contains('geosite:cn') == true);
       expect(cnDomainRule['outboundTag'], equals('direct'));
 
-      final rulesUs = XrayConfigBuilder.buildRoutingRules(const ClientConfig(passByDomain: true), 'us', false);
+      final rulesUs = LuxwapConfigBuilder.buildRoutingRules(const ClientConfig(passByDomain: true), 'us', false);
       expect(rulesUs.any((r) => (r['domain'] as List?)?.contains('geosite:cn') == true), isFalse);
       expect(domesticDomains.length, equals(7));
       expect(overseasDomains.length, equals(6));
@@ -122,11 +122,11 @@ void main() {
 
     test('passByLanIp routes geoip:private to direct outbound', () {
       const config = ClientConfig(passByLanIp: true);
-      final rules = XrayConfigBuilder.buildRoutingRules(config, 'cn', true);
+      final rules = LuxwapConfigBuilder.buildRoutingRules(config, 'cn', true);
       expect(rules.any((r) => (r['ip'] as List?)?.contains('geoip:private') == true), isTrue);
 
       const configDisabled = ClientConfig(passByLanIp: false);
-      final rulesDisabled = XrayConfigBuilder.buildRoutingRules(configDisabled, 'cn', true);
+      final rulesDisabled = LuxwapConfigBuilder.buildRoutingRules(configDisabled, 'cn', true);
       expect(rulesDisabled.any((r) => (r['ip'] as List?)?.contains('geoip:private') == true), isFalse);
     });
 
@@ -134,7 +134,7 @@ void main() {
       final sampleLanIps = ['192.168.1.1', '192.168.0.100', '10.0.0.1', '10.0.168.183', '172.16.0.1', '172.31.255.254', '127.0.0.1'];
       final samplePublicIps = ['1.1.1.1', '8.8.8.8', '103.94.185.18'];
 
-      final rules = XrayConfigBuilder.buildRoutingRules(const ClientConfig(passByLanIp: true), 'cn', true);
+      final rules = LuxwapConfigBuilder.buildRoutingRules(const ClientConfig(passByLanIp: true), 'cn', true);
       final lanRule = rules.firstWhere((r) => r['outboundTag'] == 'direct' && (r['ip'] as List?)?.contains('geoip:private') == true);
       expect(lanRule['outboundTag'], equals('direct'));
       expect(sampleLanIps.length, equals(7));
@@ -143,17 +143,17 @@ void main() {
 
     test('passByLanDomain routes domain:localhost to direct outbound', () {
       const config = ClientConfig(passByLanDomain: true);
-      final rules = XrayConfigBuilder.buildRoutingRules(config, 'cn', true);
+      final rules = LuxwapConfigBuilder.buildRoutingRules(config, 'cn', true);
       expect(rules.any((r) => (r['domain'] as List?)?.contains('domain:localhost') == true), isTrue);
 
       const configDisabled = ClientConfig(passByLanDomain: false);
-      final rulesDisabled = XrayConfigBuilder.buildRoutingRules(configDisabled, 'cn', true);
+      final rulesDisabled = LuxwapConfigBuilder.buildRoutingRules(configDisabled, 'cn', true);
       expect(rulesDisabled.any((r) => (r['domain'] as List?)?.contains('domain:localhost') == true), isFalse);
     });
 
     test('passByLanDomain with concrete local developer hostnames', () {
       final localHosts = ['localhost', 'dev.localhost', 'api.localhost', 'test.localhost'];
-      final rules = XrayConfigBuilder.buildRoutingRules(const ClientConfig(passByLanDomain: true), 'cn', true);
+      final rules = LuxwapConfigBuilder.buildRoutingRules(const ClientConfig(passByLanDomain: true), 'cn', true);
       final rule = rules.firstWhere((r) => r['outboundTag'] == 'direct' && (r['domain'] as List?)?.contains('domain:localhost') == true);
       expect(rule['outboundTag'], equals('direct'));
       expect(localHosts.length, equals(4));
@@ -161,7 +161,7 @@ void main() {
 
     test('blockAds routes geosite:category-ads-all to block (blackhole) outbound', () {
       const config = ClientConfig(blockAds: true);
-      final rules = XrayConfigBuilder.buildRoutingRules(config, 'cn', true);
+      final rules = LuxwapConfigBuilder.buildRoutingRules(config, 'cn', true);
       final adRule = rules.firstWhere(
         (r) => (r['domain'] as List?)?.contains('geosite:category-ads-all') == true,
         orElse: () => throw AssertionError('geosite:category-ads-all rule must exist when blockAds is true'),
@@ -169,12 +169,12 @@ void main() {
       expect(adRule['outboundTag'], equals('block'));
 
       const configDisabled = ClientConfig(blockAds: false);
-      final rulesDisabled = XrayConfigBuilder.buildRoutingRules(configDisabled, 'cn', true);
+      final rulesDisabled = LuxwapConfigBuilder.buildRoutingRules(configDisabled, 'cn', true);
       expect(rulesDisabled.any((r) => (r['domain'] as List?)?.contains('geosite:category-ads-all') == true), isFalse);
     });
 
     test('blockAds drops NetBIOS UDP ports and broadcast subnets to prevent network storm', () {
-      final rules = XrayConfigBuilder.buildRoutingRules(const ClientConfig(blockAds: true), 'cn', true);
+      final rules = LuxwapConfigBuilder.buildRoutingRules(const ClientConfig(blockAds: true), 'cn', true);
       final netbiosRule = rules.firstWhere((r) => r['outboundTag'] == 'block' && r['port'] == '137,138,139');
       expect(netbiosRule['network'], equals('udp'));
 
@@ -191,14 +191,14 @@ void main() {
         load: 20,
       );
 
-      final configChina = XrayConfigBuilder.buildConfigMap(
+      final configChina = LuxwapConfigBuilder.buildConfigMap(
         node: node,
         clientConfig: const ClientConfig(),
         userCountry: 'cn',
       );
       expect((configChina!['routing'] as Map)['domainStrategy'], equals('AsIs'));
 
-      final configGlobal = XrayConfigBuilder.buildConfigMap(
+      final configGlobal = LuxwapConfigBuilder.buildConfigMap(
         node: node,
         clientConfig: const ClientConfig(),
         userCountry: 'us',
@@ -215,9 +215,9 @@ void main() {
         load: 10,
       );
 
-      expect((XrayConfigBuilder.buildConfigMap(node: node, clientConfig: const ClientConfig(), userCountry: 'cn')!['routing'] as Map)['domainStrategy'], equals('AsIs'));
+      expect((LuxwapConfigBuilder.buildConfigMap(node: node, clientConfig: const ClientConfig(), userCountry: 'cn')!['routing'] as Map)['domainStrategy'], equals('AsIs'));
       for (final region in ['us', 'jp', 'sg', 'hk', 'gb', 'de', 'fr', 'ca', 'au']) {
-        final config = XrayConfigBuilder.buildConfigMap(node: node, clientConfig: const ClientConfig(), userCountry: region);
+        final config = LuxwapConfigBuilder.buildConfigMap(node: node, clientConfig: const ClientConfig(), userCountry: region);
         expect((config!['routing'] as Map)['domainStrategy'], equals('IPIfNonMatch'), reason: 'Region $region must use IPIfNonMatch for global routing');
       }
     });
@@ -238,7 +238,7 @@ void main() {
         blockAds: true,
       );
 
-      final jsonConfig = XrayConfigBuilder.buildConfigJson(
+      final jsonConfig = LuxwapConfigBuilder.buildConfigJson(
         node: node,
         clientConfig: config,
         userCountry: 'cn',
@@ -335,7 +335,7 @@ void main() {
 
   group('macOS TUN Adapter (utun10) & System Routing / Proxy Restoral Tests', () {
     test('macOS TUN config sets native utun10 device and MTU 1500', () {
-      final inboundsMac = XrayConfigBuilder.buildInbounds(
+      final inboundsMac = LuxwapConfigBuilder.buildInbounds(
         tunEnabled: true,
         statsPort: 10890,
         isWindows: false,
@@ -446,7 +446,7 @@ void main() {
         blockAds: true,
       );
 
-      final jsonConfig = XrayConfigBuilder.buildConfigJson(
+      final jsonConfig = LuxwapConfigBuilder.buildConfigJson(
         node: node,
         clientConfig: config,
         userCountry: 'cn',
@@ -490,7 +490,7 @@ void main() {
         blockAds: true,
       );
 
-      final configJson = XrayConfigBuilder.buildConfigJson(
+      final configJson = LuxwapConfigBuilder.buildConfigJson(
         node: node,
         clientConfig: clientConfig,
         userCountry: 'cn',
@@ -626,7 +626,7 @@ void main() {
       print('  ✅ [系统代理还原断言]: 注册表 ProxyEnable 严格置 0，杜绝用户断开后网络异常！');
 
       // 9. 断言关闭 TUN 后的配置仅保留 HTTP/SOCKS/API 入站，完全剔除 TUN
-      final disabledInbounds = XrayConfigBuilder.buildInbounds(tunEnabled: false);
+      final disabledInbounds = LuxwapConfigBuilder.buildInbounds(tunEnabled: false);
       expect(disabledInbounds.any((i) => i['tag'] == 'tun-in'), isFalse,
           reason: 'tun-in must be completely omitted when TUN is disabled');
       expect(disabledInbounds.any((i) => i['tag'] == 'http-in'), isTrue);

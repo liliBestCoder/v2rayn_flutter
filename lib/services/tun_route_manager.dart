@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 /// 管理 TUN 模式下远端代理服务器（节点 IP）的物理网关直连主机路由 (/32)。
 ///
-/// 官方原理 (见 Xray proxy/tun/README.md):
+/// TUN 路由接管防环路原理:
 /// 当 TUN 接管 0.0.0.0/1 与 128.0.0.0/1 时，发往远端节点的底层报文会被重复捕获进 TUN，
 /// 造成无限回环死锁 (infinite network loop)。
 /// 必须通过 /32 主机路由显式指定节点公网 IP 走物理网关直连。

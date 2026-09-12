@@ -306,7 +306,7 @@ void Win32Window::KillCoreProcesses() {
   si.dwFlags = STARTF_USESHOWWINDOW;
   si.wShowWindow = SW_HIDE;
   PROCESS_INFORMATION pi = { 0 };
-  char cmd[] = "cmd.exe /c taskkill /F /T /IM luxwap_core.exe /IM xray.exe >nul 2>nul";
+  char cmd[] = "cmd.exe /c taskkill /F /T /IM luxwap_core.exe >nul 2>nul";
   if (CreateProcessA(NULL, cmd, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
     WaitForSingleObject(pi.hProcess, 1500);
     CloseHandle(pi.hProcess);

@@ -11,7 +11,7 @@ import '../app_state.dart';
 import '../models/client_config.dart';
 import '../models/line_node.dart';
 import '../services/tun_route_manager.dart';
-import '../services/xray_config_builder.dart';
+import '../services/luxwap_config_builder.dart';
 import '../theme/luxwap_theme.dart';
 import '../widgets/luxwap_icon.dart';
 
@@ -269,7 +269,7 @@ class _LinesPageState extends State<LinesPage> {
   }
 
   Map<String, dynamic>? _buildVlessOutbound(LineNode node, String tag) {
-    return XrayConfigBuilder.buildVlessOutbound(node, tag);
+    return LuxwapConfigBuilder.buildVlessOutbound(node, tag);
   }
 
   Future<int> _nextSpeedtestPort() async {
@@ -667,17 +667,9 @@ class _LinesPageState extends State<LinesPage> {
         await Process.run('taskkill', ['/f', '/im', 'luxwap_core.exe'])
             .timeout(const Duration(seconds: 5));
       } catch (_) {}
-      try {
-        await Process.run('taskkill', ['/f', '/im', 'xray.exe'])
-            .timeout(const Duration(seconds: 5));
-      } catch (_) {}
     } else {
       try {
         await Process.run('pkill', ['-f', 'luxwap_core'])
-            .timeout(const Duration(seconds: 5));
-      } catch (_) {}
-      try {
-        await Process.run('pkill', ['-f', 'xray'])
             .timeout(const Duration(seconds: 5));
       } catch (_) {}
     }
@@ -749,7 +741,7 @@ class _LinesPageState extends State<LinesPage> {
         client.close(force: true);
       }
     } catch (_) {
-      // The metrics endpoint is unavailable while xray is still starting or stopping.
+      // The metrics endpoint is unavailable while core is still starting or stopping.
     }
   }
 
@@ -857,7 +849,7 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
     String? userCountry,
   ) async {
     statsPort = await _freePort();
-    return XrayConfigBuilder.buildConfigJson(
+    return LuxwapConfigBuilder.buildConfigJson(
       node: node,
       clientConfig: clientConfig,
       userCountry: userCountry,
@@ -866,17 +858,17 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
   }
 
   String _normalizeCountryCode(String? country) =>
-      XrayConfigBuilder.normalizeCountryCode(country);
+      LuxwapConfigBuilder.normalizeCountryCode(country);
 
   Map<String, dynamic> _buildDnsConfig(ClientConfig config, bool isChina) =>
-      XrayConfigBuilder.buildDnsConfig(config, isChina);
+      LuxwapConfigBuilder.buildDnsConfig(config, isChina);
 
   List<Map<String, dynamic>> _buildRoutingRules(
     ClientConfig config,
     String countryCode,
     bool isChina,
   ) =>
-      XrayConfigBuilder.buildRoutingRules(config, countryCode, isChina);
+      LuxwapConfigBuilder.buildRoutingRules(config, countryCode, isChina);
 
   Future<void> _showFilterMenu() async {
     final selected = await showMenu<String>(

@@ -7,11 +7,22 @@ import '../models/client_config.dart';
 class ClientConfigStore {
   Future<File> get _file async {
     final appSupportDir = await getApplicationSupportDirectory();
-    final dir = Directory('${appSupportDir.path}${Platform.pathSeparator}v2rayn_flutter');
+    final dir = Directory('${appSupportDir.path}${Platform.pathSeparator}luxwap');
     if (!await dir.exists()) {
       await dir.create(recursive: true);
     }
-    return File('${dir.path}${Platform.pathSeparator}config.json');
+    final target = File('${dir.path}${Platform.pathSeparator}config.json');
+    if (!await target.exists()) {
+      final legacyFile = File(
+        '${appSupportDir.path}${Platform.pathSeparator}v2rayn_flutter${Platform.pathSeparator}config.json',
+      );
+      if (await legacyFile.exists()) {
+        try {
+          await legacyFile.copy(target.path);
+        } catch (_) {}
+      }
+    }
+    return target;
   }
 
   Future<ClientConfig> load() async {

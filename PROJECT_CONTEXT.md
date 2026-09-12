@@ -320,4 +320,20 @@ node test/e2e_real_verification/real_verification_suite.mjs
    - 识别用户主动断开操作，彻底剔除原本突兀的 `(code -1)` 黑色底部报错横幅，实现静默顺畅退出。
 4. **全量测试与 Release 构建**：
    - `tun_routing_test.dart` 扩充至 32 项全维度断言，全量通过（100% Pass）；
-   - 重新完成 Release 二进制构建：`build\windows\x64\runner\Release\v2rayn_flutter.exe`。
+   - 重新完成 Release 二进制构建：`build\windows\x64\runner\Release\luxwap.exe`。
+
+### 10.4 全量去痕与工程重命名（2026-09-13 实施记录）
+1. **配置组装类与文件重命名**：
+   - `lib/services/xray_config_builder.dart` 重命名为 `lib/services/luxwap_config_builder.dart`；
+   - 类名统一重命名为 `LuxwapConfigBuilder`，同步更新 `lines_page.dart`、`tun_routing_test.dart`、`dot_dns_test.dart` 等所有引用。
+2. **数据存储目录更名与平滑迁移**：
+   - `ClientConfigStore` 与 `TokenStore` 本地存储路径从 `v2rayn_flutter` 更名为 `luxwap`；
+   - 增加老版本数据平滑迁移逻辑：若新目录文件不存在但旧目录存在，自动拷贝迁移，老用户不丢失配置与登录态。
+3. **强杀命令彻底清除 `xray` 残留**：
+   - `app_state.dart`、`lines_page.dart`、`win32_window.cpp`、`win32_window.h`、`AppDelegate.swift` 中全面移除 `taskkill /IM xray.exe` 及 `pkill xray`，严格仅管控 `luxwap_core`。
+4. **主程序产物更名为 `luxwap.exe`**：
+   - `windows/CMakeLists.txt` 中设置 `BINARY_NAME "luxwap"` 与 `project(luxwap)`；
+   - `Runner.rc` 中统一元数据为 `luxwap` / `luxwap.exe`；
+   - 成功构建发布版本：`build\windows\x64\runner\Release\luxwap.exe`。
+5. **质量保证**：
+   - 全项目 76 项自动化单元/集成测试 100% 通过。

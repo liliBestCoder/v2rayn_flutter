@@ -4,7 +4,7 @@ import 'dart:io';
 import '../models/client_config.dart';
 import '../models/line_node.dart';
 
-class XrayConfigBuilder {
+class LuxwapConfigBuilder {
   static String normalizeCountryCode(String? country) {
     final code = (country ?? '').trim().toLowerCase();
     if (RegExp(r'^[a-z]{2}$').hasMatch(code)) {

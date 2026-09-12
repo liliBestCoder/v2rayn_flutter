@@ -17,10 +17,10 @@ class AppDelegate: FlutterAppDelegate {
   }
 
   static func killCoreProcesses() {
-    // 1. Force kill any running xray or luxwap_core core processes
+    // 1. Force kill any running luxwap_core core processes
     let killTask = Process()
     killTask.launchPath = "/usr/bin/pkill"
-    killTask.arguments = ["-9", "-f", "xray|luxwap_core"]
+    killTask.arguments = ["-9", "-f", "luxwap_core"]
     try? killTask.run()
     killTask.waitUntilExit()
   }
