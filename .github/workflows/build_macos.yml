@@ -2,9 +2,9 @@ name: Build macOS
 
 on:
   push:
-    branches: [ master, fix/ui-and-bugs ]
+    branches: [ master, main, 'fix/**', 'feature/**' ]
   pull_request:
-    branches: [ master, fix/ui-and-bugs ]
+    branches: [ master, main, 'fix/**', 'feature/**' ]
   workflow_dispatch:
 
 jobs:
@@ -19,18 +19,21 @@ jobs:
           flutter-version: '3.44'
           channel: 'stable'
 
-      - name: Select correct xray binary
+      - name: Select correct luxwap_core binary
         run: |
           ARCH=$(uname -m)
           if [ "$ARCH" = "arm64" ]; then
-            cp macos/Runner/Resources/bin/xray/arm64/xray macos/Runner/Resources/bin/xray/xray
+            cp macos/Runner/Resources/bin/luxwap_core/arm64/luxwap_core macos/Runner/Resources/bin/luxwap_core/luxwap_core
           else
-            cp macos/Runner/Resources/bin/xray/amd64/xray macos/Runner/Resources/bin/xray/xray
+            cp macos/Runner/Resources/bin/luxwap_core/amd64/luxwap_core macos/Runner/Resources/bin/luxwap_core/luxwap_core
           fi
-          chmod +x macos/Runner/Resources/bin/xray/xray
+          chmod +x macos/Runner/Resources/bin/luxwap_core/luxwap_core
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Run Tests
+        run: flutter test test/unit/client_config_test.dart test/unit/line_node_test.dart test/unit/uwp_loopback_test.dart test/cdp/ test/mutation/
 
       - name: Build macOS
         run: flutter build macos --release
@@ -40,3 +43,4 @@ jobs:
         with:
           name: macos-release
           path: build/macos/Build/Products/Release/
+

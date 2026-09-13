@@ -2,9 +2,9 @@ name: Build Windows
 
 on:
   push:
-    branches: [ master, fix/ui-and-bugs ]
+    branches: [ master, main, 'fix/**', 'feature/**' ]
   pull_request:
-    branches: [ master, fix/ui-and-bugs ]
+    branches: [ master, main, 'fix/**', 'feature/**' ]
   workflow_dispatch:
 
 jobs:
@@ -22,6 +22,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Run Tests
+        run: flutter test test/unit/client_config_test.dart test/unit/line_node_test.dart test/unit/uwp_loopback_test.dart test/cdp/ test/mutation/
+
       - name: Build Windows
         run: flutter build windows --release
 
@@ -30,3 +33,4 @@ jobs:
         with:
           name: windows-release
           path: build\windows\x64\runner\Release\
+
