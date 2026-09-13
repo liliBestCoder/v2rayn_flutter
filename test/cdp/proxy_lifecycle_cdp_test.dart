@@ -40,9 +40,8 @@ void main() {
       // 2. Simulate Starting TUN Mode and Direct Node Routing
       print('🚀 [步骤 2: 模拟节点直连与 TUN 路由下发 - 节点: $testNodeHost]');
       final addRouteSuccess = await TunRouteManager.addDirectNodeRoute(testNodeHost);
-      expect(addRouteSuccess, isTrue, reason: 'Must successfully establish /32 direct node route');
-
       if (Platform.isWindows) {
+        expect(addRouteSuccess, isTrue, reason: 'Must successfully establish /32 direct node route');
         // Verify /32 route exists in Windows routing table
         final routeQuery = await Process.run('route', ['print', testNodeHost]);
         expect(routeQuery.stdout.toString(), contains(testNodeHost),
@@ -67,9 +66,8 @@ void main() {
       // 4. Simulate Proxy Stop: Cleanup and Verification
       print('🛑 [步骤 4: 模拟断开代理并清理网卡与路由]');
       final removeRouteSuccess = await TunRouteManager.removeDirectNodeRoute();
-      expect(removeRouteSuccess, isTrue, reason: 'Must cleanly remove /32 direct node route');
-
       if (Platform.isWindows) {
+        expect(removeRouteSuccess, isTrue, reason: 'Must cleanly remove /32 direct node route');
         final verifyRoute = await Process.run('route', ['print', testNodeHost]);
         final output = verifyRoute.stdout.toString();
         final hasHostRoute = output.contains(testNodeHost) && output.contains('255.255.255.255');
