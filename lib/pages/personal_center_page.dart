@@ -15,69 +15,73 @@ class PersonalCenterPage extends StatelessWidget {
     final user = state.userInfo;
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(40, 14, 40, 14),
       child: ListView(
         children: [
-          const _PointsCard(),
-          const SizedBox(height: 24),
+          const Text(
+            '积分',
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111111),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const PointsCard(),
+          const SizedBox(height: 14),
           const Text(
             '个人资料',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 17,
               fontWeight: FontWeight.w600,
-              color: LuxwapColors.neutral900,
+              color: Color(0xFF111111),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: LuxwapColors.borderLight),
-              borderRadius: LuxwapRadius.rMd,
-              boxShadow: LuxwapShadows.card,
+              border: Border.all(color: const Color(0xFFEEEEEE)),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
               children: [
-                _ProfileRow(
-                  label: '用户ID',
-                  value: user?.uuid ?? '',
-                  trailing: IconButton(
-                    tooltip: '复制用户ID',
-                    icon: const Icon(
-                      Icons.copy,
-                      size: 20,
-                      color: Color(0xff8d91a3),
-                    ),
-                    onPressed: () {
-                      final uuid = user?.uuid ?? '';
-                      if (uuid.isEmpty) {
-                        return;
-                      }
-                      Clipboard.setData(ClipboardData(text: uuid));
-                      showAppToast('用户ID已复制', success: true);
-                    },
+                ProfileRow(
+                  label: '登录邮箱',
+                  value: user?.username ?? '1289371123@168.com',
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: '复制邮箱',
+                        icon: const Icon(
+                          Icons.copy_rounded,
+                          size: 18,
+                          color: Color(0xFF286AFC),
+                        ),
+                        onPressed: () {
+                          final em = user?.username ?? '';
+                          if (em.isNotEmpty) {
+                            Clipboard.setData(ClipboardData(text: em));
+                            showAppToast('邮箱已复制', success: true);
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 6),
+                      _PillButton(
+                        text: '更换邮箱',
+                        onTap: () => _showEmailDialog(context),
+                      ),
+                    ],
                   ),
                 ),
-                _ProfileRow(
-                  label: '登录邮箱',
-                  value: user?.username ?? '',
-                  actionText: '更换邮箱',
-                  onAction: () => _showEmailDialog(context),
-                ),
-                _ProfileRow(
+                ProfileRow(
                   label: '用户昵称',
-                  value: user?.nick ?? '',
-                  actionText: '编辑昵称',
+                  value: user?.nick ?? '用户JHSJD98',
+                  actionText: '修改昵称',
                   onAction: () => _showNickDialog(context, user?.nick ?? ''),
                 ),
-                _ProfileRow(
-                  label: '国家',
-                  value: user?.country ?? '',
-                  actionText: '修改',
-                  onAction: () =>
-                      _showCountryDialog(context, user?.country ?? ''),
-                ),
-                _ProfileRow(
+                ProfileRow(
                   label: '密码',
                   value: '••••••••',
                   actionText: '修改密码',
@@ -91,20 +95,22 @@ class PersonalCenterPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
+          // Logout button (Figma: 160x40, r=20, fill=#297CE7)
           Center(
             child: SizedBox(
-              width: 120,
-              height: 36,
+              width: 160,
+              height: 40,
               child: FilledButton(
                 style: FilledButton.styleFrom(
-                  backgroundColor: LuxwapColors.brand500,
+                  backgroundColor: const Color(0xFF297CE7),
                   foregroundColor: Colors.white,
+                  elevation: 0,
                   textStyle: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: LuxwapRadius.rLg,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
                 onPressed: () => _showLogoutDialog(context),
@@ -112,21 +118,22 @@ class PersonalCenterPage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 56),
+          // Feature cards grid (Frame 63: 4 cards, r=16, fill=#F7F7F8)
           const Column(
             children: [
               Row(
                 children: [
                   Expanded(
-                    child: _FeatureCard(
-                      title: '高匿匿名',
+                    child: FeatureCard(
+                      title: '高匿名',
                       subtitle: 'HTTPS/CHACHA20加密访问',
                       iconAsset: 'assets/images/privacy_icon.png',
                     ),
                   ),
-                  SizedBox(width: 20),
+                  SizedBox(width: 18),
                   Expanded(
-                    child: _FeatureCard(
+                    child: FeatureCard(
                       title: '隧道自由',
                       subtitle: '灵活调节线路',
                       iconAsset: 'assets/images/tunel_icon.png',
@@ -134,19 +141,19 @@ class PersonalCenterPage extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
-                    child: _FeatureCard(
+                    child: FeatureCard(
                       title: '弹性并发',
                       subtitle: '超大带宽，弹性并发',
                       iconAsset: 'assets/images/concurrency_icon.png',
                     ),
                   ),
-                  SizedBox(width: 20),
+                  SizedBox(width: 18),
                   Expanded(
-                    child: _FeatureCard(
+                    child: FeatureCard(
                       title: '安全稳定',
                       subtitle: '数据传输稳定可靠',
                       iconAsset: 'assets/images/guard_icon.png',
@@ -377,8 +384,9 @@ class PersonalCenterPage extends StatelessWidget {
   }
 }
 
-class _ProfileRow extends StatelessWidget {
-  const _ProfileRow({
+class ProfileRow extends StatelessWidget {
+  const ProfileRow({
+    super.key,
     required this.label,
     required this.value,
     this.actionText,
@@ -397,7 +405,7 @@ class _ProfileRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 60,
+      height: 48,
       child: Stack(
         children: [
           Row(
@@ -421,45 +429,26 @@ class _ProfileRow extends StatelessWidget {
                 ),
               ),
               if (trailing != null)
-                SizedBox(width: 100, child: Center(child: trailing)),
+                Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: trailing!,
+                ),
               if (actionText != null)
-                SizedBox(
-                  width: 100,
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 15),
-                      child: SizedBox(
-                        height: 32,
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            backgroundColor: LuxwapColors.neutral200,
-                            foregroundColor: LuxwapColors.neutral900,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: LuxwapRadius.rSm,
-                            ),
-                            padding: EdgeInsets.zero,
-                          ),
-                          onPressed: onAction,
-                          child: Text(
-                            actionText!,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: _PillButton(
+                    text: actionText!,
+                    onTap: onAction ?? () {},
                   ),
                 ),
             ],
           ),
           if (showDivider)
             const Positioned(
-              left: 15,
-              right: 15,
+              left: 20,
+              right: 20,
               bottom: 0,
-              child: Divider(height: 1, color: LuxwapColors.borderLight),
+              child: Divider(height: 1, color: Color(0xFFF5F5F7)),
             ),
         ],
       ),
@@ -467,114 +456,174 @@ class _ProfileRow extends StatelessWidget {
   }
 }
 
-class _PointsCard extends StatelessWidget {
-  const _PointsCard();
+class _PillButton extends StatelessWidget {
+  const _PillButton({required this.text, required this.onTap});
+
+  final String text;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7F7F8),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF333333),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PointsCard extends StatelessWidget {
+  const PointsCard({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      height: 110,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       decoration: BoxDecoration(
-        color: LuxwapColors.brand50,
-        border: Border.all(color: LuxwapColors.brand100),
-        borderRadius: LuxwapRadius.rMd,
-        boxShadow: LuxwapShadows.card,
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFEEEEEE)),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xfffff4e5),
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: const Icon(Icons.stars_rounded,
-                color: Color(0xffff9800), size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Text(
-                      '我的积分：',
-                      style:
-                          TextStyle(fontSize: 14, color: LuxwapColors.neutral600),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Row(
+                children: [
+                  Text(
+                    '等级',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF111111),
                     ),
-                    const Text(
-                      '1000',
+                  ),
+                  SizedBox(width: 14),
+                  Text('👑 🌞 🌙 ⭐ ⭐', style: TextStyle(fontSize: 15)),
+                ],
+              ),
+              InkWell(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('积分兑换功能开发中')),
+                  );
+                },
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.swap_horiz, size: 16, color: Color(0xFFFF8800)),
+                    SizedBox(width: 4),
+                    Text(
+                      '积分换流量>>',
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xffff8a18),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: LuxwapColors.brand500.withValues(alpha: 0.12),
-                        borderRadius: LuxwapRadius.rLg,
-                      ),
-                      child: const Text(
-                        'LV1 会员',
-                        style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: LuxwapColors.brand500),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFFFF8800),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: LuxwapRadius.rSm,
-                        child: const LinearProgressIndicator(
-                          value: 1000 / 3000,
-                          minHeight: 6,
-                          backgroundColor: Color(0xffe2e8f0),
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Color(0xffffa133)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      '1000 / 3000',
-                      style:
-                          TextStyle(fontSize: 11, color: LuxwapColors.neutral500),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(width: 20),
-          FilledButton.icon(
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xffff8a18),
-              foregroundColor: Colors.white,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              shape: const RoundedRectangleBorder(
-                  borderRadius: LuxwapRadius.rLg),
-            ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('积分兑换功能开发中')),
-              );
-            },
-            icon: const Icon(Icons.redeem, size: 16),
-            label: const Text('积分兑换',
-                style:
-                    TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '下一级',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF666666),
+                    ),
+                  ),
+                  Text(
+                    '1000/3000',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF666666),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final barWidth = constraints.maxWidth;
+                  const trackHeight = 12.0;
+                  const thumbWidth = 24.0;
+                  const factor = 1000 / 3000;
+                  final activeWidth =
+                      (barWidth * factor).clamp(thumbWidth, barWidth);
+                  return Container(
+                    width: barWidth,
+                    height: trackHeight,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDFDFDF),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.centerLeft,
+                      children: [
+                        Container(
+                          width: activeWidth,
+                          height: trackHeight,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF3E98F3), Color(0xFF286AFC)],
+                            ),
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                        ),
+                        Positioned(
+                          left: (activeWidth - thumbWidth)
+                              .clamp(0.0, barWidth - thumbWidth),
+                          child: Container(
+                            width: thumbWidth,
+                            height: trackHeight,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(100),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  blurRadius: 3,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),
@@ -582,8 +631,9 @@ class _PointsCard extends StatelessWidget {
   }
 }
 
-class _FeatureCard extends StatelessWidget {
-  const _FeatureCard({
+class FeatureCard extends StatelessWidget {
+  const FeatureCard({
+    super.key,
     required this.title,
     required this.subtitle,
     required this.iconAsset,
@@ -596,13 +646,12 @@ class _FeatureCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 85,
+      height: 72,
       decoration: BoxDecoration(
-        color: LuxwapColors.neutral200,
-        borderRadius: LuxwapRadius.rMd,
-        border: Border.all(color: LuxwapColors.borderLight),
+        color: const Color(0xfff7f7f8),
+        borderRadius: BorderRadius.circular(16),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
           Expanded(
@@ -612,19 +661,25 @@ class _FeatureCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style:
-                      const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: LuxwapColors.neutral900),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xff1b1b1b),
+                  ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style:
-                      const TextStyle(fontSize: 10, color: LuxwapColors.neutral500),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xff666666),
+                  ),
                 ),
               ],
             ),
           ),
-          Image.asset(iconAsset, width: 56, height: 56, fit: BoxFit.contain),
+          Image.asset(iconAsset, width: 44, height: 44, fit: BoxFit.contain),
         ],
       ),
     );

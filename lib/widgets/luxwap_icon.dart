@@ -25,11 +25,15 @@ class LuxwapIcon extends StatelessWidget {
     this.name, {
     super.key,
     this.size = 20.0,
+    this.width,
+    this.height,
     this.color,
   });
 
   final String name;
   final double size;
+  final double? width;
+  final double? height;
   final Color? color;
 
   @override
@@ -40,8 +44,8 @@ class LuxwapIcon extends StatelessWidget {
 
     return SvgPicture.asset(
       assetPath,
-      width: size,
-      height: size,
+      width: width ?? size,
+      height: height ?? size,
       colorFilter: color != null
           ? ColorFilter.mode(color!, BlendMode.srcIn)
           : null,

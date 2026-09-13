@@ -231,12 +231,12 @@ class _SettingsPageState extends State<SettingsPage> {
     return Container(
       color: Colors.white,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(24, 22, 30, 40),
+        padding: const EdgeInsets.fromLTRB(40, 20, 40, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const _SectionTitle('路由配置'),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingRow(
               title: '更新数据包(Geo)',
               subtitle: '上次更新时间2025-08-08',
@@ -250,7 +250,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             _SettingRow(
               title: '路由策略',
-              subtitle: '国内默认AsIs，海外默认IPIfNonMatch',
+              subtitle: '默认使用AsIs规则，本地资源消耗最小',
               trailing: _DropdownText(
                 value: routeStrategy,
                 values: const ['AsIs', 'IPIfNonMatch', 'IPOnDemand'],
@@ -258,16 +258,16 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             _SettingRow(
-              title: '直连本国IP',
-              subtitle: '本国IP不使用VPN，直连更快（推荐打开）',
+              title: '直连国内IP',
+              subtitle: '国内IP不使用VPN，直连更快（推荐打开）',
               trailing: _MiniSwitch(
                 value: passByIp,
                 onChanged: (v) => _setAndSave(() => passByIp = v),
               ),
             ),
             _SettingRow(
-              title: '直连中国域名',
-              subtitle: '仅中国用户生效，海外用户没有对应geosite分类',
+              title: '直连国内域名',
+              subtitle: '国内域名不使用VPN，直连更快（推荐打开）',
               trailing: _MiniSwitch(
                 value: passByDomain,
                 onChanged: (v) => _setAndSave(() => passByDomain = v),
@@ -291,7 +291,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             _SettingRow(
               title: '阻断广告',
-              subtitle: '阻断常规广告，个别网站可能无法彻底阻断',
+              subtitle: '阻断常规广告，个别网站网站无法彻底阻断',
               trailing: _MiniSwitch(
                 value: blockAds,
                 onChanged: (v) => _setAndSave(() => blockAds = v),
@@ -309,8 +309,8 @@ class _SettingsPageState extends State<SettingsPage> {
             const _SectionTitle('DNS配置'),
             const SizedBox(height: 8),
             _SettingRow(
-              title: '智能 DNS 分流解析',
-              subtitle: '中国域名使用国内DNS，境外域名使用海外/DoT加密解析',
+              title: '启用VPN路由   端口: 10853',
+              subtitle: '如果需要直连国内和局域网地址，推荐启用。外网/内网独立DNS，更安全隐秘。',
               trailing: _MiniSwitch(
                 value: vpnRoute,
                 onChanged: (v) => _setAndSave(() => vpnRoute = v),
@@ -325,7 +325,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             _SettingRow(
-              title: '域外流量DNS8.8.8.8',
+              title: '境外流量DNS',
               subtitle: '访问境外使用的DNS，推荐国外DNS',
               trailing: _EditableDnsField(
                 controller: outerDns,
@@ -333,16 +333,16 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             _SettingRow(
-              title: '域内流量DNS223.5.5.5',
-              subtitle: '中国域名使用的DNS，推荐国内DNS',
+              title: '境内流量DNS',
+              subtitle: '访问境内使用的DNS，推荐国内DNS',
               trailing: _EditableDnsField(
                 controller: innerDns,
                 onChanged: () => _saveConfig(notify: true),
               ),
             ),
             _SettingRow(
-              title: '全局流量DNS8.8.8.8',
-              subtitle: '不区分流量，全局一个DNS地址',
+              title: '全局流量DNS',
+              subtitle: '不区分流量，全局一个DNS地址。推荐使用外网DNS地址，如Google的8.8.8.8',
               trailing: _EditableDnsField(
                 controller: globalDns,
                 onChanged: () => _saveConfig(notify: true),
@@ -408,9 +408,9 @@ class _SectionTitle extends StatelessWidget {
     return Text(
       text,
       style: const TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
-        color: LuxwapColors.neutral900,
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFF1A1A1A),
       ),
     );
   }
@@ -436,47 +436,52 @@ class _GeoUpdateButton extends StatelessWidget {
     final text = error ?? (percent == null ? '' : '$label $percent%');
     return InkWell(
       onTap: updating ? null : onPressed,
-      customBorder: const CircleBorder(),
-      child: SizedBox(
-        width: 124,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
         height: 32,
-        child: Stack(
-          alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 26,
-              height: 26,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xfff3f3f3),
-              ),
-            ),
-            if (text.isEmpty)
+            if (text.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(right: 5.5),
-                child: Image.asset(
-                  'assets/images/cloud.png',
-                  width: 15,
-                  height: 15,
-                ),
-              )
-            else
-              Padding(
-                padding: const EdgeInsets.only(right: 34),
+                padding: const EdgeInsets.only(right: 8),
                 child: Text(
                   text,
                   maxLines: 1,
-                  overflow: TextOverflow.visible,
-                  textAlign: TextAlign.right,
                   style: TextStyle(
-                    fontSize: 8,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
                     color: error == null
                         ? LuxwapColors.brand500
                         : LuxwapColors.stateError,
                   ),
                 ),
               ),
+            Container(
+              width: 28,
+              height: 28,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFFF3F6FB),
+              ),
+              child: Center(
+                child: updating
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF286AFC),
+                        ),
+                      )
+                    : const Icon(
+                        Icons.cloud_download_outlined,
+                        size: 16,
+                        color: Color(0xFF286AFC),
+                      ),
+              ),
+            ),
           ],
         ),
       ),
@@ -498,12 +503,12 @@ class _SettingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: subtitle.isEmpty ? 38 : 52,
+      height: subtitle.isEmpty ? 36 : 48,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            width: 240,
+            width: 320,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,20 +518,21 @@ class _SettingRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: LuxwapColors.neutral900,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF333333),
                   ),
                 ),
                 if (subtitle.isNotEmpty) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 11,
-                      color: LuxwapColors.neutral500,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF777777),
                     ),
                   ),
                 ],
@@ -686,31 +692,44 @@ class _MiniSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => onChanged(!value),
-      borderRadius: BorderRadius.circular(100),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 140),
-        width: 38,
-        height: 20,
-        padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(100),
-          color: value ? LuxwapColors.brand500 : LuxwapColors.neutral400,
-        ),
-        alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-        child: Container(
-          width: 16,
-          height: 16,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 2,
-                offset: Offset(0, 1),
+      borderRadius: BorderRadius.circular(50),
+      child: SizedBox(
+        width: 44.7,
+        height: 23.6,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Track: 42.0 x 18.4
+            Container(
+              width: 42.0,
+              height: 18.4,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(50),
+                color: const Color(0xFFDFDFDF),
               ),
-            ],
-          ),
+            ),
+            // Circular Thumb: 23.6 x 23.6
+            AnimatedAlign(
+              duration: const Duration(milliseconds: 160),
+              curve: Curves.easeInOut,
+              alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+              child: Container(
+                width: 23.6,
+                height: 23.6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: value ? const Color(0xFF3E98F3) : const Color(0xFFB3B3B3),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.12),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

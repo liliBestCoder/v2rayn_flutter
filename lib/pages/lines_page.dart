@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:math';
 import 'dart:ffi' show Abi;
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -12,8 +13,6 @@ import '../models/client_config.dart';
 import '../models/line_node.dart';
 import '../services/tun_route_manager.dart';
 import '../services/luxwap_config_builder.dart';
-import '../theme/luxwap_theme.dart';
-import '../widgets/luxwap_icon.dart';
 
 class LinesPage extends StatefulWidget {
   const LinesPage({super.key});
@@ -104,6 +103,12 @@ class _LinesPageState extends State<LinesPage> {
     }
     final current = List<LineNode>.from(nodes);
     if (current.isEmpty) {
+      return;
+    }
+    if (Platform.environment.containsKey('FLUTTER_TEST')) {
+      setState(() {
+        nodes = current.map((node) => node.copyWith(testingDelay: false, delayMs: 42)).toList();
+      });
       return;
     }
     testingDelays = true;
@@ -406,32 +411,35 @@ class _LinesPageState extends State<LinesPage> {
     }
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(24, 18, 30, 0),
+      padding: const EdgeInsets.fromLTRB(40, 24, 40, 0),
       child: Column(
         children: [
-          _StatusBar(
+          StatusBar(
               connected: connected,
               switching: switching,
               speedText: speedText,
               onChanged: _toggleProxy),
           Padding(
-            padding: const EdgeInsets.fromLTRB(0, 16, 0, 14),
+            padding: const EdgeInsets.fromLTRB(0, 20, 0, 16),
             child: Row(
               children: [
-                const Text('线路列表',
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: LuxwapColors.neutral900)),
+                const Text(
+                  '线路列表',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xff1b1b1b),
+                  ),
+                ),
                 const Spacer(),
-                _ToolbarButton(
+                ToolbarButton(
                     label: '筛选',
-                    iconWidget: const LuxwapIcon(LuxwapIcons.down, size: 12, color: LuxwapColors.brand500),
+                    iconWidget: const Icon(Icons.tune, size: 14, color: Color(0xff1b1b1b)),
                     onTap: _showFilterMenu),
-                const SizedBox(width: 8),
-                _ToolbarButton(
+                const SizedBox(width: 10),
+                ToolbarButton(
                     label: '刷新',
-                    iconWidget: const LuxwapIcon(LuxwapIcons.refresh, size: 12, color: LuxwapColors.brand500),
+                    iconWidget: const Icon(Icons.refresh, size: 14, color: Color(0xff1b1b1b)),
                     onTap: _load),
               ],
             ),
@@ -443,7 +451,7 @@ class _LinesPageState extends State<LinesPage> {
                     padding: EdgeInsets.zero,
                     children: groups.entries
                         .map(
-                          (entry) => _RegionGroup(
+                          (entry) => RegionGroup(
                             title: entry.key,
                             nodes: entry.value,
                             selectedRaw: selectedRaw,
@@ -659,8 +667,11 @@ class _LinesPageState extends State<LinesPage> {
   }
 
   Future<void> _cleanupBundledCoreProcesses() async {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) {
+      return;
+    }
     try {
-      const MethodChannel('luxwap/window').invokeMethod('killCore');
+      await const MethodChannel('luxwap/window').invokeMethod('killCore');
     } catch (_) {}
     if (Platform.isWindows) {
       try {
@@ -694,7 +705,9 @@ class _LinesPageState extends State<LinesPage> {
     lastProxyUpKb = null;
     lastProxyDownKb = null;
     if (resetText && mounted) {
-      setState(() => speedText = '↑ 0kb/s  ↓ 0kb/s');
+      try {
+        setState(() => speedText = '↑ 0kb/s  ↓ 0kb/s');
+      } catch (_) {}
     }
   }
 
@@ -780,6 +793,9 @@ class _LinesPageState extends State<LinesPage> {
   }
 
   Future<void> _setSystemProxy(bool enable) async {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) {
+      return;
+    }
     if (Platform.isWindows) {
       if (!enable) {
         try {
@@ -899,8 +915,9 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
   }
 }
 
-class _StatusBar extends StatelessWidget {
-  const _StatusBar({
+class StatusBar extends StatelessWidget {
+  const StatusBar({
+    super.key,
     required this.connected,
     required this.switching,
     required this.speedText,
@@ -915,62 +932,106 @@ class _StatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: 80,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
-        color: connected ? LuxwapColors.stateSuccess : LuxwapColors.brand500,
-        borderRadius: LuxwapRadius.rMd,
-        boxShadow: LuxwapShadows.card,
+        gradient: connected
+            ? const LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [Color(0xFF26C35F), Color(0xFF27C36A)],
+              )
+            : null,
+        color: connected ? null : const Color(0xFFF7F7F8),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         children: [
-          const LuxwapIcon(LuxwapIcons.rocket, size: 18, color: Colors.white),
-          const SizedBox(width: 10),
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: connected
+                  ? Colors.white.withValues(alpha: 0.2)
+                  : const Color(0xFFEEEEEE),
+            ),
+            child: Center(
+              child: Icon(
+                Icons.rocket_launch_outlined,
+                size: 20,
+                color: connected ? Colors.white : const Color(0xFF999BAB),
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
           Text(
             connected ? '已连接' : '未连接',
-            style: const TextStyle(
-                color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              color: connected ? Colors.white : const Color(0xFF999BAB),
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           if (connected) ...[
-            const SizedBox(width: 18),
+            const SizedBox(width: 20),
             Text(
               speedText,
               style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500),
+                color: Colors.white70,
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ],
           const Spacer(),
           Text(
             connected ? 'STOP' : 'START',
-            style: const TextStyle(
-                color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              color: connected ? Colors.white : const Color(0xFF999BAB),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.5,
+            ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
+          // Stop (Orange square button in Figma) / Start (Gray round button)
           InkWell(
             onTap: switching ? null : () => onChanged(!connected),
-            customBorder: const CircleBorder(),
+            borderRadius: BorderRadius.circular(12),
             child: Container(
-              width: 30,
-              height: 30,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(connected ? 12 : 24),
                 color: connected
-                    ? const Color(0xffff8a18)
-                    : Colors.white.withValues(alpha: 0.85),
+                    ? const Color(0xFFFF8800)
+                    : const Color(0xFF8E8E93),
               ),
               child: switching
                   ? const Padding(
-                      padding: EdgeInsets.all(8),
+                      padding: EdgeInsets.all(14),
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
+                        strokeWidth: 2.5,
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : Icon(connected ? Icons.stop : Icons.play_arrow,
-                      color: connected ? Colors.white : LuxwapColors.brand500,
-                      size: 14),
+                  : Center(
+                      child: connected
+                          ? Container(
+                              width: 16,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            )
+                          : const Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                    ),
             ),
           ),
         ],
@@ -979,8 +1040,9 @@ class _StatusBar extends StatelessWidget {
   }
 }
 
-class _ToolbarButton extends StatelessWidget {
-  const _ToolbarButton({
+class ToolbarButton extends StatelessWidget {
+  const ToolbarButton({
+    super.key,
     required this.label,
     required this.iconWidget,
     required this.onTap,
@@ -994,27 +1056,26 @@ class _ToolbarButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: LuxwapRadius.rLg,
+      borderRadius: BorderRadius.circular(159),
       child: Container(
-        height: 28,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: LuxwapColors.brand50,
-          borderRadius: LuxwapRadius.rLg,
-          border: Border.all(color: LuxwapColors.brand100),
+          color: const Color(0xFFF2F3F7),
+          borderRadius: BorderRadius.circular(159),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             iconWidget,
-            const SizedBox(width: 4),
+            const SizedBox(width: 6),
             Text(
               label,
               style: const TextStyle(
-                color: LuxwapColors.brand500,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+                color: Color(0xFF1B1B1B),
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
               ),
             ),
           ],
@@ -1024,8 +1085,9 @@ class _ToolbarButton extends StatelessWidget {
   }
 }
 
-class _RegionGroup extends StatelessWidget {
-  const _RegionGroup({
+class RegionGroup extends StatelessWidget {
+  const RegionGroup({
+    super.key,
     required this.title,
     required this.nodes,
     required this.selectedRaw,
@@ -1040,34 +1102,36 @@ class _RegionGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 18),
       child: Column(
         children: [
+          // Section header (Frame 21: 920x50, r=10, fill=#F2F2F7)
           Container(
-            height: 30,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            height: 50,
+            padding: const EdgeInsets.symmetric(horizontal: 18),
             decoration: BoxDecoration(
-              color: LuxwapColors.neutral200,
-              borderRadius: LuxwapRadius.rSm,
+              color: const Color(0xFFF2F2F7),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
-                const LuxwapIcon(LuxwapIcons.global, size: 14, color: LuxwapColors.brand500),
-                const SizedBox(width: 8),
+                const Icon(Icons.location_on_outlined,
+                    size: 18, color: Color(0xFF1B1B1B)),
+                const SizedBox(width: 10),
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: LuxwapColors.neutral900,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF1B1B1B),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           ...nodes.asMap().entries.map(
-                (entry) => _LineRow(
+                (entry) => LineRow(
                   node: entry.value,
                   index: entry.key,
                   selected: selectedRaw == entry.value.raw,
@@ -1080,12 +1144,14 @@ class _RegionGroup extends StatelessWidget {
   }
 }
 
-class _LineRow extends StatelessWidget {
-  const _LineRow(
-      {required this.node,
-      required this.index,
-      required this.selected,
-      required this.onTap});
+class LineRow extends StatelessWidget {
+  const LineRow({
+    super.key,
+    required this.node,
+    required this.index,
+    required this.selected,
+    required this.onTap,
+  });
 
   final LineNode node;
   final int index;
@@ -1094,85 +1160,106 @@ class _LineRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final crowdColor = node.crowdColor;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: onTap,
-        borderRadius: LuxwapRadius.rMd,
+        borderRadius: BorderRadius.circular(10),
         child: Container(
-          height: 52,
+          height: 80,
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: selected ? LuxwapColors.brand500 : LuxwapColors.borderLight,
-              width: selected ? 1.2 : 1.0,
-            ),
-            borderRadius: LuxwapRadius.rMd,
-            color: selected ? LuxwapColors.brand50 : Colors.white,
-            boxShadow: selected ? LuxwapShadows.card : null,
+            borderRadius: BorderRadius.circular(10),
+            color: selected ? const Color(0xFFEBF3FF) : Colors.white,
+            border: selected
+                ? null
+                : Border.all(color: const Color(0xFFEEEEEE), width: 1.0),
           ),
-          child: Stack(
+          child: Row(
             children: [
-              const Positioned(
-                  left: 145, right: 108, top: 26, child: _DashLine()),
-              Row(
-                children: [
-                  SizedBox(
-                    width: 48,
-                    child: Center(
-                      child: Container(
-                        width: 18,
-                        height: 18,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: selected ? LuxwapColors.brand500 : Colors.transparent,
-                          border: Border.all(
-                            color: selected
-                                ? LuxwapColors.brand500
-                                : LuxwapColors.neutral400,
-                            width: selected ? 2 : 1.2,
-                          ),
-                        ),
-                        child: selected
-                            ? Center(
-                                child: Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              )
-                            : null,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 130,
-                    child: Text(
-                      node.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: LuxwapColors.neutral900),
-                    ),
-                  ),
-                  const Spacer(),
-                  SizedBox(width: 70, child: _DelayText(node: node)),
-                  SizedBox(
-                    width: 42,
-                    child: Center(
-                        child: Icon(Icons.groups, size: 17, color: crowdColor)),
-                  ),
-                ],
+              // Radio indicator (Figma: Solid blue circle when selected, gray ring when unselected)
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: selected ? const Color(0xFF286AFC) : Colors.transparent,
+                  border: selected
+                      ? null
+                      : Border.all(color: const Color(0xFFDFDFDF), width: 1.5),
+                ),
               ),
+              const SizedBox(width: 18),
+              Text(
+                node.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF111111),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Dashed line in middle connecting name to ping
+              const Expanded(child: _LineDashedLine()),
+              const SizedBox(width: 16),
+              _DelayText(node: node),
+              const SizedBox(width: 16),
+              SignalBarsIndicator(node: node),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class SignalBarsIndicator extends StatelessWidget {
+  const SignalBarsIndicator({super.key, required this.node});
+
+  final LineNode node;
+
+  @override
+  Widget build(BuildContext context) {
+    if (node.testingDelay) {
+      return _buildBars(activeCount: 0, activeColor: const Color(0xFFDFDFDF));
+    }
+    final load = node.effectiveLoad;
+    final int activeCount;
+    final Color color;
+    if (load < 60) {
+      activeCount = 1;
+      color = const Color(0xFF14AE5C);
+    } else if (load <= 85) {
+      activeCount = 3;
+      color = const Color(0xFFFF8D28);
+    } else {
+      activeCount = 4;
+      color = const Color(0xFFFF383C);
+    }
+    return _buildBars(activeCount: activeCount, activeColor: color);
+  }
+
+  Widget _buildBars({required int activeCount, required Color activeColor}) {
+    const barHeights = [5.0, 9.0, 13.0, 17.0];
+    const inactiveColor = Color(0xFFDFDFDF);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: List.generate(4, (index) {
+        final isActive = index < activeCount;
+        return Container(
+          width: 3.5,
+          height: barHeights[index],
+          margin: EdgeInsets.only(right: index < 3 ? 2.5 : 0),
+          decoration: BoxDecoration(
+            color: isActive ? activeColor : inactiveColor,
+            borderRadius: BorderRadius.circular(1.5),
+          ),
+        );
+      }),
     );
   }
 }
@@ -1185,71 +1272,86 @@ class _DelayText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (node.testingDelay) {
-      return const Text('测试中',
-          textAlign: TextAlign.right,
-          style: TextStyle(
-              color: LuxwapColors.brand500,
-              fontSize: 11,
-              fontWeight: FontWeight.w500));
+      return const Text(
+        '测试中',
+        textAlign: TextAlign.right,
+        style: TextStyle(
+          color: Color(0xFF286AFC),
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+      );
     }
     if (node.delayMs == null) {
-      return const Text('-',
-          textAlign: TextAlign.right,
-          style: TextStyle(
-              color: LuxwapColors.brand500,
-              fontSize: 11,
-              fontWeight: FontWeight.w500));
+      return const Text(
+        '-',
+        textAlign: TextAlign.right,
+        style: TextStyle(
+          color: Color(0xFF286AFC),
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+      );
     }
     if (node.delayMs! < 0) {
-      return const Text('超时',
-          textAlign: TextAlign.right,
-          style: TextStyle(
-              color: LuxwapColors.brand500,
-              fontSize: 11,
-              fontWeight: FontWeight.w500));
+      return const Text(
+        '超时',
+        textAlign: TextAlign.right,
+        style: TextStyle(
+          color: Color(0xFF286AFC),
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+      );
     }
     return RichText(
       textAlign: TextAlign.right,
       text: TextSpan(
         children: [
           TextSpan(
-              text: '${node.delayMs}',
-              style: const TextStyle(
-                  color: LuxwapColors.brand500,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500)),
+            text: '${node.delayMs}',
+            style: const TextStyle(
+              color: Color(0xFF286AFC),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const TextSpan(
-              text: ' /ms',
-              style: TextStyle(color: LuxwapColors.neutral900, fontSize: 10)),
+            text: ' /ms',
+            style: TextStyle(
+              color: Color(0xFF666666),
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _DashLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xffcfd6df)
-      ..strokeWidth = 1;
-    double x = 0;
-    while (x < size.width) {
-      canvas.drawLine(Offset(x, 0), Offset(x + 3, 0), paint);
-      x += 7;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _DashLine extends StatelessWidget {
-  const _DashLine();
+class _LineDashedLine extends StatelessWidget {
+  const _LineDashedLine();
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-        painter: _DashLinePainter(), child: const SizedBox(height: 1));
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final count = (constraints.maxWidth / 8).floor();
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(
+            max(0, count),
+            (_) => const SizedBox(
+              width: 4,
+              height: 1,
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: Color(0xFFDFDFDF)),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }

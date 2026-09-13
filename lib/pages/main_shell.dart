@@ -32,11 +32,11 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   final pages = const [
     LinesPage(),
     PersonalCenterPage(),
-    SettingsPage(),
     TradeManagerPage(),
+    SettingsPage(),
+    HelpPage(),
     ActivityPage(),
     AboutPage(),
-    HelpPage(),
   ];
 
   @override
@@ -87,18 +87,18 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
       body: SizedBox.expand(
         child: Row(
           children: [
-            _Sidebar(
+            Sidebar(
               selected: selected,
               onSelect: _select,
-              onHelp: () => _select(6),
+              onHelp: () => _select(4),
             ),
-            Container(width: 1, color: LuxwapColors.divider),
+            Container(width: 1, color: const Color(0xFFEEEEEE)),
             Expanded(
               child: Column(
                 children: [
                   if (selected != 4 && selected != 5 && selected != 6)
                     _UserHeader(
-                      onTrade: () => setState(() => selected = 3),
+                      onTrade: () => setState(() => selected = 2),
                       onRenew: () { _startPaymentPolling(); _openRenewPage(); },
                     ),
                   Expanded(
@@ -194,8 +194,9 @@ static String _generateUuid() {
   }
 }
 
-class _Sidebar extends StatelessWidget {
-  const _Sidebar({
+class Sidebar extends StatelessWidget {
+  const Sidebar({
+    super.key,
     required this.selected,
     required this.onSelect,
     required this.onHelp,
@@ -207,88 +208,43 @@ class _Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const navItems = [
+      (0, '线路'),
+      (1, '个人中心'),
+      (2, '交易记录'),
+      (3, '设置'),
+      (4, '帮助中心'),
+      (5, '有礼活动'),
+      (6, '关于'),
+    ];
+
     return SizedBox(
-      width: 170,
+      width: 230,
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.fromLTRB(18, 24, 18, 20),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  padding: const EdgeInsets.all(6),
-                  decoration: const BoxDecoration(
-                    color: LuxwapColors.brand50,
-                    borderRadius: LuxwapRadius.rSm,
-                  ),
-                  child: const LuxwapIcon('icon-logo-blue', size: 24),
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  'Luxwap',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: LuxwapColors.brand500,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
+            height: 200,
+            alignment: Alignment.center,
+            child: const LuxwapIcon(
+              'icon-logo-blue',
+              width: 120,
+              height: 141,
             ),
           ),
-          _NavButton(
-            index: 0,
-            selected: selected,
-            label: '线路',
-            icon: 'icon-rocket',
-            onTap: onSelect,
-          ),
-          _NavButton(
-            index: 1,
-            selected: selected,
-            label: '个人中心',
-            icon: 'icon-star',
-            onTap: onSelect,
-          ),
-          _NavButton(
-            index: 2,
-            selected: selected,
-            label: '设置',
-            icon: 'icon-gear',
-            onTap: onSelect,
-          ),
-          _NavButton(
-            index: 6,
-            selected: selected,
-            label: '帮助',
-            icon: 'icon-clipboard',
-            onTap: onSelect,
-          ),
-          _NavButton(
-            index: 5,
-            selected: selected,
-            label: '关于',
-            icon: 'icon-cloud',
-            onTap: onSelect,
-          ),
-          _NavButton(
-            index: 4,
-            selected: selected,
-            label: '有礼活动',
-            icon: 'icon-turkey',
-            onTap: onSelect,
-          ),
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Text(
-              'v2.0 PC 专业版',
-              style: TextStyle(
-                fontSize: 11,
-                color: LuxwapColors.neutral400,
-                fontWeight: FontWeight.w400,
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  for (final item in navItems) ...[
+                    _NavButton(
+                      index: item.$1,
+                      selected: selected,
+                      label: item.$2,
+                      onTap: onSelect,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ],
               ),
             ),
           ),
@@ -303,75 +259,70 @@ class _NavButton extends StatelessWidget {
     required this.index,
     required this.selected,
     required this.label,
-    required this.icon,
     required this.onTap,
   });
 
   final int index;
   final int selected;
   final String label;
-  final String icon;
   final ValueChanged<int> onTap;
 
   @override
   Widget build(BuildContext context) {
     final active = selected == index;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => onTap(index),
-          borderRadius: LuxwapRadius.rSm,
-          hoverColor: LuxwapColors.neutral100,
-          child: Container(
-            height: 38,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: active ? LuxwapColors.brand50 : Colors.transparent,
-              borderRadius: LuxwapRadius.rSm,
-              border: Border.all(
-                color: active
-                    ? LuxwapColors.brand500.withValues(alpha: 0.18)
-                    : Colors.transparent,
-                width: 1,
+    return SizedBox(
+      width: 230,
+      height: 50,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (active)
+            Positioned(
+              left: 0,
+              top: 5,
+              bottom: 5,
+              child: Container(
+                width: 6,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF286AFC),
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(5),
+                    bottomRight: Radius.circular(5),
+                  ),
+                ),
               ),
             ),
-            child: Row(
-              children: [
-                LuxwapIcon(
-                  icon,
-                  size: 16,
-                  color: active
-                      ? LuxwapColors.brand500
-                      : LuxwapColors.neutral600,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
+          SizedBox(
+            width: 170,
+            height: 50,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => onTap(index),
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: active
+                        ? const Color(0xFFE9F0FF)
+                        : const Color(0xFFF7F7F8),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  alignment: Alignment.center,
                   child: Text(
                     label,
                     style: TextStyle(
                       color: active
-                          ? LuxwapColors.brand500
-                          : LuxwapColors.neutral800,
-                      fontSize: 13,
-                      fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                          ? const Color(0xFF286AFC)
+                          : const Color(0xFF666666),
+                      fontSize: 16,
+                      fontWeight: active ? FontWeight.w500 : FontWeight.w400,
                     ),
                   ),
                 ),
-                if (active)
-                  Container(
-                    width: 4,
-                    height: 14,
-                    decoration: const BoxDecoration(
-                      color: LuxwapColors.brand500,
-                      borderRadius: BorderRadius.all(Radius.circular(2)),
-                    ),
-                  ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -397,128 +348,216 @@ class _UserHeader extends StatelessWidget {
     final level = _levelSymbols(user?.cumulativeMonths ?? 0);
 
     return Container(
-      height: 138,
+      height: 145,
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: LuxwapColors.divider)),
-        color: LuxwapColors.neutral0,
+        border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1)),
+        color: Colors.white,
       ),
-      padding: const EdgeInsets.fromLTRB(24, 16, 30, 0),
+      padding: const EdgeInsets.fromLTRB(40, 10, 40, 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Flexible(
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 310),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    nick,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xff1b1b1b),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  nick,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF1F2329),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '登录邮箱：$username',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF666666),
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Text(
+                      '账号等级：',
+                      style: TextStyle(color: Color(0xFF666666), fontSize: 13),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '登录邮箱：$username',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style:
-                        const TextStyle(color: Color(0xff777777), fontSize: 11),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Text(
-                        '账号等级：',
-                        style: TextStyle(color: Color(0xff777777), fontSize: 11),
-                      ),
-                      Text(
-                        level,
-                        style: const TextStyle(fontSize: 12, height: 1),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _HeaderActionButton(
-                        label: '交易记录',
-                        color: const Color(0xff24a848),
-                        background: const Color(0xffe9f7ee),
-                        icon: Icons.receipt_long_outlined,
-                        onPressed: onTrade,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const Spacer(),
-          Container(
-            width: 285,
-            height: 64,
-            decoration: BoxDecoration(
-              color: LuxwapColors.brand500,
-              borderRadius: LuxwapRadius.rMd,
-              boxShadow: [
-                BoxShadow(
-                  color: LuxwapColors.brand500.withValues(alpha: 0.25),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                    Text(
+                      level,
+                      style: const TextStyle(fontSize: 14, height: 1),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _HeaderActionButton(
+                  label: '交易记录',
+                  color: const Color(0xFF27C36A),
+                  background: const Color(0xFFEBF8F0),
+                  icon: Icons.receipt_long_rounded,
+                  onPressed: onTrade,
                 ),
               ],
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
+          ),
+          const SizedBox(width: 20),
+          // Blue Traffic Card
+          Container(
+            width: 360,
+            height: 125,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF286AFC), Color(0xFF3E98F3)],
+              ),
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF286AFC).withValues(alpha: 0.25),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$expiration / 有效期',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '流量套餐信息',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: onRenew,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF27C36A),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          '在线充值',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '使用流量：$usedTraffic (MB)',
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 11),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                SizedBox(
-                  width: 62,
-                  height: 30,
-                  child: FilledButton(
-                    style: FilledButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      backgroundColor: Colors.white,
-                      foregroundColor: LuxwapColors.brand500,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: LuxwapRadius.rLg),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    const Text(
+                      '已用流量 ',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                    onPressed: onRenew,
-                    child: const Text(
-                      '续费',
-                      style:
-                          TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                    Text(
+                      '$usedTraffic GB',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '总流量  80GB',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    Text(
+                      '有效期  $expiration',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+                // Capsule progress bar with white rounded thumb knob
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final barWidth = constraints.maxWidth;
+                    const trackHeight = 12.0;
+                    const thumbWidth = 44.0;
+                    final usedNum = double.tryParse(usedTraffic) ?? 0.0;
+                    final factor = (usedNum / 80.0).clamp(0.0, 1.0);
+                    final activeWidth =
+                        (barWidth * factor).clamp(thumbWidth, barWidth);
+                    return Container(
+                      width: barWidth,
+                      height: trackHeight,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.22),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          Container(
+                            width: activeWidth,
+                            height: trackHeight,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF38B2FF), Colors.white],
+                              ),
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                          ),
+                          Positioned(
+                            left: (activeWidth - thumbWidth)
+                                .clamp(0.0, barWidth - thumbWidth),
+                            child: Container(
+                              width: thumbWidth,
+                              height: trackHeight,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(100),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.18),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -544,8 +583,6 @@ class _UserHeader extends StatelessWidget {
       ..write('⭐' * stars);
     return result.isEmpty ? '无' : result.toString();
   }
-
-
 }
 
 class _HeaderActionButton extends StatelessWidget {
@@ -565,32 +602,29 @@ class _HeaderActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: label.length > 4 ? 126 : 92,
-      height: 32,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          decoration: BoxDecoration(
-            color: background,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 13, color: color),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: color,
-                  fontWeight: FontWeight.w700,
-                ),
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: color,
+                fontWeight: FontWeight.w500,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

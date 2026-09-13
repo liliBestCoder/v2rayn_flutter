@@ -2,24 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:v2rayn_flutter/pages/about_page.dart';
 import 'package:v2rayn_flutter/pages/help_page.dart';
-import 'package:v2rayn_flutter/pages/main_shell.dart';
-import 'package:v2rayn_flutter/app_state.dart';
-import 'package:v2rayn_flutter/services/api_service.dart';
-import 'package:v2rayn_flutter/services/token_store.dart';
-
-class MockTokenStore implements TokenStore {
-  @override
-  Future<void> clear() async {}
-  @override
-  Future<String?> loadToken() async => 'test-token';
-  @override
-  Future<void> saveToken(String token) async {}
-}
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
-  group('HelpPage Widget Tests', () {
+  group('CDP UI Integration Tests - Help Page & Documentation Center', () {
     testWidgets('Renders help guide tab and category pills by default', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
@@ -74,19 +59,17 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Enter search term "DoT"
+      // Enter query 'DoT'
       await tester.enterText(find.byType(TextField), 'DoT');
       await tester.pumpAndSettle();
 
-      // DoT section should be present, but unrelated sections like "账号登录与注册" should be filtered out
-      expect(find.textContaining('DoT (DNS over TLS)'), findsOneWidget);
+      expect(find.text('4. DoT (DNS over TLS) 与路由分流策略'), findsOneWidget);
       expect(find.text('1. 快速入门：账号登录与注册'), findsNothing);
 
-      // Tap clear button
+      // Clear search
       await tester.tap(find.byIcon(Icons.clear));
       await tester.pumpAndSettle();
 
-      // Sections should reappear
       expect(find.text('1. 快速入门：账号登录与注册'), findsOneWidget);
     });
 
@@ -137,7 +120,7 @@ void main() {
       expect(find.text('帮助与文档中心'), findsNothing);
     });
 
-    testWidgets('AboutPage has links to open help guide and privacy policy dialogs', (tester) async {
+    testWidgets('AboutPage strictly adheres to Figma prototype without extra help links', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -147,23 +130,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('使用与帮助指南'), findsOneWidget);
-      expect(find.text('隐私保护协议'), findsOneWidget);
-
-      // Tap help guide link
-      await tester.tap(find.text('使用与帮助指南'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('帮助与文档中心'), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.close));
-      await tester.pumpAndSettle();
-
-      // Tap privacy policy link
-      await tester.tap(find.text('隐私保护协议'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('帮助与文档中心'), findsOneWidget);
-      expect(find.textContaining('无访问日志记录原则'), findsOneWidget);
+      expect(find.text('使用与帮助指南'), findsNothing);
+      expect(find.text('隐私保护协议'), findsNothing);
+      expect(find.text('关于 Luxwap'), findsOneWidget);
+      expect(find.text('版本说明'), findsOneWidget);
+      expect(find.text('反馈'), findsOneWidget);
+      expect(find.text('发送'), findsOneWidget);
     });
   });
 }

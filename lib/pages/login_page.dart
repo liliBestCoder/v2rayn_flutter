@@ -467,73 +467,91 @@ class _LoginPageState extends State<LoginPage> {
       _registerCodePanel(),
     ];
     return Scaffold(
-      backgroundColor: const Color(0xfff4f6fb),
+      backgroundColor: const Color(0xffefefef),
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
           child: Center(
             child: SizedBox(
-              width: 382,
-              height: 760,
+              width: 540,
+              height: 900,
               child: Stack(
                 alignment: Alignment.topCenter,
                 children: [
+                  // Top gradient banner (Frame 19: 540x374, r=[0,0,30,30], gradient #3E98F3 -> #2A72E1)
                   Container(
-                    width: 382,
-                    height: 200,
+                    width: 540,
+                    height: 374,
                     decoration: const BoxDecoration(
-                      color: LuxwapColors.brand500,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xff3e98f3), Color(0xff2a72e1)],
+                      ),
                       borderRadius:
                           BorderRadius.vertical(bottom: Radius.circular(30)),
                     ),
                   ),
+                  // Language pill button (80x30, r=148)
                   Positioned(
-                    top: 20,
-                    right: 26,
-                    child: TextButton.icon(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        textStyle: const TextStyle(fontSize: 11),
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        minimumSize: Size.zero,
-                      ),
-                      icon: const Icon(Icons.language, size: 13),
-                      label: const Text('语言'),
-                    ),
-                  ),
-                  Positioned(
-                    top: 30,
-                    child: Column(
-                      children: [
-                        const LuxwapIcon('icon-logo-white', size: 60),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Luxwap',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Positioned(
-                    top: 146,
+                    top: 24,
+                    right: 30,
                     child: Container(
-                      width: 330,
-                      height: 520,
-                      padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 24),
+                      width: 80,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(148),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.4),
+                          width: 1,
+                        ),
+                      ),
+                      child: InkWell(
+                        onTap: () {},
+                        borderRadius: BorderRadius.circular(148),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.language, size: 14, color: Colors.white),
+                            SizedBox(width: 4),
+                            Text(
+                              '语言',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // White brand logo (主logo白色, 145x135)
+                  const Positioned(
+                    top: 36,
+                    child: LuxwapIcon(
+                      'icon-logo-white',
+                      width: 145,
+                      height: 136,
+                    ),
+                  ),
+                  // Floating white card (Frame 18: 480x688, r=30, white, shadow)
+                  Positioned(
+                    top: 187,
+                    child: Container(
+                      width: 480,
+                      height: 688,
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 28),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 22,
-                            offset: const Offset(0, 8),
+                            blurRadius: 30,
+                            offset: const Offset(0, 12),
                           ),
                         ],
                       ),
@@ -541,49 +559,56 @@ class _LoginPageState extends State<LoginPage> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           if (mode == 0 || mode == 1)
-                            Row(
-                              children: [
-                                _buildTabItem(
-                                  title: '账号登录',
-                                  isSelected: mode == 0,
-                                  onTap: () => setState(() {
-                                    notice = null;
-                                    mode = 0;
-                                  }),
-                                ),
-                                const SizedBox(width: 24),
-                                _buildTabItem(
-                                  title: '账号注册',
-                                  isSelected: mode == 1,
-                                  onTap: () => setState(() {
-                                    notice = null;
-                                    mode = 1;
-                                  }),
-                                ),
-                              ],
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _buildTabItem(
+                                    title: '账号登录',
+                                    isSelected: mode == 0,
+                                    onTap: () => setState(() {
+                                      notice = null;
+                                      mode = 0;
+                                    }),
+                                  ),
+                                  const SizedBox(width: 48),
+                                  _buildTabItem(
+                                    title: '账号注册',
+                                    isSelected: mode == 1,
+                                    onTap: () => setState(() {
+                                      notice = null;
+                                      mode = 1;
+                                    }),
+                                  ),
+                                ],
+                              ),
                             )
                           else if (mode == 2)
-                            const Text(
-                              '重置密码',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xff1b1b1b),
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 12),
+                              child: Text(
+                                '重置密码',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xff1b1b1b),
+                                ),
                               ),
                             ),
                           AnimatedSwitcher(
                             duration: const Duration(milliseconds: 160),
                             child: notice == null
-                                ? SizedBox(height: mode == 3 ? 0 : 16)
+                                ? SizedBox(height: mode == 3 ? 0 : 12)
                                 : Padding(
                                     key: ValueKey(notice),
                                     padding:
-                                        const EdgeInsets.only(top: 8, bottom: 8),
+                                        const EdgeInsets.only(top: 4, bottom: 8),
                                     child: Container(
                                       constraints:
                                           const BoxConstraints(minHeight: 32),
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 8),
+                                          horizontal: 12, vertical: 6),
                                       decoration: BoxDecoration(
                                         color: const Color(0xfffff7e6),
                                         borderRadius: BorderRadius.circular(8),
@@ -618,9 +643,12 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   if (oauthLoading)
                     Container(
-                      width: 382,
-                      height: 760,
-                      color: Colors.black.withValues(alpha: 0.45),
+                      width: 540,
+                      height: 900,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.45),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                       child: const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -876,77 +904,73 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _oauthSection({bool compact = false}) {
     return SizedBox(
-      width: 260,
+      width: 320,
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 30,
+                width: 36,
                 height: 1,
                 color: const Color(0xffd7dce6),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               const Text(
-                '其他账号授权登录',
+                '使用以下服务登陆',
                 style: TextStyle(
-                  color: Color(0xff777777),
+                  color: Color(0xff666666),
                   fontSize: 12,
+                  fontWeight: FontWeight.w400,
                   height: 1,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Container(
-                width: 30,
+                width: 36,
                 height: 1,
                 color: const Color(0xffd7dce6),
               ),
             ],
           ),
-          SizedBox(height: compact ? 12 : 18),
+          SizedBox(height: compact ? 12 : 16),
           SizedBox(
-            width: 246,
+            width: 260,
             height: 62,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _OauthButton(
-                  label: 'X账户',
-                  asset: 'assets/images/icon_X_logo.png',
-                  iconSize: 20,
-                  onTap: () => _oauthLogin('x'),
-                ),
                 _OauthButton(
                   label: 'Google',
                   asset: 'assets/images/icon_Google_logo.png',
-                  iconSize: 23,
+                  iconSize: 24,
                   onTap: () => _oauthLogin('google'),
                 ),
                 _OauthButton(
                   label: 'Facebook',
                   asset: 'assets/images/icon_facebook_logo.png',
-                  iconSize: 23,
+                  iconSize: 24,
                   onTap: () => _oauthLogin('facebook'),
+                ),
+                _OauthButton(
+                  label: 'X账户',
+                  asset: 'assets/images/icon_X_logo.png',
+                  iconSize: 22,
+                  onTap: () => _oauthLogin('x'),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('登录即代表同意 ', style: TextStyle(fontSize: 10.5, color: LuxwapColors.neutral500)),
-              InkWell(
-                onTap: () => showHelpDialog(context, initialTab: 0),
-                child: const Text('《使用指南》', style: TextStyle(fontSize: 10.5, color: LuxwapColors.brand500)),
-              ),
-              const Text('与 ', style: TextStyle(fontSize: 10.5, color: LuxwapColors.neutral500)),
-              InkWell(
-                onTap: () => showHelpDialog(context, initialTab: 1),
-                child: const Text('《隐私协议》', style: TextStyle(fontSize: 10.5, color: LuxwapColors.brand500)),
-              ),
-            ],
+          const SizedBox(height: 18),
+          const Text(
+            '查看《用户协议》及《隐私政策》。我们将依法保护您的数据安全。',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11,
+              color: Color(0xffb2b2b2),
+              height: 1.4,
+              fontWeight: FontWeight.w400,
+            ),
           ),
         ],
       ),
@@ -962,8 +986,8 @@ class _LoginPageState extends State<LoginPage> {
           mode = 0;
         }),
         style: TextButton.styleFrom(
-          foregroundColor: LuxwapColors.brand500,
-          textStyle: const TextStyle(fontSize: 13),
+          foregroundColor: const Color(0xff286afc),
+          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
           padding: EdgeInsets.zero,
           minimumSize: const Size(0, 28),
         ),
@@ -979,17 +1003,16 @@ class _LoginPageState extends State<LoginPage> {
     bool obscure = false,
   }) {
     return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: LuxwapColors.neutral0,
-        borderRadius: LuxwapRadius.rSm,
-        border: Border.all(color: LuxwapColors.border),
+        color: const Color(0xfff3f6fb),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: LuxwapColors.neutral500),
-          const SizedBox(width: 8),
+          Icon(icon, size: 18, color: const Color(0xff666666)),
+          const SizedBox(width: 10),
           Expanded(
             child: TextField(
               controller: controller,
@@ -1001,9 +1024,9 @@ class _LoginPageState extends State<LoginPage> {
                 contentPadding: EdgeInsets.zero,
                 hintText: hint,
                 hintStyle:
-                    const TextStyle(fontSize: 14, color: LuxwapColors.neutral400),
+                    const TextStyle(fontSize: 14, color: Color(0xffb2b2b2)),
               ),
-              style: const TextStyle(fontSize: 14, color: LuxwapColors.neutral800),
+              style: const TextStyle(fontSize: 14, color: Color(0xff1b1b1b)),
             ),
           ),
         ],
@@ -1016,11 +1039,10 @@ class _LoginPageState extends State<LoginPage> {
     required String hint,
   }) {
     return Container(
-      height: 46,
+      height: 52,
       decoration: BoxDecoration(
-        color: LuxwapColors.neutral0,
-        borderRadius: LuxwapRadius.rSm,
-        border: Border.all(color: LuxwapColors.border),
+        color: const Color(0xfff3f6fb),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: TextField(
         controller: controller,
@@ -1029,24 +1051,25 @@ class _LoginPageState extends State<LoginPage> {
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
           contentPadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           hintText: hint,
-          hintStyle: const TextStyle(fontSize: 13, color: LuxwapColors.neutral400),
+          hintStyle: const TextStyle(fontSize: 14, color: Color(0xffb2b2b2)),
         ),
-        style: const TextStyle(fontSize: 13, color: LuxwapColors.neutral800),
+        style: const TextStyle(fontSize: 14, color: Color(0xff1b1b1b)),
       ),
     );
   }
 
   Widget _primaryButton(String text, VoidCallback onPressed) {
     return SizedBox(
-      height: 48,
+      height: 53,
       child: FilledButton(
         style: FilledButton.styleFrom(
-          backgroundColor: LuxwapColors.brand500,
+          backgroundColor: const Color(0xff297ce7),
           foregroundColor: Colors.white,
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          shape: RoundedRectangleBorder(borderRadius: LuxwapRadius.rMd),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 0,
         ),
         onPressed: loading || oauthLoading ? null : onPressed,
         child: Text(text),
@@ -1056,13 +1079,14 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _secondaryButton(String text, VoidCallback onPressed) {
     return SizedBox(
-      height: 48,
+      height: 52,
       child: FilledButton(
         style: FilledButton.styleFrom(
-          backgroundColor: LuxwapColors.brand50,
-          foregroundColor: LuxwapColors.brand500,
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          shape: RoundedRectangleBorder(borderRadius: LuxwapRadius.rMd),
+          backgroundColor: const Color(0xffe9f0ff),
+          foregroundColor: const Color(0xff286afc),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 0,
         ),
         onPressed: loading || oauthLoading ? null : onPressed,
         child: Text(text),

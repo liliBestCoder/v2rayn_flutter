@@ -126,7 +126,7 @@ class _ActivityPageState extends State<ActivityPage> {
             child: Align(
               alignment: Alignment.topLeft,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(34, 58, 34, 44),
+                padding: const EdgeInsets.fromLTRB(48, 44, 48, 44),
                 child: SizedBox(
                   width: contentWidth,
                   child: Column(
@@ -138,47 +138,50 @@ class _ActivityPageState extends State<ActivityPage> {
                           child: Text(
                             '分享有礼',
                             style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xff111111)),
+                              fontSize: 26,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF111111),
+                            ),
                           ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      const Text(
+                        '📝 分享有礼，1000人名额',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF111111),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        '晒软件心得 / 教程等至论坛、视频平台、社交媒体、博客等，提交页面链接（非私链，客服可直接打开。私链无奖励！）参与评审。',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF555555),
+                          height: 1.5,
                         ),
                       ),
                       const SizedBox(height: 28),
                       const Text(
-                        '分享有礼：1000 人名额',
+                        '🏆 奖项设置',
                         style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xff111111)),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF111111),
+                        ),
                       ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        '晒软件心得 / 教程等至论坛、视频平台、社交媒体、博客等，提交页面链接（非私链，客服可直接打开。私链无奖励！）参与评审。',
-                        style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xff666666),
-                            height: 1.45),
-                      ),
-                      const SizedBox(height: 26),
-                      const Text(
-                        '奖项设置',
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xff111111)),
-                      ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       const Text(
                         '一等奖(10 名): 1年VIP\n二等奖(20 名): 半年VIP\n三等奖(100 名): 季度VIP\n参与奖: 1个月 VIP',
                         style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xff666666),
-                            height: 1.35),
+                          fontSize: 13,
+                          color: Color(0xFF555555),
+                          height: 1.5,
+                        ),
                       ),
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 36),
                       SizedBox(
                         width: contentWidth,
                         child: Center(
@@ -186,71 +189,112 @@ class _ActivityPageState extends State<ActivityPage> {
                             TextSpan(
                               children: [
                                 const TextSpan(
-                                    text: '剩余名额：',
-                                    style: TextStyle(color: Color(0xff777777))),
+                                  text: '剩余名额：  ',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Color(0xFF3D3D3D),
+                                  ),
+                                ),
                                 TextSpan(
-                                    text: '$remaining',
-                                    style: const TextStyle(color: Color(0xff2b77ff))),
+                                  text: '$remaining',
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF286AFC),
+                                  ),
+                                ),
                               ],
                             ),
-                            style: const TextStyle(
-                                fontSize: 10, fontWeight: FontWeight.w700),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 14),
-                      SizedBox(
-                          width: contentWidth,
-                          child: Center(
-                            child: _RewardTable(rows: rankRows),
-                          )),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 20),
                       SizedBox(
                         width: contentWidth,
                         child: Center(
                           child: Container(
-                            width: 520,
-                            height: 42,
+                            width: 510,
                             decoration: BoxDecoration(
-                              color: const Color(0xfff3f6fb),
-                              borderRadius: BorderRadius.circular(8),
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: const Color(0xFFEEEEEE),
+                                width: 1,
+                              ),
                             ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 14,
+                            ),
+                            child: _RewardTable(rows: rankRows),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      SizedBox(
+                        width: contentWidth,
+                        child: Center(
+                          child: Container(
+                            width: 510,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: const Color(0xFFEEEEEE),
+                                width: 1,
+                              ),
+                            ),
+                            alignment: Alignment.centerLeft,
                             child: TextField(
                               controller: auditLink,
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                filled: false,
+                                fillColor: Colors.transparent,
                                 hintText: '提交链接',
                                 hintStyle: TextStyle(
-                                    fontSize: 11, color: Color(0xff999999)),
+                                  fontSize: 13,
+                                  color: Color(0xFFB2B2B2),
+                                ),
                                 contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 12),
+                                  horizontal: 24,
+                                  vertical: 18,
+                                ),
                               ),
                               style: const TextStyle(
-                                  fontSize: 12, color: Color(0xff111111)),
+                                fontSize: 13,
+                                color: Color(0xFF111111),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 26),
+                      const SizedBox(height: 32),
                       SizedBox(
                         width: contentWidth,
                         child: Center(
                           child: SizedBox(
-                            width: 92,
-                            height: 34,
-                            child: TextButton(
+                            width: 140,
+                            height: 54,
+                            child: FilledButton(
                               onPressed: loading ? null : _submit,
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                backgroundColor: const Color(0xffe8f0ff),
-                                foregroundColor: const Color(0xff2b77ff),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: const Color(0xFFE9F0FF),
+                                foregroundColor: const Color(0xFF286AFC),
+                                elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
                               ),
                               child: Text(
                                 loading ? '提交中' : '发送',
                                 style: const TextStyle(
-                                    fontSize: 12, fontWeight: FontWeight.w600),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ),
@@ -282,58 +326,56 @@ class _RewardTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const headerStyle = TextStyle(
-        fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xff111111));
-    const bodyStyle = TextStyle(fontSize: 11, color: Color(0xff111111));
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      color: Color(0xFF1F2329),
+    );
+    const bodyStyle = TextStyle(
+      fontSize: 13,
+      color: Color(0xFF555555),
+    );
 
-    final displayRows = rows.length >= 5 ? rows : [
-      ...rows,
-      ...List.generate(5 - rows.length, (_) => const _RankRow(name: '-', date: '-', reward: '-')),
-    ];
-
-    return SizedBox(
-      width: 520,
-      height: 200,
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xfff3f6fb),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 40,
-              child: Row(
-                children: [
-                  Expanded(child: Center(child: Text('用户名', style: headerStyle))),
-                  Expanded(child: Center(child: Text('有效期', style: headerStyle))),
-                  Expanded(child: Center(child: Text('奖励', style: headerStyle))),
-                ],
+    final displayRows = rows.length >= 6
+        ? rows.take(6).toList()
+        : [
+            ...rows,
+            ...List.generate(
+              6 - rows.length,
+              (_) => const _RankRow(
+                name: 'User***Name',
+                date: '2025-12-09',
+                reward: '参与奖',
               ),
             ),
-            const Divider(height: 1, color: Color(0xffe1e4ec)),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: displayRows.map(
-                  (row) => SizedBox(
-                    height: 30,
-                    child: Row(
-                      children: [
-                        Expanded(
-                            child: Center(child: Text(row.name, style: bodyStyle))),
-                        Expanded(
-                            child: Center(child: Text(row.date, style: bodyStyle))),
-                        Expanded(
-                            child: Center(child: Text(row.reward, style: bodyStyle))),
-                      ],
-                    ),
-                  ),
-                ).toList(),
-              ),
-            ),
-          ],
+          ];
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(top: 4, bottom: 12),
+          child: Row(
+            children: [
+              SizedBox(width: 8),
+              Expanded(flex: 7, child: Text('用户名', style: headerStyle)),
+              Expanded(flex: 7, child: Text('有效期', style: headerStyle)),
+              Expanded(flex: 4, child: Text('奖励', style: headerStyle)),
+            ],
+          ),
         ),
-      ),
+        for (final row in displayRows)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              children: [
+                const SizedBox(width: 8),
+                Expanded(flex: 7, child: Text(row.name, style: bodyStyle)),
+                Expanded(flex: 7, child: Text(row.date, style: bodyStyle)),
+                Expanded(flex: 4, child: Text(row.reward, style: bodyStyle)),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }

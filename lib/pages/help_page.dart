@@ -213,6 +213,10 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                             )
                           : null,
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      filled: false,
+                      fillColor: Colors.transparent,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     ),
                     style: const TextStyle(fontSize: 12, color: LuxwapColors.neutral900),

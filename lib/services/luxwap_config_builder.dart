@@ -234,6 +234,11 @@ class LuxwapConfigBuilder {
       clientConfig: clientConfig,
     );
 
+    final domainStrategy = (clientConfig.routeStrategy == 'IPIfNonMatch' ||
+            clientConfig.routeStrategy == 'IPOnDemand')
+        ? clientConfig.routeStrategy
+        : (isChina ? 'AsIs' : 'IPIfNonMatch');
+
     return {
       'log': {'loglevel': 'warning'},
       'dns': buildDnsConfig(clientConfig, isChina),
@@ -252,7 +257,7 @@ class LuxwapConfigBuilder {
         {'tag': 'block', 'protocol': 'blackhole'},
       ],
       'routing': {
-        'domainStrategy': isChina ? 'AsIs' : 'IPIfNonMatch',
+        'domainStrategy': domainStrategy,
         'rules': [
           {
             'type': 'field',
