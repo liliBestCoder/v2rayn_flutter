@@ -7,13 +7,11 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import 'about_page.dart';
 import 'activity_page.dart';
-import 'dns_settings_page.dart';
 import 'help_page.dart';
 import 'lines_page.dart';
 import 'personal_center_page.dart';
 import 'settings_page.dart';
 import 'trade_manager_page.dart';
-import '../theme/luxwap_theme.dart';
 import '../widgets/luxwap_icon.dart';
 
 class MainShell extends StatefulWidget {
@@ -78,8 +76,6 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     }
   }
 
-  
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,7 +95,10 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
                   if (selected != 4 && selected != 5 && selected != 6)
                     _UserHeader(
                       onTrade: () => setState(() => selected = 2),
-                      onRenew: () { _startPaymentPolling(); _openRenewPage(); },
+                      onRenew: () {
+                        _startPaymentPolling();
+                        _openRenewPage();
+                      },
                     ),
                   Expanded(
                     child: IndexedStack(index: selected, children: pages),
@@ -120,7 +119,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     setState(() => selected = index);
   }
 
-static String _generateUuid() {
+  static String _generateUuid() {
     final r = Random();
     return List.generate(32, (_) => r.nextInt(16).toRadixString(16)).join();
   }
@@ -128,7 +127,8 @@ static String _generateUuid() {
   void _startPaymentPolling() {
     _paymentPollTimer?.cancel();
     _submitToken = _generateUuid();
-    _paymentPollTimer = Timer.periodic(const Duration(seconds: 10), (_) => _checkPaymentStatus());
+    _paymentPollTimer = Timer.periodic(
+        const Duration(seconds: 10), (_) => _checkPaymentStatus());
   }
 
   void _stopPaymentPolling() {
@@ -141,7 +141,10 @@ static String _generateUuid() {
     final app = AppScope.of(context);
     final token = app.token;
     final submitToken = _submitToken;
-    if (token == null || token.isEmpty || submitToken == null || submitToken.isEmpty) {
+    if (token == null ||
+        token.isEmpty ||
+        submitToken == null ||
+        submitToken.isEmpty) {
       _stopPaymentPolling();
       return;
     }
@@ -175,10 +178,13 @@ static String _generateUuid() {
     final sToken = _submitToken ?? "";
     final params = <String, String>{"token": token};
     if (sToken.isNotEmpty) params["submitToken"] = sToken;
-    final url = Uri.parse("http://101.201.215.20:8000/pay").replace(queryParameters: params).toString();
+    final url = Uri.parse("http://101.201.215.20:8000/pay")
+        .replace(queryParameters: params)
+        .toString();
     try {
       if (Platform.isWindows) {
-        await Process.start("rundll32", ["url.dll,FileProtocolHandler", url], runInShell: false);
+        await Process.start("rundll32", ["url.dll,FileProtocolHandler", url],
+            runInShell: false);
       } else if (Platform.isMacOS) {
         await Process.start("open", [url], runInShell: false);
       } else {
@@ -223,26 +229,33 @@ class Sidebar extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            height: 200,
+            height: 250,
             alignment: Alignment.center,
-            child: const LuxwapIcon(
-              'icon-logo-blue',
-              width: 120,
-              height: 141,
+            child: const SizedBox(
+              width: 149,
+              height: 263,
+              child: Center(
+                child: LuxwapIcon(
+                  'icon-logo-blue',
+                  width: 120,
+                  height: 141,
+                ),
+              ),
             ),
           ),
           Expanded(
             child: SingleChildScrollView(
+              padding: const EdgeInsets.only(top: 24),
               child: Column(
                 children: [
-                  for (final item in navItems) ...[
+                  for (var i = 0; i < navItems.length; i++) ...[
                     _NavButton(
-                      index: item.$1,
+                      index: navItems[i].$1,
                       selected: selected,
-                      label: item.$2,
+                      label: navItems[i].$2,
                       onTap: onSelect,
                     ),
-                    const SizedBox(height: 12),
+                    if (i != navItems.length - 1) const SizedBox(height: 24),
                   ],
                 ],
               ),
@@ -314,8 +327,8 @@ class _NavButton extends StatelessWidget {
                       color: active
                           ? const Color(0xFF286AFC)
                           : const Color(0xFF666666),
-                      fontSize: 16,
-                      fontWeight: active ? FontWeight.w500 : FontWeight.w400,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -348,12 +361,12 @@ class _UserHeader extends StatelessWidget {
     final level = _levelSymbols(user?.cumulativeMonths ?? 0);
 
     return Container(
-      height: 145,
+      height: 263,
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1)),
         color: Colors.white,
       ),
-      padding: const EdgeInsets.fromLTRB(40, 10, 40, 10),
+      padding: const EdgeInsets.fromLTRB(42, 42, 42, 41),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -367,7 +380,7 @@ class _UserHeader extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF1F2329),
                   ),
@@ -379,7 +392,7 @@ class _UserHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFF666666),
-                    fontSize: 13,
+                    fontSize: 18,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -387,11 +400,11 @@ class _UserHeader extends StatelessWidget {
                   children: [
                     const Text(
                       '账号等级：',
-                      style: TextStyle(color: Color(0xFF666666), fontSize: 13),
+                      style: TextStyle(color: Color(0xFF666666), fontSize: 18),
                     ),
                     Text(
                       level,
-                      style: const TextStyle(fontSize: 14, height: 1),
+                      style: const TextStyle(fontSize: 18, height: 1),
                     ),
                   ],
                 ),
@@ -400,22 +413,22 @@ class _UserHeader extends StatelessWidget {
                   label: '交易记录',
                   color: const Color(0xFF27C36A),
                   background: const Color(0xFFEBF8F0),
-                  icon: Icons.receipt_long_rounded,
+                  icon: const LuxwapIcon(LuxwapIcons.copy, size: 20),
                   onPressed: onTrade,
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 42),
           // Blue Traffic Card
           Container(
-            width: 360,
-            height: 125,
+            width: 399,
+            height: 180,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF286AFC), Color(0xFF3E98F3)],
               ),
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
                   color: const Color(0xFF286AFC).withValues(alpha: 0.25),
@@ -424,7 +437,7 @@ class _UserHeader extends StatelessWidget {
                 ),
               ],
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -436,7 +449,7 @@ class _UserHeader extends StatelessWidget {
                       '流量套餐信息',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 14,
+                        fontSize: 20,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -451,10 +464,10 @@ class _UserHeader extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Text(
-                          '在线充值',
+                          '充值中心',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 13,
+                            fontSize: 16,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -470,16 +483,16 @@ class _UserHeader extends StatelessWidget {
                       '已用流量 ',
                       style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     Text(
                       '$usedTraffic GB',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -487,20 +500,42 @@ class _UserHeader extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      '总流量  80GB',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
+                    RichText(
+                      text: const TextSpan(
+                        children: [
+                          TextSpan(
+                              text: '总流量',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500)),
+                          TextSpan(text: '  '),
+                          TextSpan(
+                              text: '80GB',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w400)),
+                        ],
                       ),
                     ),
-                    Text(
-                      '有效期  $expiration',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          const TextSpan(
+                              text: '有效期',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500)),
+                          const TextSpan(text: '  '),
+                          TextSpan(
+                              text: expiration,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w400)),
+                        ],
                       ),
                     ),
                   ],
@@ -597,7 +632,7 @@ class _HeaderActionButton extends StatelessWidget {
   final String label;
   final Color color;
   final Color background;
-  final IconData icon;
+  final Widget icon;
   final VoidCallback onPressed;
 
   @override
@@ -614,12 +649,15 @@ class _HeaderActionButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: color),
+            ColorFiltered(
+              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+              child: icon,
+            ),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 18,
                 color: color,
                 fontWeight: FontWeight.w500,
               ),
@@ -630,9 +668,3 @@ class _HeaderActionButton extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-

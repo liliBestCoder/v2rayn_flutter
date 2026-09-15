@@ -37,11 +37,13 @@ class MockApiService extends ApiService {
 
   @override
   Future<ApiResult> getUserInfo(String token) async {
-    return const ApiResult(code: '0', msg: 'OK', data: {'username': 'test_user'});
+    return const ApiResult(
+        code: '0', msg: 'OK', data: {'username': 'test_user'});
   }
 
   @override
-  Future<ApiResult> paymentOrders(String token, {int page = 1, int size = 20}) async {
+  Future<ApiResult> paymentOrders(String token,
+      {int page = 1, int size = 20}) async {
     return const ApiResult(
       code: '0',
       msg: 'OK',
@@ -62,7 +64,8 @@ class MockApiService extends ApiService {
 
 void main() {
   group('CDP UI Integration Tests - Brand Logo & Main Shell Navigation', () {
-    testWidgets('Sidebar displays single unified vector brand logo', (WidgetTester tester) async {
+    testWidgets('Sidebar displays single unified vector brand logo',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -79,7 +82,8 @@ void main() {
       final logoFinder = find.byWidgetPredicate(
         (widget) => widget is LuxwapIcon && widget.name == 'icon-logo-blue',
       );
-      expect(logoFinder, findsOneWidget, reason: 'Sidebar must have exactly one LuxwapIcon(icon-logo-blue)');
+      expect(logoFinder, findsOneWidget,
+          reason: 'Sidebar must have exactly one LuxwapIcon(icon-logo-blue)');
 
       final logoWidget = tester.widget<LuxwapIcon>(logoFinder);
       expect(logoWidget.width, equals(120));
@@ -87,10 +91,14 @@ void main() {
 
       // Verify there is no separate redundant Text('Luxwap') widget
       final textFinder = find.text('Luxwap');
-      expect(textFinder, findsNothing, reason: 'Wordmark is embedded as vector path in SVG, no redundant Text widget');
+      expect(textFinder, findsNothing,
+          reason:
+              'Wordmark is embedded as vector path in SVG, no redundant Text widget');
     });
 
-    testWidgets('LoginPage header displays single unified vector white brand logo', (WidgetTester tester) async {
+    testWidgets(
+        'LoginPage header displays single unified vector white brand logo',
+        (WidgetTester tester) async {
       final state = AppState(
         api: ApiService(baseUrl: 'http://127.0.0.1:8080'),
         tokenStore: MockTokenStore(),
@@ -109,14 +117,18 @@ void main() {
       final logoFinder = find.byWidgetPredicate(
         (widget) => widget is LuxwapIcon && widget.name == 'icon-logo-white',
       );
-      expect(logoFinder, findsOneWidget, reason: 'LoginPage header must have exactly one LuxwapIcon(icon-logo-white)');
+      expect(logoFinder, findsOneWidget,
+          reason:
+              'LoginPage header must have exactly one LuxwapIcon(icon-logo-white)');
 
       final logoWidget = tester.widget<LuxwapIcon>(logoFinder);
       expect(logoWidget.width, equals(145));
       expect(logoWidget.height, equals(136));
     });
 
-    testWidgets('MainShell sidebar displays exact menu order matching Figma prototype', (WidgetTester tester) async {
+    testWidgets(
+        'MainShell sidebar displays exact menu order matching Figma prototype',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -137,7 +149,9 @@ void main() {
       expect(find.text('分享有礼'), findsNothing);
     });
 
-    testWidgets('SettingsPage displays clean Figma DNS & routing titles without hardcoded IPs', (WidgetTester tester) async {
+    testWidgets(
+        'SettingsPage displays clean Figma DNS & routing titles without hardcoded IPs',
+        (WidgetTester tester) async {
       final state = AppState(
         api: MockApiService(),
         tokenStore: MockTokenStore(),
@@ -155,6 +169,11 @@ void main() {
         ),
       );
 
+      // Expand DNS settings before checking the DNS detail rows.
+      await tester.ensureVisible(find.text('DNS配置 >>'));
+      await tester.tap(find.text('DNS配置 >>'));
+      await tester.pumpAndSettle();
+
       // Verify clean DNS titles
       expect(find.text('境外流量DNS'), findsOneWidget);
       expect(find.text('境内流量DNS'), findsOneWidget);
@@ -168,11 +187,13 @@ void main() {
       // Verify routing titles
       expect(find.text('直连国内IP'), findsOneWidget);
       expect(find.text('直连国内域名'), findsOneWidget);
-      expect(find.text('启用VPN路由   端口: 10853'), findsOneWidget);
+      expect(find.text('启用 DNS 分流'), findsOneWidget);
       expect(find.text('默认使用AsIs规则，本地资源消耗最小'), findsOneWidget);
     });
 
-    testWidgets('TradeManagerPage renders boxed card (_TradeBillCard) with border and 2-column layout', (WidgetTester tester) async {
+    testWidgets(
+        'TradeManagerPage renders boxed card (_TradeBillCard) with border and 2-column layout',
+        (WidgetTester tester) async {
       final state = AppState(
         api: MockApiService(),
         tokenStore: MockTokenStore(),
@@ -204,7 +225,9 @@ void main() {
       expect(statusWidget.style?.color, equals(const Color(0xFFFF9923)));
     });
 
-    testWidgets('LinesPage signal congestion indicator renders 4-bar indicator and no groups icon', (WidgetTester tester) async {
+    testWidgets(
+        'LinesPage signal congestion indicator renders 4-bar indicator and no groups icon',
+        (WidgetTester tester) async {
       const nodeGreen = LineNode(
         name: '美洲HUUYWU',
         region: '美洲',
@@ -231,7 +254,8 @@ void main() {
       expect(find.byIcon(Icons.groups_rounded), findsNothing);
     });
 
-    testWidgets('ActivityPage renders rank table inside rounded bordered card', (WidgetTester tester) async {
+    testWidgets('ActivityPage renders rank table inside rounded bordered card',
+        (WidgetTester tester) async {
       final state = AppState(
         api: MockApiService(),
         tokenStore: MockTokenStore(),

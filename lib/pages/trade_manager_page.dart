@@ -93,9 +93,9 @@ class _TradeManagerPageState extends State<TradeManagerPage> {
           return RefreshIndicator(
             onRefresh: () async => _reload(),
             child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(40, 20, 40, 32),
+              padding: const EdgeInsets.fromLTRB(42, 30, 42, 32),
               itemCount: records.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              separatorBuilder: (_, __) => const SizedBox(height: 20),
               itemBuilder: (context, index) =>
                   TradeBillCard(record: records[index]),
             ),
@@ -131,7 +131,8 @@ class TradeRecord {
       createdAt: _dateTime(json['createdAt']?.toString()),
       orderNo: json['orderNo']?.toString() ?? '-',
       paidAt: _dateTime(json['paidAt']?.toString()),
-      amount: '${_currencySymbol(currency)} ${paidAmount?.isNotEmpty == true ? paidAmount : amount}',
+      amount:
+          '${_currencySymbol(currency)} ${paidAmount?.isNotEmpty == true ? paidAmount : amount}',
       status: _statusLabel(status),
       statusColor: _statusColor(status),
     );
@@ -248,7 +249,8 @@ class TradeBillCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      height: 128,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -266,34 +268,31 @@ class TradeBillCard extends StatelessWidget {
                 Text(
                   '订单：${record.title}',
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 20,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF000000),
                   ),
                 ),
-                const SizedBox(height: 8),
                 Text(
                   '有效期：${record.paidAt != '-' ? record.paidAt : record.createdAt}',
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 18,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF3D3D3D),
                   ),
                 ),
-                const SizedBox(height: 6),
                 Text(
                   '订单号：${record.orderNo}',
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 16,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFFB2B2B2),
                   ),
                 ),
-                const SizedBox(height: 4),
                 Text(
                   '开始时间：${record.createdAt}',
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 16,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFFB2B2B2),
                   ),
@@ -310,7 +309,7 @@ class TradeBillCard extends StatelessWidget {
               Text(
                 record.amount,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF000000),
                 ),
@@ -319,7 +318,7 @@ class TradeBillCard extends StatelessWidget {
               Text(
                 record.status,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 18,
                   fontWeight: FontWeight.w500,
                   color: record.statusColor,
                 ),

@@ -27,7 +27,8 @@ class MockConfigStore implements ClientConfigStore {
 
 void main() {
   group('CDP UI Integration Tests - Settings Page Interactions', () {
-    testWidgets('SettingsPage displays TUN, DoT, close-to-tray, and UWP option', (WidgetTester tester) async {
+    testWidgets('SettingsPage displays TUN, DoT, close-to-tray, and UWP option',
+        (WidgetTester tester) async {
       final state = AppState(
         api: ApiService(baseUrl: 'http://127.0.0.1:8080'),
         tokenStore: MockTokenStore(),
@@ -63,7 +64,9 @@ void main() {
       }
     });
 
-    testWidgets('Toggling TUN mode switch updates AppState clientConfig.tunEnabled', (WidgetTester tester) async {
+    testWidgets(
+        'Toggling TUN mode switch updates AppState clientConfig.tunEnabled',
+        (WidgetTester tester) async {
       final state = AppState(
         api: ApiService(baseUrl: 'http://127.0.0.1:8080'),
         tokenStore: MockTokenStore(),
@@ -99,7 +102,8 @@ void main() {
       }
     });
 
-    testWidgets('Double tapping DoT field enters edit mode', (WidgetTester tester) async {
+    testWidgets('Double tapping DoT field enters edit mode',
+        (WidgetTester tester) async {
       final state = AppState(
         api: ApiService(baseUrl: 'http://127.0.0.1:8080'),
         tokenStore: MockTokenStore(),
@@ -124,6 +128,7 @@ void main() {
       expect(find.text('tcp://1.1.1.1:853'), findsOneWidget);
 
       // Double tap to edit
+      await tester.ensureVisible(find.text('tcp://1.1.1.1:853'));
       await tester.tap(find.text('tcp://1.1.1.1:853'));
       await tester.pump(const Duration(milliseconds: 100));
       await tester.tap(find.text('tcp://1.1.1.1:853'));

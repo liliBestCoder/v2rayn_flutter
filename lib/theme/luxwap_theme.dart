@@ -61,9 +61,9 @@ abstract final class LuxwapColors {
 }
 
 abstract final class LuxwapRadius {
-  static const double sm = 5.0;   // inputs, form fields, tags
-  static const double md = 15.0;  // cards, primary CTA buttons
-  static const double lg = 30.0;  // chips, pill badges, avatars
+  static const double sm = 5.0; // inputs, form fields, tags
+  static const double md = 15.0; // cards, primary CTA buttons
+  static const double lg = 30.0; // chips, pill badges, avatars
   static const double full = 9999.0;
 
   static const BorderRadius rSm = BorderRadius.all(Radius.circular(sm));
@@ -73,13 +73,11 @@ abstract final class LuxwapRadius {
 }
 
 abstract final class LuxwapTypography {
-  static const String primaryFont = 'Microsoft YaHei';
+  static const String primaryFont = 'Inter';
   static const List<String> fontFallbacks = [
-    'PingFang SC',
+    'Microsoft YaHei',
     'Segoe UI',
-    'MiSans',
-    'Inter',
-    'Helvetica Neue',
+    'PingFang SC',
     'sans-serif',
   ];
 

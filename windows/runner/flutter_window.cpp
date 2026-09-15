@@ -92,6 +92,32 @@ bool FlutterWindow::OnCreate() {
           return;
         }
 
+        if (method == "setMinimumSize") {
+          const auto* args = std::get_if<flutter::EncodableMap>(call.arguments());
+          if (args) {
+            auto read_number = [args](const char* key) -> unsigned int {
+              auto it = args->find(flutter::EncodableValue(key));
+              if (it == args->end()) return 0;
+              if (const auto* value = std::get_if<int>(&it->second)) {
+                return *value > 0 ? static_cast<unsigned int>(*value) : 0;
+              }
+              if (const auto* value = std::get_if<long long>(&it->second)) {
+                return *value > 0 ? static_cast<unsigned int>(*value) : 0;
+              }
+              return 0;
+            };
+            const auto width = read_number("width");
+            const auto height = read_number("height");
+            if (width > 0 && height > 0) {
+              SetMinimumSize(width, height);
+              result->Success();
+              return;
+            }
+          }
+          result->Error("invalid-argument", "Invalid minimum window size.");
+          return;
+        }
+
         if (method == "show") {
           if (handle) {
             ShowWindow(handle, SW_SHOW);

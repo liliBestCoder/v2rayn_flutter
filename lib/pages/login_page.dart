@@ -7,7 +7,6 @@ import '../app_state.dart';
 import '../app_toast.dart';
 import '../theme/luxwap_theme.dart';
 import '../widgets/luxwap_icon.dart';
-import 'help_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -513,7 +512,8 @@ class _LoginPageState extends State<LoginPage> {
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.language, size: 14, color: Colors.white),
+                            LuxwapIcon(LuxwapIcons.language,
+                                size: 14, color: Colors.white),
                             SizedBox(width: 4),
                             Text(
                               '语言',
@@ -543,7 +543,8 @@ class _LoginPageState extends State<LoginPage> {
                     child: Container(
                       width: 480,
                       height: 688,
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 28),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 28),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(30),
@@ -602,8 +603,8 @@ class _LoginPageState extends State<LoginPage> {
                                 ? SizedBox(height: mode == 3 ? 0 : 12)
                                 : Padding(
                                     key: ValueKey(notice),
-                                    padding:
-                                        const EdgeInsets.only(top: 4, bottom: 8),
+                                    padding: const EdgeInsets.only(
+                                        top: 4, bottom: 8),
                                     child: Container(
                                       constraints:
                                           const BoxConstraints(minHeight: 32),
@@ -617,8 +618,9 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                       child: Row(
                                         children: [
-                                          const Icon(Icons.info_outline,
-                                              size: 16, color: Color(0xffd46b08)),
+                                          const LuxwapIcon(LuxwapIcons.info,
+                                              size: 16,
+                                              color: Color(0xffd46b08)),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
@@ -635,8 +637,14 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                   ),
                           ),
-                          Expanded(child: panels[mode]),
-                          if (loading) const LinearProgressIndicator(minHeight: 2),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: SizedBox(width: 313, child: panels[mode]),
+                            ),
+                          ),
+                          if (loading)
+                            const LinearProgressIndicator(minHeight: 2),
                         ],
                       ),
                     ),
@@ -658,7 +666,8 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           SizedBox(height: 12),
                           Text('登录中...',
-                              style: TextStyle(color: Colors.white, fontSize: 14)),
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 14)),
                         ],
                       ),
                     ),
@@ -686,8 +695,10 @@ class _LoginPageState extends State<LoginPage> {
             title,
             style: TextStyle(
               fontSize: 18,
-              fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
-              color: isSelected ? LuxwapColors.neutral800 : LuxwapColors.neutral500,
+              fontWeight: FontWeight.w500,
+              color: isSelected
+                  ? LuxwapColors.neutral800
+                  : LuxwapColors.neutral500,
             ),
           ),
           const SizedBox(height: 4),
@@ -710,14 +721,14 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         _input(
           controller: loginEmail,
-          hint: '用户名/账号',
-          icon: Icons.person_outline,
+          hint: '登录邮箱',
+          icon: const LuxwapIcon(LuxwapIcons.userOutline, size: 18),
         ),
         const SizedBox(height: 10),
         _input(
           controller: loginPassword,
           hint: '密码',
-          icon: Icons.lock_outline,
+          icon: const LuxwapIcon(LuxwapIcons.lock, size: 18),
           obscure: true,
         ),
         SizedBox(
@@ -738,7 +749,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
-        _primaryButton('登录', _login),
+        _primaryButton('登陆', _login),
         const SizedBox(height: 10),
         _secondaryButton(
             '免费试用',
@@ -758,28 +769,28 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         _input(
           controller: registerEmail,
-          hint: '用户名/账号 (邮箱)',
-          icon: Icons.person_outline,
+          hint: '输入邮箱',
+          icon: const LuxwapIcon(LuxwapIcons.userOutline, size: 18),
         ),
         const SizedBox(height: 10),
         _input(
           controller: registerPassword,
-          hint: '密码',
-          icon: Icons.lock_outline,
+          hint: '输入密码',
+          icon: const LuxwapIcon(LuxwapIcons.lock, size: 18),
           obscure: true,
         ),
         const SizedBox(height: 10),
         _input(
           controller: registerConfirm,
-          hint: '请再次输入密码',
-          icon: Icons.lock_outline,
+          hint: '确认注册密码',
+          icon: const LuxwapIcon(LuxwapIcons.lock, size: 18),
           obscure: true,
         ),
         const SizedBox(height: 20),
         _primaryButton('验证邮箱', _sendRegisterCode),
         const SizedBox(height: 16),
         const Text(
-          '注册即表示您同意《用户协议》和《隐私政策》，仅用于账户登录和服务通知。',
+          '注册即视为您已阅读并同意《用户协议》及《隐私政策》。我们将依法保护您的数据安全。',
           textAlign: TextAlign.center,
           style: TextStyle(color: Color(0xffb2b2b2), fontSize: 10, height: 1.5),
         ),
@@ -796,7 +807,8 @@ class _LoginPageState extends State<LoginPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 24),
-        const Icon(Icons.near_me_outlined, size: 38, color: Color(0xff6b7280)),
+        const LuxwapIcon(LuxwapIcons.arrowRight,
+            size: 38, color: Color(0xff6b7280)),
         const SizedBox(height: 14),
         const Text(
           '我们已向邮箱发送验证码',
@@ -849,18 +861,20 @@ class _LoginPageState extends State<LoginPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _input(
-            controller: resetEmail, hint: '请输入注册邮箱', icon: Icons.mail_outline),
+            controller: resetEmail,
+            hint: '请输入注册邮箱',
+            icon: const LuxwapIcon(LuxwapIcons.email, size: 18)),
         const SizedBox(height: 10),
         _input(
             controller: resetPassword,
             hint: '请输入新密码',
-            icon: Icons.lock_outline,
+            icon: const LuxwapIcon(LuxwapIcons.lock, size: 18),
             obscure: true),
         const SizedBox(height: 10),
         _input(
             controller: resetConfirm,
             hint: '请再次输入新密码',
-            icon: Icons.lock_outline,
+            icon: const LuxwapIcon(LuxwapIcons.lock, size: 18),
             obscure: true),
         const SizedBox(height: 10),
         Row(
@@ -869,7 +883,7 @@ class _LoginPageState extends State<LoginPage> {
               child: _input(
                   controller: resetCode,
                   hint: '请输入验证码',
-                  icon: Icons.verified_outlined),
+                  icon: const LuxwapIcon(LuxwapIcons.check, size: 18)),
             ),
             const SizedBox(width: 8),
             SizedBox(
@@ -999,7 +1013,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget _input({
     required TextEditingController controller,
     required String hint,
-    required IconData icon,
+    required Widget icon,
     bool obscure = false,
   }) {
     return Container(
@@ -1011,7 +1025,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: const Color(0xff666666)),
+          icon,
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
@@ -1024,9 +1038,9 @@ class _LoginPageState extends State<LoginPage> {
                 contentPadding: EdgeInsets.zero,
                 hintText: hint,
                 hintStyle:
-                    const TextStyle(fontSize: 14, color: Color(0xffb2b2b2)),
+                    const TextStyle(fontSize: 12, color: Color(0xffb2b2b2)),
               ),
-              style: const TextStyle(fontSize: 14, color: Color(0xff1b1b1b)),
+              style: const TextStyle(fontSize: 12, color: Color(0xff1b1b1b)),
             ),
           ),
         ],
@@ -1053,9 +1067,9 @@ class _LoginPageState extends State<LoginPage> {
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           hintText: hint,
-          hintStyle: const TextStyle(fontSize: 14, color: Color(0xffb2b2b2)),
+          hintStyle: const TextStyle(fontSize: 12, color: Color(0xffb2b2b2)),
         ),
-        style: const TextStyle(fontSize: 14, color: Color(0xff1b1b1b)),
+        style: const TextStyle(fontSize: 12, color: Color(0xff1b1b1b)),
       ),
     );
   }
@@ -1067,8 +1081,9 @@ class _LoginPageState extends State<LoginPage> {
         style: FilledButton.styleFrom(
           backgroundColor: const Color(0xff297ce7),
           foregroundColor: Colors.white,
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           elevation: 0,
         ),
         onPressed: loading || oauthLoading ? null : onPressed,
@@ -1084,8 +1099,9 @@ class _LoginPageState extends State<LoginPage> {
         style: FilledButton.styleFrom(
           backgroundColor: const Color(0xffe9f0ff),
           foregroundColor: const Color(0xff286afc),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           elevation: 0,
         ),
         onPressed: loading || oauthLoading ? null : onPressed,

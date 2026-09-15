@@ -7,6 +7,7 @@ import '../app_state.dart';
 import '../app_toast.dart';
 import '../services/uwp_loopback_service.dart';
 import '../theme/luxwap_theme.dart';
+import '../widgets/luxwap_icon.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -36,10 +37,17 @@ class _SettingsPageState extends State<SettingsPage> {
   String routeStrategy = 'AsIs';
   String language = '简体中文';
   bool configLoaded = false;
+  bool geoTimestampLoaded = false;
+  DateTime? geoLastUpdated;
+  bool dnsExpanded = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (!geoTimestampLoaded) {
+      geoTimestampLoaded = true;
+      _refreshGeoLastUpdated();
+    }
     if (configLoaded) {
       return;
     }
@@ -59,6 +67,41 @@ class _SettingsPageState extends State<SettingsPage> {
     routeStrategy = config.routeStrategy;
     language = config.language;
     configLoaded = true;
+  }
+
+  Future<DateTime?> _readGeoLastUpdated() async {
+    final directory = File(Platform.resolvedExecutable).parent;
+    DateTime? latest;
+    for (final fileName in ['geoip.dat', 'geosite.dat']) {
+      final file = File(
+        '${directory.path}${Platform.pathSeparator}$fileName',
+      );
+      if (!await file.exists()) {
+        continue;
+      }
+      final modified = await file.lastModified();
+      if (latest == null || modified.isAfter(latest)) {
+        latest = modified;
+      }
+    }
+    return latest;
+  }
+
+  Future<void> _refreshGeoLastUpdated() async {
+    final latest = await _readGeoLastUpdated();
+    if (mounted) {
+      setState(() => geoLastUpdated = latest);
+    }
+  }
+
+  String _geoUpdatedSubtitle() {
+    final date = geoLastUpdated;
+    if (date == null) {
+      return '上次更新时间--';
+    }
+    String twoDigits(int value) => value.toString().padLeft(2, '0');
+    return '上次更新时间${date.year}-${twoDigits(date.month)}-'
+        '${twoDigits(date.day)} ${twoDigits(date.hour)}:${twoDigits(date.minute)}';
   }
 
   @override
@@ -93,10 +136,12 @@ class _SettingsPageState extends State<SettingsPage> {
         fileName: 'geosite.dat',
         label: 'geosite',
       );
+      final latest = await _readGeoLastUpdated();
       if (!mounted) {
         return;
       }
       setState(() {
+        geoLastUpdated = latest;
         geoUpdating = false;
         geoLabel = 'geosite';
         geoPercent = 100;
@@ -165,13 +210,48 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
     if (notify) {
-      showAppToast('配置已保存，重启代理后生效', success: true);
+      showAppToast('配置已保存', success: true);
     }
   }
 
-  void _setAndSave(VoidCallback change) {
+  Future<void> _setAndSave(VoidCallback change) async {
     setState(change);
-    _saveConfig(notify: true);
+    await _saveConfig();
+    await _confirmProxyRestart();
+  }
+
+  Future<void> _saveAndAskRestart() async {
+    await _saveConfig();
+    await _confirmProxyRestart();
+  }
+
+  Future<void> _confirmProxyRestart() async {
+    if (!mounted) return;
+    final restart = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('需要重启代理服务'),
+        content: const Text('设置已保存，是否立即重启代理服务？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('确认重启'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (restart == true) {
+      AppScope.of(context).requestProxyRestart();
+      showAppToast('正在重启代理服务...', success: true);
+    } else {
+      showAppToast('配置已保存，下次启动代理时生效', success: true);
+    }
   }
 
   Future<void> _downloadGeoFile({
@@ -231,15 +311,13 @@ class _SettingsPageState extends State<SettingsPage> {
     return Container(
       color: Colors.white,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(40, 20, 40, 32),
+        padding: const EdgeInsets.fromLTRB(42, 10, 42, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _SectionTitle('路由配置'),
-            const SizedBox(height: 8),
             _SettingRow(
               title: '更新数据包(Geo)',
-              subtitle: '上次更新时间2025-08-08',
+              subtitle: _geoUpdatedSubtitle(),
               trailing: _GeoUpdateButton(
                 label: geoLabel,
                 percent: geoPercent,
@@ -248,6 +326,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 onPressed: _updateGeoData,
               ),
             ),
+            const SizedBox(height: 12),
+            const _SectionTitle('路由配置'),
+            const SizedBox(height: 8),
             _SettingRow(
               title: '路由策略',
               subtitle: '默认使用AsIs规则，本地资源消耗最小',
@@ -297,6 +378,56 @@ class _SettingsPageState extends State<SettingsPage> {
                 onChanged: (v) => _setAndSave(() => blockAds = v),
               ),
             ),
+            const SizedBox(height: 16),
+            const _SectionTitle('高级配置'),
+            const SizedBox(height: 8),
+            _SettingRow(
+              title: '启用 DNS 分流',
+              subtitle: '境内外流量使用不同 DNS，关闭后统一使用全局 DNS。',
+              trailing: _MiniSwitch(
+                value: vpnRoute,
+                onChanged: (v) => _setAndSave(() => vpnRoute = v),
+              ),
+            ),
+            _DnsSectionHeader(
+              expanded: dnsExpanded,
+              onTap: () => setState(() => dnsExpanded = !dnsExpanded),
+            ),
+            if (dnsExpanded) ...[
+              const SizedBox(height: 8),
+              _SettingRow(
+                title: '境外流量DNS',
+                subtitle: '访问境外使用的DNS，推荐国外DNS',
+                trailing: _EditableDnsField(
+                  controller: outerDns,
+                  onChanged: _saveAndAskRestart,
+                ),
+              ),
+              _SettingRow(
+                title: '境内流量DNS',
+                subtitle: '访问境内使用的DNS，推荐国内DNS',
+                trailing: _EditableDnsField(
+                  controller: innerDns,
+                  onChanged: _saveAndAskRestart,
+                ),
+              ),
+              _SettingRow(
+                title: '全局流量DNS',
+                subtitle: '不区分流量，全局一个DNS地址。推荐使用外网DNS地址，如Google的8.8.8.8',
+                trailing: _EditableDnsField(
+                  controller: globalDns,
+                  onChanged: _saveAndAskRestart,
+                ),
+              ),
+            ],
+            _SettingRow(
+              title: 'DoT (DNS over TLS)',
+              subtitle: '加密 DNS 查询，例如 tcp://1.1.1.1:853',
+              trailing: _EditableDnsField(
+                controller: dotDns,
+                onChanged: _saveAndAskRestart,
+              ),
+            ),
             _SettingRow(
               title: 'TUN 虚拟网卡模式',
               subtitle: '接管系统全局流量（默认开启）',
@@ -306,50 +437,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             const SizedBox(height: 16),
-            const _SectionTitle('DNS配置'),
-            const SizedBox(height: 8),
-            _SettingRow(
-              title: '启用VPN路由   端口: 10853',
-              subtitle: '如果需要直连国内和局域网地址，推荐启用。外网/内网独立DNS，更安全隐秘。',
-              trailing: _MiniSwitch(
-                value: vpnRoute,
-                onChanged: (v) => _setAndSave(() => vpnRoute = v),
-              ),
-            ),
-            _SettingRow(
-              title: 'DoT (DNS over TLS)',
-              subtitle: '加密 DNS 查询，例如 tcp://1.1.1.1:853',
-              trailing: _EditableDnsField(
-                controller: dotDns,
-                onChanged: () => _saveConfig(notify: true),
-              ),
-            ),
-            _SettingRow(
-              title: '境外流量DNS',
-              subtitle: '访问境外使用的DNS，推荐国外DNS',
-              trailing: _EditableDnsField(
-                controller: outerDns,
-                onChanged: () => _saveConfig(notify: true),
-              ),
-            ),
-            _SettingRow(
-              title: '境内流量DNS',
-              subtitle: '访问境内使用的DNS，推荐国内DNS',
-              trailing: _EditableDnsField(
-                controller: innerDns,
-                onChanged: () => _saveConfig(notify: true),
-              ),
-            ),
-            _SettingRow(
-              title: '全局流量DNS',
-              subtitle: '不区分流量，全局一个DNS地址。推荐使用外网DNS地址，如Google的8.8.8.8',
-              trailing: _EditableDnsField(
-                controller: globalDns,
-                onChanged: () => _saveConfig(notify: true),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const _SectionTitle('常规与系统设置'),
+            const _SectionTitle('其他'),
             const SizedBox(height: 8),
             _SettingRow(
               title: '点击关闭 (X) 按钮',
@@ -357,8 +445,8 @@ class _SettingsPageState extends State<SettingsPage> {
               trailing: _DropdownText(
                 value: closeToTray ? '最小化到托盘' : '直接退出',
                 values: const ['最小化到托盘', '直接退出'],
-                onSelected: (value) => _setAndSave(
-                    () => closeToTray = (value == '最小化到托盘')),
+                onSelected: (value) =>
+                    _setAndSave(() => closeToTray = (value == '最小化到托盘')),
               ),
             ),
             if (Platform.isWindows)
@@ -398,6 +486,35 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 }
 
+class _DnsSectionHeader extends StatelessWidget {
+  const _DnsSectionHeader({required this.expanded, required this.onTap});
+
+  final bool expanded;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox(
+        height: 48,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            expanded ? 'DNS配置 <<' : 'DNS配置 >>',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF1A1A1A),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.text);
 
@@ -408,7 +525,7 @@ class _SectionTitle extends StatelessWidget {
     return Text(
       text,
       style: const TextStyle(
-        fontSize: 16,
+        fontSize: 20,
         fontWeight: FontWeight.w500,
         color: Color(0xFF1A1A1A),
       ),
@@ -475,11 +592,8 @@ class _GeoUpdateButton extends StatelessWidget {
                           color: Color(0xFF286AFC),
                         ),
                       )
-                    : const Icon(
-                        Icons.cloud_download_outlined,
-                        size: 16,
-                        color: Color(0xFF286AFC),
-                      ),
+                    : const LuxwapIcon(LuxwapIcons.cloudDownload,
+                        size: 16, color: Color(0xFF286AFC)),
               ),
             ),
           ],
@@ -503,7 +617,7 @@ class _SettingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: subtitle.isEmpty ? 36 : 48,
+      height: 58,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -518,8 +632,8 @@ class _SettingRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
                     color: Color(0xFF333333),
                   ),
                 ),
@@ -582,10 +696,14 @@ class _DropdownText extends StatelessWidget {
         children: [
           Text(
             value,
-            style: const TextStyle(fontSize: 12, color: LuxwapColors.neutral900, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+                fontSize: 18,
+                color: LuxwapColors.neutral900,
+                fontWeight: FontWeight.w400),
           ),
           const SizedBox(width: 2),
-          const Icon(Icons.arrow_drop_down, size: 15, color: LuxwapColors.neutral900),
+          const LuxwapIcon(LuxwapIcons.dropdown,
+              size: 15, color: LuxwapColors.neutral900),
         ],
       ),
     );
@@ -649,7 +767,10 @@ class _EditableDnsFieldState extends State<_EditableDnsField> {
             child: Text(
               widget.controller.text,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 12, color: LuxwapColors.neutral900, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                  fontSize: 12,
+                  color: LuxwapColors.neutral900,
+                  fontWeight: FontWeight.w500),
             ),
           ),
         ),
@@ -675,7 +796,10 @@ class _EditableDnsFieldState extends State<_EditableDnsField> {
             border: InputBorder.none,
             contentPadding: EdgeInsets.zero,
           ),
-          style: const TextStyle(fontSize: 12, color: LuxwapColors.neutral900, fontWeight: FontWeight.w500),
+          style: const TextStyle(
+              fontSize: 12,
+              color: LuxwapColors.neutral900,
+              fontWeight: FontWeight.w500),
         ),
       ),
     );
@@ -718,7 +842,8 @@ class _MiniSwitch extends StatelessWidget {
                 height: 23.6,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: value ? const Color(0xFF3E98F3) : const Color(0xFFB3B3B3),
+                  color:
+                      value ? const Color(0xFF3E98F3) : const Color(0xFFB3B3B3),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.12),

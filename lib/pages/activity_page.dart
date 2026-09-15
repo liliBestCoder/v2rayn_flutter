@@ -40,7 +40,9 @@ class _ActivityPageState extends State<ActivityPage> {
       final list = data['rankList'];
       if (list is List) {
         rankRows = list.map((item) {
-          final map = item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+          final map = item is Map
+              ? Map<String, dynamic>.from(item)
+              : <String, dynamic>{};
           final rank = map['rank']?.toString() ?? '';
           final reward = _rewardLabel(int.tryParse(rank) ?? 0);
           return _RankRow(
@@ -65,7 +67,8 @@ class _ActivityPageState extends State<ActivityPage> {
       return '${prefix.substring(0, 3)}***$domain';
     }
     // 用户名：保留前3 + *** + 后2
-    if (name.length <= 5) return '${name.substring(0, 2)}***${name.substring(name.length - 1)}';
+    if (name.length <= 5)
+      return '${name.substring(0, 2)}***${name.substring(name.length - 1)}';
     return '${name.substring(0, 3)}***${name.substring(name.length - 2)}';
   }
 
@@ -121,12 +124,12 @@ class _ActivityPageState extends State<ActivityPage> {
       color: Colors.white,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final contentWidth = constraints.maxWidth - 68;
+          final contentWidth = constraints.maxWidth - 84;
           return SingleChildScrollView(
             child: Align(
               alignment: Alignment.topLeft,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(48, 44, 48, 44),
+                padding: const EdgeInsets.fromLTRB(42, 50, 42, 44),
                 child: SizedBox(
                   width: contentWidth,
                   child: Column(
@@ -134,54 +137,55 @@ class _ActivityPageState extends State<ActivityPage> {
                     children: [
                       SizedBox(
                         width: contentWidth,
+                        height: 105,
                         child: const Center(
                           child: Text(
                             '分享有礼',
                             style: TextStyle(
-                              fontSize: 26,
+                              fontSize: 28,
                               fontWeight: FontWeight.w500,
                               color: Color(0xFF111111),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 15),
                       const Text(
                         '📝 分享有礼，1000人名额',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF111111),
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 15),
                       const Text(
                         '晒软件心得 / 教程等至论坛、视频平台、社交媒体、博客等，提交页面链接（非私链，客服可直接打开。私链无奖励！）参与评审。',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 18,
                           color: Color(0xFF555555),
                           height: 1.5,
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 20),
                       const Text(
                         '🏆 奖项设置',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF111111),
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 15),
                       const Text(
                         '一等奖(10 名): 1年VIP\n二等奖(20 名): 半年VIP\n三等奖(100 名): 季度VIP\n参与奖: 1个月 VIP',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 18,
                           color: Color(0xFF555555),
                           height: 1.5,
                         ),
                       ),
-                      const SizedBox(height: 36),
+                      const SizedBox(height: 15),
                       SizedBox(
                         width: contentWidth,
                         child: Center(
@@ -191,14 +195,14 @@ class _ActivityPageState extends State<ActivityPage> {
                                 const TextSpan(
                                   text: '剩余名额：  ',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 20,
                                     color: Color(0xFF3D3D3D),
                                   ),
                                 ),
                                 TextSpan(
                                   text: '$remaining',
                                   style: const TextStyle(
-                                    fontSize: 17,
+                                    fontSize: 20,
                                     fontWeight: FontWeight.w500,
                                     color: Color(0xFF286AFC),
                                   ),
@@ -208,7 +212,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 15),
                       SizedBox(
                         width: contentWidth,
                         child: Center(
@@ -230,13 +234,13 @@ class _ActivityPageState extends State<ActivityPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 15),
                       SizedBox(
                         width: contentWidth,
                         child: Center(
                           child: Container(
                             width: 510,
-                            height: 56,
+                            height: 48,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
@@ -256,7 +260,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                 fillColor: Colors.transparent,
                                 hintText: '提交链接',
                                 hintStyle: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 14,
                                   color: Color(0xFFB2B2B2),
                                 ),
                                 contentPadding: EdgeInsets.symmetric(
@@ -265,20 +269,20 @@ class _ActivityPageState extends State<ActivityPage> {
                                 ),
                               ),
                               style: const TextStyle(
-                                fontSize: 13,
+                                fontSize: 14,
                                 color: Color(0xFF111111),
                               ),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 15),
                       SizedBox(
                         width: contentWidth,
                         child: Center(
                           child: SizedBox(
                             width: 140,
-                            height: 54,
+                            height: 52,
                             child: FilledButton(
                               onPressed: loading ? null : _submit,
                               style: FilledButton.styleFrom(
@@ -292,7 +296,7 @@ class _ActivityPageState extends State<ActivityPage> {
                               child: Text(
                                 loading ? '提交中' : '发送',
                                 style: const TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -313,7 +317,8 @@ class _ActivityPageState extends State<ActivityPage> {
 }
 
 class _RankRow {
-  const _RankRow({required this.name, required this.date, required this.reward});
+  const _RankRow(
+      {required this.name, required this.date, required this.reward});
   final String name;
   final String date;
   final String reward;
@@ -326,12 +331,12 @@ class _RewardTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const headerStyle = TextStyle(
-      fontSize: 14,
+      fontSize: 16,
       fontWeight: FontWeight.w500,
       color: Color(0xFF1F2329),
     );
     const bodyStyle = TextStyle(
-      fontSize: 13,
+      fontSize: 12,
       color: Color(0xFF555555),
     );
 

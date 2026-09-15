@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../app_toast.dart';
 import '../theme/luxwap_theme.dart';
+import '../widgets/luxwap_icon.dart';
 
 /// 弹出帮助与文档对话框
 Future<void> showHelpDialog(BuildContext context, {int initialTab = 0}) {
@@ -43,7 +44,8 @@ class HelpPage extends StatefulWidget {
   State<HelpPage> createState() => _HelpPageState();
 }
 
-class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin {
+class _HelpPageState extends State<HelpPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -122,7 +124,8 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         children: [
           Row(
             children: [
-              const Icon(Icons.help_outline_rounded, color: LuxwapColors.brand500, size: 24),
+              const LuxwapIcon(LuxwapIcons.help,
+                  color: LuxwapColors.brand500, size: 24),
               const SizedBox(width: 10),
               const Text(
                 '帮助与文档中心',
@@ -135,7 +138,8 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
               const Spacer(),
               if (widget.isDialog && widget.onClose != null)
                 IconButton(
-                  icon: const Icon(Icons.close, color: LuxwapColors.neutral500, size: 20),
+                  icon: const LuxwapIcon(LuxwapIcons.close,
+                      color: LuxwapColors.neutral500, size: 20),
                   splashRadius: 18,
                   onPressed: widget.onClose,
                   tooltip: '关闭',
@@ -163,15 +167,17 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                     boxShadow: LuxwapShadows.card,
                   ),
                   labelColor: LuxwapColors.brand500,
-                  labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  labelStyle: const TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.w600),
                   unselectedLabelColor: LuxwapColors.neutral600,
-                  unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                  unselectedLabelStyle: const TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.w500),
                   tabs: const [
                     Tab(
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.menu_book_rounded, size: 14),
+                          LuxwapIcon(LuxwapIcons.book, size: 14),
                           SizedBox(width: 6),
                           Text('使用与帮助指南'),
                         ],
@@ -181,7 +187,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.privacy_tip_outlined, size: 14),
+                          LuxwapIcon(LuxwapIcons.privacy, size: 14),
                           SizedBox(width: 6),
                           Text('隐私保护协议'),
                         ],
@@ -203,11 +209,14 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: '搜索文档内容 (如: TUN, DoT, 拥堵, FAQ, UWP)...',
-                      hintStyle: const TextStyle(fontSize: 11, color: LuxwapColors.neutral500),
-                      prefixIcon: const Icon(Icons.search, size: 16, color: LuxwapColors.neutral500),
+                      hintStyle: const TextStyle(
+                          fontSize: 11, color: LuxwapColors.neutral500),
+                      prefixIcon: const LuxwapIcon(LuxwapIcons.search,
+                          size: 16, color: LuxwapColors.neutral500),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear, size: 14, color: LuxwapColors.neutral500),
+                              icon: const LuxwapIcon(LuxwapIcons.close,
+                                  size: 14, color: LuxwapColors.neutral500),
                               onPressed: () => _searchController.clear(),
                               splashRadius: 14,
                             )
@@ -217,9 +226,11 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                       focusedBorder: InputBorder.none,
                       filled: false,
                       fillColor: Colors.transparent,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 8),
                     ),
-                    style: const TextStyle(fontSize: 12, color: LuxwapColors.neutral900),
+                    style: const TextStyle(
+                        fontSize: 12, color: LuxwapColors.neutral900),
                   ),
                 ),
               ),
@@ -237,7 +248,8 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         return false;
       }
       if (_searchQuery.isEmpty) return true;
-      final fullText = '${sec.title} ${sec.content} ${sec.keywords.join(' ')}'.toLowerCase();
+      final fullText =
+          '${sec.title} ${sec.content} ${sec.keywords.join(' ')}'.toLowerCase();
       return fullText.contains(_searchQuery);
     }).toList();
 
@@ -267,7 +279,8 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
           child: filtered.isEmpty
               ? _buildEmptySearch()
               : ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
                   itemCount: filtered.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
@@ -326,7 +339,8 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                     color: LuxwapColors.brand50,
                     borderRadius: LuxwapRadius.rSm,
                   ),
-                  child: Icon(section.icon, size: 16, color: LuxwapColors.brand500),
+                  child: LuxwapIcon(section.icon,
+                      size: 16, color: LuxwapColors.brand500),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -340,14 +354,16 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: const BoxDecoration(
                     color: LuxwapColors.neutral200,
                     borderRadius: LuxwapRadius.rSm,
                   ),
                   child: Text(
                     section.badge,
-                    style: const TextStyle(fontSize: 10, color: LuxwapColors.neutral600),
+                    style: const TextStyle(
+                        fontSize: 10, color: LuxwapColors.neutral600),
                   ),
                 ),
               ],
@@ -403,10 +419,12 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: LuxwapRadius.rSm,
-                  border: Border.all(color: LuxwapColors.stateSuccess.withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: LuxwapColors.stateSuccess.withValues(alpha: 0.3)),
                 ),
                 child: const Center(
-                  child: Icon(Icons.verified_user_rounded, size: 20, color: LuxwapColors.stateSuccess),
+                  child: const LuxwapIcon(LuxwapIcons.verified,
+                      size: 20, color: LuxwapColors.stateSuccess),
                 ),
               ),
               const SizedBox(width: 14),
@@ -426,15 +444,21 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                         ),
                         const SizedBox(width: 10),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: LuxwapColors.stateSuccess.withValues(alpha: 0.4)),
+                            border: Border.all(
+                                color: LuxwapColors.stateSuccess
+                                    .withValues(alpha: 0.4)),
                           ),
                           child: const Text(
                             '最新生效日期：2026年9月11日',
-                            style: TextStyle(fontSize: 10, color: LuxwapColors.stateSuccess, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: LuxwapColors.stateSuccess,
+                                fontWeight: FontWeight.w500),
                           ),
                         ),
                       ],
@@ -458,7 +482,8 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
           child: filteredSections.isEmpty
               ? _buildEmptySearch()
               : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
                   itemCount: filteredSections.length,
                   itemBuilder: (context, index) {
                     final sec = filteredSections[index];
@@ -482,7 +507,8 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                                   height: 16,
                                   decoration: const BoxDecoration(
                                     color: LuxwapColors.brand500,
-                                    borderRadius: BorderRadius.all(Radius.circular(2)),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(2)),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -496,7 +522,8 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                                 ),
                                 const SizedBox(width: 8),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: sec.badgeBg,
                                     borderRadius: LuxwapRadius.rSm,
@@ -527,14 +554,17 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                             ...sec.points.map((pt) => Padding(
                                   padding: const EdgeInsets.only(bottom: 8),
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Container(
                                         width: 6,
                                         height: 6,
-                                        margin: const EdgeInsets.only(top: 6, right: 10),
+                                        margin: const EdgeInsets.only(
+                                            top: 6, right: 10),
                                         decoration: BoxDecoration(
-                                          color: pt.dotColor ?? LuxwapColors.brand500,
+                                          color: pt.dotColor ??
+                                              LuxwapColors.brand500,
                                           shape: BoxShape.circle,
                                         ),
                                       ),
@@ -549,7 +579,9 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                                             children: [
                                               TextSpan(
                                                 text: '${pt.title}：',
-                                                style: const TextStyle(fontWeight: FontWeight.w600),
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w600),
                                               ),
                                               TextSpan(text: pt.desc),
                                             ],
@@ -575,16 +607,19 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.search_off_rounded, size: 48, color: LuxwapColors.neutral400),
+          const LuxwapIcon(LuxwapIcons.searchOff,
+              size: 48, color: LuxwapColors.neutral400),
           const SizedBox(height: 12),
           Text(
             '未找到匹配 "$_searchQuery" 的文档内容',
-            style: const TextStyle(fontSize: 13, color: LuxwapColors.neutral500),
+            style:
+                const TextStyle(fontSize: 13, color: LuxwapColors.neutral500),
           ),
           const SizedBox(height: 8),
           TextButton(
             onPressed: () => _searchController.clear(),
-            child: const Text('清空搜索条件', style: TextStyle(fontSize: 12, color: LuxwapColors.brand500)),
+            child: const Text('清空搜索条件',
+                style: TextStyle(fontSize: 12, color: LuxwapColors.brand500)),
           ),
         ],
       ),
@@ -628,7 +663,8 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         points: [
           _PrivacyPoint(
             title: '账户与注册信息',
-            desc: '电子邮箱地址（用于用户身份标识与安全验证码发送）；账户密码（在服务器端经不可逆强哈希加密算法存储，本软件绝不以明文形式保存或传输）；第三方授权信息（Google、X、Facebook 授权仅获取公开 OpenID 及邮箱，绝不获取您的社交好友关系或第三方账号密码）。',
+            desc:
+                '电子邮箱地址（用于用户身份标识与安全验证码发送）；账户密码（在服务器端经不可逆强哈希加密算法存储，本软件绝不以明文形式保存或传输）；第三方授权信息（Google、X、Facebook 授权仅获取公开 OpenID 及邮箱，绝不获取您的社交好友关系或第三方账号密码）。',
           ),
           _PrivacyPoint(
             title: '服务运行与订阅信息',
@@ -636,7 +672,8 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
           ),
           _PrivacyPoint(
             title: '设备与技术信息',
-            desc: '设备操作系统版本（如 Windows 10/11 或 macOS，用于适配最佳代理核心架构组件）；应用版本（用于检测最新可用更新与推送安全补丁）。',
+            desc:
+                '设备操作系统版本（如 Windows 10/11 或 macOS，用于适配最佳代理核心架构组件）；应用版本（用于检测最新可用更新与推送安全补丁）。',
           ),
         ],
       ),
@@ -684,7 +721,8 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
           ),
           _PrivacyPoint(
             title: '代理信道保护',
-            desc: '所有网络代理传输均采用强加密协议（VLESS + TLS / XTLS / ChaCha20），保障公用 Wi-Fi 及不可信网络环境下的通信安全。',
+            desc:
+                '所有网络代理传输均采用强加密协议（VLESS + TLS / XTLS / ChaCha20），保障公用 Wi-Fi 及不可信网络环境下的通信安全。',
           ),
           _PrivacyPoint(
             title: '系统代理安全重置',
@@ -702,7 +740,8 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         points: [
           _PrivacyPoint(
             title: '本地配置文件路径',
-            desc: 'Windows 系统存储于 %APPDATA%\\luxwap\\config.json；macOS 系统存储于 ~/Library/Application Support/luxwap/config.json。您可随时在客户端重置或在本地手动清除。',
+            desc:
+                'Windows 系统存储于 %APPDATA%\\luxwap\\config.json；macOS 系统存储于 ~/Library/Application Support/luxwap/config.json。您可随时在客户端重置或在本地手动清除。',
           ),
         ],
       ),
@@ -737,7 +776,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         category: '入门',
         badge: '基础指引',
         title: '1. 快速入门：账号登录与注册',
-        icon: Icons.person_outline,
+        icon: LuxwapIcons.userOutline,
         keywords: ['登录', '注册', 'oauth', '邮箱', 'google', 'twitter'],
         content: '1. 登录与注册切换：在主界面上方通过「账号登录」与「账号注册」双 Tab 无缝切换。\n'
             '2. 注册流程：输入有效电子邮箱与密码，点击「验证邮箱」获取 6 位验证码即可完成激活。\n'
@@ -747,7 +786,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         category: '拥堵',
         badge: '线路规范',
         title: '2. 线路选择与三色拥堵指标说明',
-        icon: Icons.alt_route,
+        icon: LuxwapIcons.route,
         keywords: ['线路', '拥堵', '绿色', '黄色', '红色', '延迟', '负载'],
         content: '点击任意线路卡片即可选择节点，窗口尺寸已锁死防抖动。节点右侧拥堵图标依据服务器实时负载展示：',
         extraWidget: Container(
@@ -784,7 +823,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         category: '功能',
         badge: '核心设置',
         title: '3. TUN 虚拟网卡与全流量接管',
-        icon: Icons.stream,
+        icon: LuxwapIcons.stream,
         keywords: ['tun', '虚拟网卡', 'wintun', '游戏', 'cmd', '命令行'],
         content: 'Luxwap 内置 2026 最新版网络加速核心与 Wintun 虚拟驱动。\n'
             '• TUN 模式默认开启，在系统网络底层建立虚拟 TUN 网卡通道。\n'
@@ -794,34 +833,37 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         category: '功能',
         badge: '安全加密',
         title: '4. DoT (DNS over TLS) 与路由分流策略',
-        icon: Icons.security,
+        icon: LuxwapIcons.security,
         keywords: ['dot', 'dns', 'tls', '分流', '直连', '广告过滤'],
-        content: '• DoT 加密 DNS：在「设置」中配置 DoT 地址（例如 tcp://1.1.1.1:853），所有域名解析均通过 TLS 加密传输，彻底杜绝本地运营商 DNS 劫持与污染。\n'
+        content:
+            '• DoT 加密 DNS：在「设置」中配置 DoT 地址（例如 tcp://1.1.1.1:853），所有域名解析均通过 TLS 加密传输，彻底杜绝本地运营商 DNS 劫持与污染。\n'
             '• 精准分流策略：支持自动直连本国 IP、直连国内常用域名、直连本地局域网设备 (NAS/打印机) 以及一键开启恶意广告拦截。',
       ),
       _HelpSection(
         category: '功能',
         badge: 'Windows 专享',
         title: '5. 解除 Win10/11 UWP 应用网络回环限制',
-        icon: Icons.window,
+        icon: LuxwapIcons.window,
         keywords: ['uwp', 'windows', '应用商店', '回环', 'loopback'],
-        content: 'Windows 系统的沙盒安全机制默认限制了微软应用商店及 UWP 应用（如 Windows Store、Netflix、Spotify）访问本地 127.0.0.1 代理。\n'
+        content:
+            'Windows 系统的沙盒安全机制默认限制了微软应用商店及 UWP 应用（如 Windows Store、Netflix、Spotify）访问本地 127.0.0.1 代理。\n'
             '在「设置」-「系统工具」中，直接点击「解除 UWP 应用回环限制」按钮，客户端将一键完成 CheckNetIsolation 批处理豁免，无需复杂手动配置。',
       ),
       _HelpSection(
         category: 'FAQ',
         badge: '常见疑问',
         title: '6. 常见问题：关闭客户端后浏览器无法上网？',
-        icon: Icons.question_answer_outlined,
+        icon: LuxwapIcons.question,
         keywords: ['faq', '无法上网', '断网', '代理残留', '注册表'],
-        content: '【安全防护保障】：Luxwap 在 Windows 原生层（C++ Win32）与 macOS 系统层均实现了退出守护。当您点击关闭按钮、托盘退出或强行终止时，客户端会自动清理系统代理注册表并还原为直连模式。\n'
+        content:
+            '【安全防护保障】：Luxwap 在 Windows 原生层（C++ Win32）与 macOS 系统层均实现了退出守护。当您点击关闭按钮、托盘退出或强行终止时，客户端会自动清理系统代理注册表并还原为直连模式。\n'
             '【排查建议】：若因机器意外断电导致代理残留，只需重新启动 Luxwap 点击一次「连接」再点击「断开」，系统代理设置即可自动完全还原。',
       ),
       _HelpSection(
         category: 'FAQ',
         badge: '常见疑问',
         title: '7. 常见问题：高 DPI 屏幕缩放与窗口防抖',
-        icon: Icons.aspect_ratio,
+        icon: LuxwapIcons.aspect,
         keywords: ['dpi', '缩放', '高分屏', '抖动', '4k'],
         content: '• 新版已针对 125%、150%、200% 等各种高分屏缩放比例做好了物理像素对齐适配，字体与卡片边缘清晰锐利。\n'
             '• 线路点选与延迟测速已从窗口几何尺寸监听器中完全解耦，连续快速切换线路时，窗口不会再出现任何缩放抖动。',
@@ -830,7 +872,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         category: '支持',
         badge: '联系我们',
         title: '8. 客户支持与问题反馈',
-        icon: Icons.support_agent,
+        icon: LuxwapIcons.support,
         keywords: ['客服', '支持', '邮箱', '反馈', '工单'],
         content: '如果您在配置使用或线路连接中遇到任何问题，欢迎随时联系支持团队：\n'
             '• 官方技术支持邮箱：support@luxwap.com\n'
@@ -840,16 +882,19 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
           children: [
             ElevatedButton.icon(
               onPressed: () {
-                Clipboard.setData(const ClipboardData(text: 'support@luxwap.com'));
+                Clipboard.setData(
+                    const ClipboardData(text: 'support@luxwap.com'));
                 showAppToast('技术支持邮箱已复制到剪贴板', success: true);
               },
-              icon: const Icon(Icons.copy, size: 13),
+              icon: const LuxwapIcon(LuxwapIcons.copy, size: 13),
               label: const Text('复制客服邮箱', style: TextStyle(fontSize: 11)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: LuxwapColors.brand500,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                shape: const RoundedRectangleBorder(borderRadius: LuxwapRadius.rLg),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                shape: const RoundedRectangleBorder(
+                    borderRadius: LuxwapRadius.rLg),
               ),
             ),
           ],
@@ -875,9 +920,12 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: const TextStyle(fontSize: 11, color: LuxwapColors.neutral700, height: 1.4),
+              style: const TextStyle(
+                  fontSize: 11, color: LuxwapColors.neutral700, height: 1.4),
               children: [
-                TextSpan(text: '$title: ', style: const TextStyle(fontWeight: FontWeight.w600)),
+                TextSpan(
+                    text: '$title: ',
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
                 TextSpan(text: desc),
               ],
             ),
@@ -902,7 +950,7 @@ class _HelpSection {
   final String category;
   final String badge;
   final String title;
-  final IconData icon;
+  final String icon;
   final List<String> keywords;
   final String content;
   final Widget? extraWidget;

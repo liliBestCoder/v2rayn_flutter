@@ -23,6 +23,9 @@ class AppState extends ChangeNotifier {
   String? token;
   UserInfo? userInfo;
   ClientConfig clientConfig = const ClientConfig();
+  int _proxyRestartRequest = 0;
+
+  int get proxyRestartRequest => _proxyRestartRequest;
 
   bool get isLoggedIn => token != null && token!.isNotEmpty && userInfo != null;
 
@@ -48,6 +51,14 @@ class AppState extends ChangeNotifier {
   Future<void> updateClientConfig(ClientConfig config) async {
     clientConfig = config;
     await configStore.save(config);
+    notifyListeners();
+  }
+
+  /// Requests the active line page to restart the running proxy with the
+  /// latest settings. The line page owns the core process and performs the
+  /// actual stop/start sequence.
+  void requestProxyRestart() {
+    _proxyRestartRequest++;
     notifyListeners();
   }
 
@@ -104,10 +115,10 @@ class AppState extends ChangeNotifier {
 
   Future<void> cleanupNetwork() async {
     try {
-      const MethodChannel('luxwap/window').invokeMethod('cleanProxy');
+      await const MethodChannel('luxwap/window').invokeMethod('cleanProxy');
     } catch (_) {}
     try {
-      const MethodChannel('luxwap/window').invokeMethod('killCore');
+      await const MethodChannel('luxwap/window').invokeMethod('killCore');
     } catch (_) {}
     if (Platform.isWindows) {
       try {

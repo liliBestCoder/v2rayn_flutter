@@ -13,6 +13,7 @@ import '../models/client_config.dart';
 import '../models/line_node.dart';
 import '../services/tun_route_manager.dart';
 import '../services/luxwap_config_builder.dart';
+import '../widgets/luxwap_icon.dart';
 
 class LinesPage extends StatefulWidget {
   const LinesPage({super.key});
@@ -38,11 +39,45 @@ class _LinesPageState extends State<LinesPage> {
   int? lastProxyDownKb;
   String speedText = '↑ 0kb/s  ↓ 0kb/s';
   bool _userInitiatedStop = false;
+  AppState? _observedAppState;
+  int _lastProxyRestartRequest = 0;
 
   @override
   void initState() {
     super.initState();
     _initialize();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final state = AppScope.of(context);
+    if (identical(_observedAppState, state)) return;
+    _observedAppState?.removeListener(_onAppStateChanged);
+    _observedAppState = state;
+    _lastProxyRestartRequest = state.proxyRestartRequest;
+    state.addListener(_onAppStateChanged);
+  }
+
+  void _onAppStateChanged() {
+    final state = _observedAppState;
+    if (!mounted || state == null) return;
+    final request = state.proxyRestartRequest;
+    if (request == _lastProxyRestartRequest) return;
+    _lastProxyRestartRequest = request;
+    if (connected && !switching) {
+      _restartProxyAfterSettingsChange();
+    }
+  }
+
+  Future<void> _restartProxyAfterSettingsChange() async {
+    if (!mounted || switching) return;
+    setState(() => switching = true);
+    try {
+      await _startProxy();
+    } finally {
+      if (mounted) setState(() => switching = false);
+    }
   }
 
   Future<void> _initialize() async {
@@ -86,8 +121,10 @@ class _LinesPageState extends State<LinesPage> {
     if (!mounted) {
       return;
     }
-    final matchedNode = loaded.where((node) => node.name == savedName).firstOrNull;
-    final selected = matchedNode?.raw ?? (loaded.isNotEmpty ? loaded.first.raw : null);
+    final matchedNode =
+        loaded.where((node) => node.name == savedName).firstOrNull;
+    final selected =
+        matchedNode?.raw ?? (loaded.isNotEmpty ? loaded.first.raw : null);
     setState(() {
       nodes = loaded;
       selectedRaw = selected;
@@ -107,7 +144,9 @@ class _LinesPageState extends State<LinesPage> {
     }
     if (Platform.environment.containsKey('FLUTTER_TEST')) {
       setState(() {
-        nodes = current.map((node) => node.copyWith(testingDelay: false, delayMs: 42)).toList();
+        nodes = current
+            .map((node) => node.copyWith(testingDelay: false, delayMs: 42))
+            .toList();
       });
       return;
     }
@@ -116,13 +155,50 @@ class _LinesPageState extends State<LinesPage> {
       nodes = current.map((node) => node.copyWith(testingDelay: true)).toList();
     });
     try {
-      final measured = await _measureDelaysBatch(current);
+      final state = AppScope.of(context);
+      final measured = _isTrafficExhausted(state.userInfo?.usedTraffic)
+          ? await _measureTcpPings(current)
+          : await _measureDelaysBatch(current);
       if (!mounted) {
         return;
       }
       setState(() => nodes = measured);
     } finally {
       testingDelays = false;
+    }
+  }
+
+  bool _isTrafficExhausted(String? usedTraffic) {
+    if (usedTraffic == null || usedTraffic.trim().isEmpty) return false;
+    final match = RegExp(r'[-+]?\d+(?:\.\d+)?').firstMatch(usedTraffic);
+    final used = double.tryParse(match?.group(0) ?? '');
+    return used != null && used >= 80;
+  }
+
+  Future<List<LineNode>> _measureTcpPings(List<LineNode> source) async {
+    await _speedtestLog('traffic exhausted: using tcp ping');
+    return Future.wait(source.map((node) async {
+      final delay = await _tcpPing(node.host, node.port);
+      return node.copyWith(delayMs: delay, testingDelay: false);
+    }));
+  }
+
+  Future<int> _tcpPing(String host, int port) async {
+    if (host.isEmpty || port <= 0) return -1;
+    final stopwatch = Stopwatch()..start();
+    Socket? socket;
+    try {
+      socket = await Socket.connect(
+        host,
+        port,
+        timeout: const Duration(seconds: 3),
+      );
+      return stopwatch.elapsedMilliseconds;
+    } catch (_) {
+      return -1;
+    } finally {
+      stopwatch.stop();
+      socket?.destroy();
     }
   }
 
@@ -231,7 +307,8 @@ class _LinesPageState extends State<LinesPage> {
     final exeDir = File(Platform.resolvedExecutable).parent.path;
     if (Platform.isMacOS) {
       // macOS .app bundle: Contents/MacOS/app → Contents/Resources/
-      final resDir = '${File(exeDir).parent.path}${Platform.pathSeparator}Resources';
+      final resDir =
+          '${File(exeDir).parent.path}${Platform.pathSeparator}Resources';
       return '$resDir${Platform.pathSeparator}bin${Platform.pathSeparator}luxwap_core';
     }
     return '$exeDir${Platform.pathSeparator}bin${Platform.pathSeparator}luxwap_core';
@@ -242,10 +319,12 @@ class _LinesPageState extends State<LinesPage> {
     final dir = _luxwapCoreDir();
     if (Platform.isMacOS) {
       final arch = _macCpuArch();
-      final p1 = '$dir${Platform.pathSeparator}$arch${Platform.pathSeparator}$coreName';
+      final p1 =
+          '$dir${Platform.pathSeparator}$arch${Platform.pathSeparator}$coreName';
       if (File(p1).existsSync()) return p1;
       final other = arch == 'arm64' ? 'amd64' : 'arm64';
-      final p2 = '$dir${Platform.pathSeparator}$other${Platform.pathSeparator}$coreName';
+      final p2 =
+          '$dir${Platform.pathSeparator}$other${Platform.pathSeparator}$coreName';
       if (File(p2).existsSync()) return p2;
       return p1;
     }
@@ -392,6 +471,7 @@ class _LinesPageState extends State<LinesPage> {
 
   @override
   void dispose() {
+    _observedAppState?.removeListener(_onAppStateChanged);
     _stopStatsPolling(resetText: false);
     _killProcess(speedtestProcess);
     _stopProxy(updateState: false);
@@ -426,20 +506,22 @@ class _LinesPageState extends State<LinesPage> {
                 const Text(
                   '线路列表',
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
                     color: Color(0xff1b1b1b),
                   ),
                 ),
                 const Spacer(),
                 ToolbarButton(
                     label: '筛选',
-                    iconWidget: const Icon(Icons.tune, size: 14, color: Color(0xff1b1b1b)),
+                    iconWidget: const LuxwapIcon(LuxwapIcons.settings,
+                        size: 14, color: Color(0xff1b1b1b)),
                     onTap: _showFilterMenu),
                 const SizedBox(width: 10),
                 ToolbarButton(
                     label: '刷新',
-                    iconWidget: const Icon(Icons.refresh, size: 14, color: Color(0xff1b1b1b)),
+                    iconWidget: const LuxwapIcon(LuxwapIcons.refresh,
+                        size: 14, color: Color(0xff1b1b1b)),
                     onTap: _load),
               ],
             ),
@@ -504,6 +586,9 @@ class _LinesPageState extends State<LinesPage> {
 
     await _stopProxy(updateState: false);
     await _cleanupBundledCoreProcesses();
+    // Give the OS time to release the previous core process and TUN adapter
+    // before creating the next one during rapid mode switches.
+    await Future<void>.delayed(const Duration(milliseconds: 250));
     final config = await _buildLuxwapCoreRuntimeConfig(
       node,
       state.clientConfig,
@@ -525,19 +610,20 @@ class _LinesPageState extends State<LinesPage> {
     }
 
     _userInitiatedStop = false;
-    coreProcess = await Process.start(
+    final startedProcess = await Process.start(
       corePath,
       ['run', '-c', 'stdin:'],
       runInShell: false,
       workingDirectory: File(Platform.resolvedExecutable).parent.path,
       environment: _luxwapCoreAssetEnvironment(),
     );
-    coreProcess!.exitCode.then((code) {
+    coreProcess = startedProcess;
+    startedProcess.exitCode.then((code) {
       _speedtestLog('runtime luxwap_core exitCode=$code');
-      if (isTun) {
+      if (isTun && identical(coreProcess, startedProcess)) {
         TunRouteManager.removeDirectNodeRoute();
       }
-      if (mounted && connected) {
+      if (mounted && connected && identical(coreProcess, startedProcess)) {
         setState(() => connected = false);
         _stopStatsPolling();
         if (!_userInitiatedStop) {
@@ -545,13 +631,16 @@ class _LinesPageState extends State<LinesPage> {
             SnackBar(
               behavior: SnackBarBehavior.floating,
               backgroundColor: const Color(0xFF1F2329),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
               margin: const EdgeInsets.only(bottom: 24, left: 32, right: 32),
               content: const Row(
                 children: [
-                  Icon(Icons.info_outline, color: Color(0xFF71AFFC), size: 18),
+                  LuxwapIcon(LuxwapIcons.info,
+                      color: Color(0xFF71AFFC), size: 18),
                   SizedBox(width: 8),
-                  Text('网络连接已断开', style: TextStyle(color: Colors.white, fontSize: 13)),
+                  Text('网络连接已断开',
+                      style: TextStyle(color: Colors.white, fontSize: 13)),
                 ],
               ),
               duration: const Duration(seconds: 2),
@@ -586,7 +675,8 @@ class _LinesPageState extends State<LinesPage> {
       // 等待 Wintun / utun 设备就绪并校验进程存活
       await Future<void>.delayed(const Duration(milliseconds: 300));
       if (await _hasProcessExited(coreProcess)) {
-        await _speedtestLog('runtime luxwap_core exited unexpectedly during tun init');
+        await _speedtestLog(
+            'runtime luxwap_core exited unexpectedly during tun init');
         coreProcess = null;
         await TunRouteManager.removeDirectNodeRoute();
         if (mounted) {
@@ -748,7 +838,8 @@ class _LinesPageState extends State<LinesPage> {
         final up = (current.$1 - previousUp).clamp(0, 1 << 31);
         final down = (current.$2 - previousDown).clamp(0, 1 << 31);
         if (mounted) {
-          setState(() => speedText = '↑ ${_formatSpeed(up)}  ↓ ${_formatSpeed(down)}');
+          setState(() =>
+              speedText = '↑ ${_formatSpeed(up)}  ↓ ${_formatSpeed(down)}');
         }
       } finally {
         client.close(force: true);
@@ -799,7 +890,7 @@ class _LinesPageState extends State<LinesPage> {
     if (Platform.isWindows) {
       if (!enable) {
         try {
-          MethodChannel('luxwap/window').invokeMethod('cleanProxy');
+          await MethodChannel('luxwap/window').invokeMethod('cleanProxy');
         } catch (_) {}
       }
       final script = enable
@@ -829,32 +920,42 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
     } else if (Platform.isMacOS) {
       if (!enable) {
         try {
-          const MethodChannel('luxwap/window').invokeMethod('cleanProxy');
+          await const MethodChannel('luxwap/window').invokeMethod('cleanProxy');
         } catch (_) {}
       }
       for (final iface in ['Wi-Fi', 'Ethernet', 'Thunderbolt Bridge']) {
         try {
           if (enable) {
-            await Process.run('networksetup', ['-setwebproxy', iface, '127.0.0.1', '10809']);
-            await Process.run('networksetup', ['-setwebproxystate', iface, 'on']);
-            await Process.run('networksetup', ['-setsocksfirewallproxy', iface, '127.0.0.1', '10808']);
-            await Process.run('networksetup', ['-setsocksfirewallproxystate', iface, 'on']);
+            await Process.run(
+                'networksetup', ['-setwebproxy', iface, '127.0.0.1', '10809']);
+            await Process.run(
+                'networksetup', ['-setwebproxystate', iface, 'on']);
+            await Process.run('networksetup',
+                ['-setsocksfirewallproxy', iface, '127.0.0.1', '10808']);
+            await Process.run(
+                'networksetup', ['-setsocksfirewallproxystate', iface, 'on']);
           } else {
-            await Process.run('networksetup', ['-setwebproxystate', iface, 'off']);
-            await Process.run('networksetup', ['-setsocksfirewallproxystate', iface, 'off']);
+            await Process.run(
+                'networksetup', ['-setwebproxystate', iface, 'off']);
+            await Process.run(
+                'networksetup', ['-setsocksfirewallproxystate', iface, 'off']);
           }
         } catch (_) {}
       }
     } else {
       const iface = 'eth0';
       if (enable) {
-        await Process.run('networksetup', ['-setwebproxy', iface, '127.0.0.1', '10809']);
+        await Process.run(
+            'networksetup', ['-setwebproxy', iface, '127.0.0.1', '10809']);
         await Process.run('networksetup', ['-setwebproxystate', iface, 'on']);
-        await Process.run('networksetup', ['-setsocksfirewallproxy', iface, '127.0.0.1', '10808']);
-        await Process.run('networksetup', ['-setsocksfirewallproxystate', iface, 'on']);
+        await Process.run('networksetup',
+            ['-setsocksfirewallproxy', iface, '127.0.0.1', '10808']);
+        await Process.run(
+            'networksetup', ['-setsocksfirewallproxystate', iface, 'on']);
       } else {
         await Process.run('networksetup', ['-setwebproxystate', iface, 'off']);
-        await Process.run('networksetup', ['-setsocksfirewallproxystate', iface, 'off']);
+        await Process.run(
+            'networksetup', ['-setsocksfirewallproxystate', iface, 'off']);
       }
     }
   }
@@ -957,8 +1058,8 @@ class StatusBar extends StatelessWidget {
                   : const Color(0xFFEEEEEE),
             ),
             child: Center(
-              child: Icon(
-                Icons.rocket_launch_outlined,
+              child: LuxwapIcon(
+                LuxwapIcons.rocket,
                 size: 20,
                 color: connected ? Colors.white : const Color(0xFF999BAB),
               ),
@@ -969,7 +1070,7 @@ class StatusBar extends StatelessWidget {
             connected ? '已连接' : '未连接',
             style: TextStyle(
               color: connected ? Colors.white : const Color(0xFF999BAB),
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -989,8 +1090,8 @@ class StatusBar extends StatelessWidget {
             connected ? 'STOP' : 'START',
             style: TextStyle(
               color: connected ? Colors.white : const Color(0xFF999BAB),
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontSize: 20,
+              fontWeight: FontWeight.w400,
               letterSpacing: 0.5,
             ),
           ),
@@ -1026,11 +1127,8 @@ class StatusBar extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(3),
                               ),
                             )
-                          : const Icon(
-                              Icons.play_arrow_rounded,
-                              color: Colors.white,
-                              size: 28,
-                            ),
+                          : const LuxwapIcon(LuxwapIcons.play,
+                              color: Colors.white, size: 28),
                     ),
             ),
           ),
@@ -1058,7 +1156,7 @@ class ToolbarButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(159),
       child: Container(
-        height: 32,
+        height: 30,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
           color: const Color(0xFFF2F3F7),
@@ -1074,7 +1172,7 @@ class ToolbarButton extends StatelessWidget {
               label,
               style: const TextStyle(
                 color: Color(0xFF1B1B1B),
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -1115,13 +1213,13 @@ class RegionGroup extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.location_on_outlined,
-                    size: 18, color: Color(0xFF1B1B1B)),
+                const LuxwapIcon(LuxwapIcons.location,
+                    size: 20, color: Color(0xFF1B1B1B)),
                 const SizedBox(width: 10),
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 20,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF1B1B1B),
                   ),
@@ -1183,7 +1281,8 @@ class LineRow extends StatelessWidget {
                 height: 24,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: selected ? const Color(0xFF286AFC) : Colors.transparent,
+                  color:
+                      selected ? const Color(0xFF286AFC) : Colors.transparent,
                   border: selected
                       ? null
                       : Border.all(color: const Color(0xFFDFDFDF), width: 1.5),
@@ -1195,8 +1294,8 @@ class LineRow extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w400,
                   color: Color(0xFF111111),
                 ),
               ),
@@ -1273,7 +1372,7 @@ class _DelayText extends StatelessWidget {
   Widget build(BuildContext context) {
     if (node.testingDelay) {
       return const Text(
-        '测试中',
+        '刷新中',
         textAlign: TextAlign.right,
         style: TextStyle(
           color: Color(0xFF286AFC),
@@ -1312,7 +1411,7 @@ class _DelayText extends StatelessWidget {
             text: '${node.delayMs}',
             style: const TextStyle(
               color: Color(0xFF286AFC),
-              fontSize: 16,
+              fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1320,7 +1419,7 @@ class _DelayText extends StatelessWidget {
             text: ' /ms',
             style: TextStyle(
               color: Color(0xFF666666),
-              fontSize: 12,
+              fontSize: 20,
               fontWeight: FontWeight.w400,
             ),
           ),

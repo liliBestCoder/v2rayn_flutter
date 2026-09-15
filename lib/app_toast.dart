@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'theme/luxwap_theme.dart';
+import 'widgets/luxwap_icon.dart';
 
 final rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
@@ -30,12 +31,11 @@ void showAppToast(String message, {bool success = false}) {
         ),
         content: Row(
           children: [
-            Icon(
-              success ? Icons.check_circle_outline : Icons.error_outline,
+            LuxwapIcon(
+              success ? LuxwapIcons.check : LuxwapIcons.info,
               size: 18,
-              color: success
-                  ? LuxwapColors.stateSuccess
-                  : LuxwapColors.stateError,
+              color:
+                  success ? LuxwapColors.stateSuccess : LuxwapColors.stateError,
             ),
             const SizedBox(width: 10),
             Expanded(

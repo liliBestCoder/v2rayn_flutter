@@ -89,9 +89,13 @@ class _LuxwapAppState extends State<LuxwapApp> {
 
   Future<void> _syncWindowSize(bool loggedIn) async {
     try {
+      await _windowChannel.invokeMethod('setMinimumSize', {
+        'width': loggedIn ? 1000 : 540,
+        'height': loggedIn ? 700 : 900,
+      });
       await _windowChannel.invokeMethod('setSize', {
-        'width': loggedIn ? 1194 : 440,
-        'height': loggedIn ? 850 : 720,
+        'width': loggedIn ? 1100 : 540,
+        'height': loggedIn ? 760 : 900,
         'center': true,
       });
     } catch (_) {}

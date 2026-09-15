@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../app_state.dart';
 import '../app_toast.dart';
 import '../theme/luxwap_theme.dart';
+import '../widgets/luxwap_icon.dart';
 import 'change_password_dialog.dart';
 
 class PersonalCenterPage extends StatelessWidget {
@@ -15,14 +16,14 @@ class PersonalCenterPage extends StatelessWidget {
     final user = state.userInfo;
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(40, 14, 40, 14),
+      padding: const EdgeInsets.fromLTRB(42, 17, 42, 14),
       child: ListView(
         children: [
           const Text(
             '积分',
             style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
               color: Color(0xFF111111),
             ),
           ),
@@ -32,8 +33,8 @@ class PersonalCenterPage extends StatelessWidget {
           const Text(
             '个人资料',
             style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
               color: Color(0xFF111111),
             ),
           ),
@@ -54,11 +55,8 @@ class PersonalCenterPage extends StatelessWidget {
                     children: [
                       IconButton(
                         tooltip: '复制邮箱',
-                        icon: const Icon(
-                          Icons.copy_rounded,
-                          size: 18,
-                          color: Color(0xFF286AFC),
-                        ),
+                        icon: const LuxwapIcon(LuxwapIcons.copy,
+                            size: 18, color: Color(0xFF286AFC)),
                         onPressed: () {
                           final em = user?.username ?? '';
                           if (em.isNotEmpty) {
@@ -106,7 +104,7 @@ class PersonalCenterPage extends StatelessWidget {
                   foregroundColor: Colors.white,
                   elevation: 0,
                   textStyle: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 18,
                     fontWeight: FontWeight.w500,
                   ),
                   shape: RoundedRectangleBorder(
@@ -405,7 +403,7 @@ class ProfileRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 48,
+      height: 58,
       child: Stack(
         children: [
           Row(
@@ -417,7 +415,8 @@ class ProfileRow extends StatelessWidget {
                 child: Text(
                   label,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w500,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w400,
                     color: Color(0xff1b1b1b),
                   ),
                 ),
@@ -425,7 +424,7 @@ class ProfileRow extends StatelessWidget {
               Expanded(
                 child: SelectableText(
                   value.isEmpty ? '-' : value,
-                  style: const TextStyle(fontSize: 14),
+                  style: const TextStyle(fontSize: 20),
                 ),
               ),
               if (trailing != null)
@@ -494,7 +493,7 @@ class PointsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 110,
+      height: 150,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -513,7 +512,7 @@ class PointsCard extends StatelessWidget {
                   Text(
                     '等级',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 20,
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF111111),
                     ),
@@ -531,12 +530,13 @@ class PointsCard extends StatelessWidget {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.swap_horiz, size: 16, color: Color(0xFFFF8800)),
+                    const LuxwapIcon(LuxwapIcons.arrowRight,
+                        size: 16, color: Color(0xFFFF8800)),
                     SizedBox(width: 4),
                     Text(
                       '积分换流量>>',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 18,
                         fontWeight: FontWeight.w500,
                         color: Color(0xFFFF8800),
                       ),
@@ -555,7 +555,7 @@ class PointsCard extends StatelessWidget {
                   Text(
                     '下一级',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF666666),
                     ),
@@ -563,7 +563,7 @@ class PointsCard extends StatelessWidget {
                   Text(
                     '1000/3000',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 12,
                       color: Color(0xFF666666),
                       fontWeight: FontWeight.w400,
                     ),

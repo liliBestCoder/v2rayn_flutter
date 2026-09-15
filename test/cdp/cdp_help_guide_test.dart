@@ -5,7 +5,8 @@ import 'package:v2rayn_flutter/pages/help_page.dart';
 
 void main() {
   group('CDP UI Integration Tests - Help Page & Documentation Center', () {
-    testWidgets('Renders help guide tab and category pills by default', (tester) async {
+    testWidgets('Renders help guide tab and category pills by default',
+        (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -30,7 +31,9 @@ void main() {
       expect(find.text('2. 线路选择与三色拥堵指标说明'), findsOneWidget);
     });
 
-    testWidgets('Switching to privacy policy tab renders No-Logs banner and content', (tester) async {
+    testWidgets(
+        'Switching to privacy policy tab renders No-Logs banner and content',
+        (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -49,7 +52,8 @@ void main() {
       expect(find.textContaining('Luxwap 隐私保护协议'), findsOneWidget);
     });
 
-    testWidgets('Search query filters help sections and clear button works', (tester) async {
+    testWidgets('Search query filters help sections and clear button works',
+        (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -67,7 +71,7 @@ void main() {
       expect(find.text('1. 快速入门：账号登录与注册'), findsNothing);
 
       // Clear search
-      await tester.tap(find.byIcon(Icons.clear));
+      await tester.tap(find.byType(IconButton).last);
       await tester.pumpAndSettle();
 
       expect(find.text('1. 快速入门：账号登录与注册'), findsOneWidget);
@@ -91,7 +95,8 @@ void main() {
       expect(find.text('1. 快速入门：账号登录与注册'), findsNothing);
     });
 
-    testWidgets('showHelpDialog opens modal dialog with close button', (tester) async {
+    testWidgets('showHelpDialog opens modal dialog with close button',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -111,16 +116,18 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('帮助与文档中心'), findsOneWidget);
-      expect(find.byIcon(Icons.close), findsOneWidget);
+      expect(find.byTooltip('关闭'), findsOneWidget);
 
       // Close dialog
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(find.byTooltip('关闭'));
       await tester.pumpAndSettle();
 
       expect(find.text('帮助与文档中心'), findsNothing);
     });
 
-    testWidgets('AboutPage strictly adheres to Figma prototype without extra help links', (tester) async {
+    testWidgets(
+        'AboutPage strictly adheres to Figma prototype without extra help links',
+        (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

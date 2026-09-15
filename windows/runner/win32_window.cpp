@@ -202,8 +202,10 @@ Win32Window::MessageHandler(HWND hwnd,
 
     case WM_GETMINMAXINFO: {
       auto info = reinterpret_cast<MINMAXINFO*>(lparam);
-      info->ptMinTrackSize.x = 440;
-      info->ptMinTrackSize.y = 600;
+      const UINT dpi = GetDpiForWindow(hwnd);
+      const double scale_factor = dpi > 0 ? dpi / 96.0 : 1.0;
+      info->ptMinTrackSize.x = Scale(minimum_width_, scale_factor);
+      info->ptMinTrackSize.y = Scale(minimum_height_, scale_factor);
       return 0;
     }
 
@@ -239,6 +241,15 @@ Win32Window::MessageHandler(HWND hwnd,
   }
 
   return DefWindowProc(window_handle_, message, wparam, lparam);
+}
+
+void Win32Window::SetMinimumSize(unsigned int width, unsigned int height) {
+  minimum_width_ = width;
+  minimum_height_ = height;
+  if (window_handle_ != nullptr) {
+    SetWindowPos(window_handle_, nullptr, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+  }
 }
 
 void Win32Window::Destroy() {

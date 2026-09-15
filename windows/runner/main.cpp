@@ -27,8 +27,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   int screen_w = GetSystemMetrics(SM_CXSCREEN);
   int screen_h = GetSystemMetrics(SM_CYSCREEN);
-  int win_w = 1194;
-  int win_h = 850;
+  int win_w = 1100;
+  int win_h = 760;
   int x = (screen_w - win_w) / 2;
   int y = (screen_h - win_h) / 2;
   Win32Window::Point origin(x > 0 ? x : 50, y > 0 ? y : 50);

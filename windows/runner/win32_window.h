@@ -56,6 +56,9 @@ class Win32Window {
   void SetCloseToTray(bool close_to_tray);
   bool GetCloseToTray() const;
 
+  // Sets the logical minimum client size for the current window mode.
+  void SetMinimumSize(unsigned int width, unsigned int height);
+
   // Static helper to cleanly restore Windows Internet proxy settings.
   static void CleanSystemProxy();
 
@@ -106,6 +109,8 @@ class Win32Window {
 
   bool quit_on_close_ = false;
   bool close_to_tray_ = true;
+  unsigned int minimum_width_ = 440;
+  unsigned int minimum_height_ = 600;
 
   // window handle for top level window.
   HWND window_handle_ = nullptr;
