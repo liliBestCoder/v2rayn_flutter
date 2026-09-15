@@ -367,237 +367,244 @@ class _UserHeader extends StatelessWidget {
         color: Colors.white,
       ),
       padding: const EdgeInsets.fromLTRB(42, 42, 42, 41),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  nick,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF1F2329),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '登录邮箱：$username',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF666666),
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final cardWidth = (constraints.maxWidth * 0.43).clamp(320.0, 399.0);
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      '账号等级：',
-                      style: TextStyle(color: Color(0xFF666666), fontSize: 18),
-                    ),
                     Text(
-                      level,
-                      style: const TextStyle(fontSize: 18, height: 1),
+                      nick,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF1F2329),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '登录邮箱：$username',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFF666666),
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Text(
+                          '账号等级：',
+                          style:
+                              TextStyle(color: Color(0xFF666666), fontSize: 18),
+                        ),
+                        Text(
+                          level,
+                          style: const TextStyle(fontSize: 18, height: 1),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    _HeaderActionButton(
+                      label: '交易记录',
+                      color: const Color(0xFF27C36A),
+                      background: const Color(0xFFEBF8F0),
+                      icon: const LuxwapIcon(LuxwapIcons.copy, size: 20),
+                      onPressed: onTrade,
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                _HeaderActionButton(
-                  label: '交易记录',
-                  color: const Color(0xFF27C36A),
-                  background: const Color(0xFFEBF8F0),
-                  icon: const LuxwapIcon(LuxwapIcons.copy, size: 20),
-                  onPressed: onTrade,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 42),
-          // Blue Traffic Card
-          Container(
-            width: 399,
-            height: 180,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF286AFC), Color(0xFF3E98F3)],
               ),
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF286AFC).withValues(alpha: 0.25),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
+              const SizedBox(width: 42),
+              // Blue Traffic Card
+              Container(
+                width: cardWidth,
+                height: 180,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF286AFC), Color(0xFF3E98F3)],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF286AFC).withValues(alpha: 0.25),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
+                padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      '流量套餐信息',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    InkWell(
-                      onTap: onRenew,
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF27C36A),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          '充值中心',
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          '流量套餐信息',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: 20,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    const Text(
-                      '已用流量 ',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Text(
-                      '$usedTraffic GB',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    RichText(
-                      text: const TextSpan(
-                        children: [
-                          TextSpan(
-                              text: '总流量',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500)),
-                          TextSpan(text: '  '),
-                          TextSpan(
-                              text: '80GB',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w400)),
-                        ],
-                      ),
-                    ),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          const TextSpan(
-                              text: '有效期',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500)),
-                          const TextSpan(text: '  '),
-                          TextSpan(
-                              text: expiration,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w400)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                // Capsule progress bar with white rounded thumb knob
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final barWidth = constraints.maxWidth;
-                    const trackHeight = 12.0;
-                    const thumbWidth = 44.0;
-                    final usedNum = double.tryParse(usedTraffic) ?? 0.0;
-                    final factor = (usedNum / 80.0).clamp(0.0, 1.0);
-                    final activeWidth =
-                        (barWidth * factor).clamp(thumbWidth, barWidth);
-                    return Container(
-                      width: barWidth,
-                      height: trackHeight,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.22),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Stack(
-                        alignment: Alignment.centerLeft,
-                        children: [
-                          Container(
-                            width: activeWidth,
-                            height: trackHeight,
+                        InkWell(
+                          onTap: onRenew,
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 4),
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF38B2FF), Colors.white],
-                              ),
-                              borderRadius: BorderRadius.circular(100),
+                              color: const Color(0xFF27C36A),
+                              borderRadius: BorderRadius.circular(20),
                             ),
-                          ),
-                          Positioned(
-                            left: (activeWidth - thumbWidth)
-                                .clamp(0.0, barWidth - thumbWidth),
-                            child: Container(
-                              width: thumbWidth,
-                              height: trackHeight,
-                              decoration: BoxDecoration(
+                            child: const Text(
+                              '充值中心',
+                              style: TextStyle(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(100),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.18),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 1),
-                                  ),
-                                ],
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    );
-                  },
+                        ),
+                      ],
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        const Text(
+                          '已用流量 ',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          '$usedTraffic GB',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        RichText(
+                          text: const TextSpan(
+                            children: [
+                              TextSpan(
+                                  text: '总流量',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500)),
+                              TextSpan(text: '  '),
+                              TextSpan(
+                                  text: '80GB',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w400)),
+                            ],
+                          ),
+                        ),
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              const TextSpan(
+                                  text: '有效期',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500)),
+                              const TextSpan(text: '  '),
+                              TextSpan(
+                                  text: expiration,
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w400)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Capsule progress bar with white rounded thumb knob
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final barWidth = constraints.maxWidth;
+                        const trackHeight = 12.0;
+                        const thumbWidth = 44.0;
+                        final usedNum = double.tryParse(usedTraffic) ?? 0.0;
+                        final factor = (usedNum / 80.0).clamp(0.0, 1.0);
+                        final activeWidth =
+                            (barWidth * factor).clamp(thumbWidth, barWidth);
+                        return Container(
+                          width: barWidth,
+                          height: trackHeight,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.22),
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.centerLeft,
+                            children: [
+                              Container(
+                                width: activeWidth,
+                                height: trackHeight,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF38B2FF), Colors.white],
+                                  ),
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
+                              ),
+                              Positioned(
+                                left: (activeWidth - thumbWidth)
+                                    .clamp(0.0, barWidth - thumbWidth),
+                                child: Container(
+                                  width: thumbWidth,
+                                  height: trackHeight,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(100),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black
+                                            .withValues(alpha: 0.18),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
+import '../theme/luxwap_theme.dart';
 
 class TradeManagerPage extends StatefulWidget {
   const TradeManagerPage({super.key});
@@ -263,38 +264,38 @@ class TradeBillCard extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   '订单：${record.title}',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF000000),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: LuxwapTypography.heading2.copyWith(
+                    color: LuxwapColors.neutral900,
                   ),
                 ),
                 Text(
                   '有效期：${record.paidAt != '-' ? record.paidAt : record.createdAt}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFF3D3D3D),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: LuxwapTypography.heading3.copyWith(
+                    color: LuxwapColors.neutral700,
                   ),
                 ),
                 Text(
                   '订单号：${record.orderNo}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFFB2B2B2),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: LuxwapTypography.heading6.copyWith(
+                    color: LuxwapColors.neutral400,
                   ),
                 ),
                 Text(
                   '开始时间：${record.createdAt}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFFB2B2B2),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: LuxwapTypography.heading6.copyWith(
+                    color: LuxwapColors.neutral400,
                   ),
                 ),
               ],
@@ -308,18 +309,14 @@ class TradeBillCard extends StatelessWidget {
             children: [
               Text(
                 record.amount,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF000000),
+                style: LuxwapTypography.heading2.copyWith(
+                  color: LuxwapColors.neutral900,
                 ),
               ),
-              const SizedBox(height: 38),
+              const Spacer(),
               Text(
                 record.status,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
+                style: LuxwapTypography.heading3.copyWith(
                   color: record.statusColor,
                 ),
               ),
