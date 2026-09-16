@@ -144,7 +144,7 @@ class _ActivityPageState extends State<ActivityPage> {
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w500,
-                              color: Color(0xFF111111),
+                              color: Color(0xFF000000),
                             ),
                           ),
                         ),
@@ -155,7 +155,7 @@ class _ActivityPageState extends State<ActivityPage> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF111111),
+                          color: Color(0xFF000000),
                         ),
                       ),
                       const SizedBox(height: 15),
@@ -163,8 +163,7 @@ class _ActivityPageState extends State<ActivityPage> {
                         '晒软件心得 / 教程等至论坛、视频平台、社交媒体、博客等，提交页面链接（非私链，客服可直接打开。私链无奖励！）参与评审。',
                         style: TextStyle(
                           fontSize: 18,
-                          color: Color(0xFF555555),
-                          height: 1.5,
+                          color: Color(0xFF3D3D3D),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -173,7 +172,7 @@ class _ActivityPageState extends State<ActivityPage> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF111111),
+                          color: Color(0xFF000000),
                         ),
                       ),
                       const SizedBox(height: 15),
@@ -181,8 +180,7 @@ class _ActivityPageState extends State<ActivityPage> {
                         '一等奖(10 名): 1年VIP\n二等奖(20 名): 半年VIP\n三等奖(100 名): 季度VIP\n参与奖: 1个月 VIP',
                         style: TextStyle(
                           fontSize: 18,
-                          color: Color(0xFF555555),
-                          height: 1.5,
+                          color: Color(0xFF3D3D3D),
                         ),
                       ),
                       const SizedBox(height: 15),
@@ -204,7 +202,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                   style: const TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w500,
-                                    color: Color(0xFF286AFC),
+                                    color: Color(0xFF297CE7),
                                   ),
                                 ),
                               ],
@@ -220,9 +218,9 @@ class _ActivityPageState extends State<ActivityPage> {
                             width: 510,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(15),
                               border: Border.all(
-                                color: const Color(0xFFEEEEEE),
+                                color: const Color(0xFFDFDFDF),
                                 width: 1,
                               ),
                             ),
@@ -243,9 +241,9 @@ class _ActivityPageState extends State<ActivityPage> {
                             height: 48,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                color: const Color(0xFFEEEEEE),
+                                color: const Color(0xFFDFDFDF),
                                 width: 1,
                               ),
                             ),
@@ -270,7 +268,7 @@ class _ActivityPageState extends State<ActivityPage> {
                               ),
                               style: const TextStyle(
                                 fontSize: 14,
-                                color: Color(0xFF111111),
+                                color: Color(0xFF000000),
                               ),
                             ),
                           ),
@@ -290,7 +288,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                 foregroundColor: const Color(0xFF286AFC),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(15),
                                 ),
                               ),
                               child: Text(
@@ -337,7 +335,7 @@ class _RewardTable extends StatelessWidget {
     );
     const bodyStyle = TextStyle(
       fontSize: 12,
-      color: Color(0xFF555555),
+      color: Color(0xFF3D3D3D),
     );
 
     final displayRows = rows.length >= 6

@@ -24,7 +24,7 @@ class PersonalCenterPage extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF111111),
+              color: Color(0xFF000000),
             ),
           ),
           const SizedBox(height: 8),
@@ -35,15 +35,15 @@ class PersonalCenterPage extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF111111),
+              color: Color(0xFF000000),
             ),
           ),
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: const Color(0xFFEEEEEE)),
-              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFDFDFDF)),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Column(
               children: [
@@ -93,11 +93,11 @@ class PersonalCenterPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          // Logout button (Figma: 160x40, r=20, fill=#297CE7)
+          // Logout button (Figma: 180x53, r=15, fill=#297CE7)
           Center(
             child: SizedBox(
-              width: 160,
-              height: 40,
+              width: 180,
+              height: 53,
               child: FilledButton(
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF297CE7),
@@ -108,7 +108,7 @@ class PersonalCenterPage extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(15),
                   ),
                 ),
                 onPressed: () => _showLogoutDialog(context),
@@ -117,7 +117,7 @@ class PersonalCenterPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 56),
-          // Feature cards grid (Frame 63: 4 cards, r=16, fill=#F7F7F8)
+          // Feature cards grid (Frame 63: 4 cards, 388x120, r=20, fill=#F7F7F8)
           const Column(
             children: [
               Row(
@@ -129,7 +129,7 @@ class PersonalCenterPage extends StatelessWidget {
                       iconAsset: 'assets/images/privacy_icon.png',
                     ),
                   ),
-                  SizedBox(width: 18),
+                  SizedBox(width: 24),
                   Expanded(
                     child: FeatureCard(
                       title: '隧道自由',
@@ -139,7 +139,7 @@ class PersonalCenterPage extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              SizedBox(height: 24),
               Row(
                 children: [
                   Expanded(
@@ -149,7 +149,7 @@ class PersonalCenterPage extends StatelessWidget {
                       iconAsset: 'assets/images/concurrency_icon.png',
                     ),
                   ),
-                  SizedBox(width: 18),
+                  SizedBox(width: 24),
                   Expanded(
                     child: FeatureCard(
                       title: '安全稳定',
@@ -312,7 +312,11 @@ class PersonalCenterPage extends StatelessWidget {
                 initialValue: countries.any((c) => c.$1 == selected)
                     ? selected
                     : countries.first.$1,
-                decoration: const InputDecoration(labelText: '国家'),
+                decoration: const InputDecoration(
+                  labelText: '国家',
+                  filled: true,
+                  fillColor: Color(0xfffafbfc),
+                ),
                 items: countries
                     .map((c) => DropdownMenuItem(
                           value: c.$1,
@@ -403,7 +407,7 @@ class ProfileRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 58,
+      height: 50,
       child: Stack(
         children: [
           Row(
@@ -465,20 +469,20 @@ class _PillButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(5),
       child: Container(
-        height: 32,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        height: 37,
+        padding: const EdgeInsets.symmetric(horizontal: 18),
         decoration: BoxDecoration(
           color: const Color(0xFFF7F7F8),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(5),
         ),
         alignment: Alignment.center,
         child: Text(
           text,
           style: const TextStyle(
-            fontSize: 13,
-            color: Color(0xFF333333),
+            fontSize: 16,
+            color: Color(0xFF1B1B1B),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -497,8 +501,8 @@ class PointsCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(color: const Color(0xFFEEEEEE)),
-        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFDFDFDF)),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -514,7 +518,7 @@ class PointsCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF111111),
+                      color: Color(0xFF000000),
                     ),
                   ),
                   SizedBox(width: 14),
@@ -646,12 +650,12 @@ class FeatureCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 72,
+      height: 120,
       decoration: BoxDecoration(
         color: const Color(0xfff7f7f8),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 33),
       child: Row(
         children: [
           Expanded(
@@ -662,24 +666,25 @@ class FeatureCard extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 19,
+                    fontWeight: FontWeight.w400,
                     color: Color(0xff1b1b1b),
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 11),
                 Text(
                   subtitle,
                   style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: 13,
                     fontWeight: FontWeight.w400,
+                    letterSpacing: 0.13,
                     color: Color(0xff666666),
                   ),
                 ),
               ],
             ),
           ),
-          Image.asset(iconAsset, width: 44, height: 44, fit: BoxFit.contain),
+          Image.asset(iconAsset, width: 51, height: 51, fit: BoxFit.contain),
         ],
       ),
     );

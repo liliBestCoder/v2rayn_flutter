@@ -156,7 +156,7 @@ class _LinesPageState extends State<LinesPage> {
     });
     try {
       final state = AppScope.of(context);
-      final measured = _isTrafficExhausted(state.userInfo?.usedTraffic)
+      final measured = (state.userInfo?.isTrafficExhausted ?? false)
           ? await _measureTcpPings(current)
           : await _measureDelaysBatch(current);
       if (!mounted) {
@@ -166,13 +166,6 @@ class _LinesPageState extends State<LinesPage> {
     } finally {
       testingDelays = false;
     }
-  }
-
-  bool _isTrafficExhausted(String? usedTraffic) {
-    if (usedTraffic == null || usedTraffic.trim().isEmpty) return false;
-    final match = RegExp(r'[-+]?\d+(?:\.\d+)?').firstMatch(usedTraffic);
-    final used = double.tryParse(match?.group(0) ?? '');
-    return used != null && used >= 80;
   }
 
   Future<List<LineNode>> _measureTcpPings(List<LineNode> source) async {
@@ -481,17 +474,14 @@ class _LinesPageState extends State<LinesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final filtered = nodes
-        .where(
-            (n) => filter == 'all' || n.keyword.toLowerCase().contains(filter))
-        .toList();
+    final filtered = nodes.where(_matchesFilter).toList();
     final groups = <String, List<LineNode>>{};
     for (final node in filtered) {
       groups.putIfAbsent(node.region, () => []).add(node);
     }
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(40, 24, 40, 0),
+      padding: const EdgeInsets.fromLTRB(42, 24, 42, 0),
       child: Column(
         children: [
           StatusBar(
@@ -508,11 +498,12 @@ class _LinesPageState extends State<LinesPage> {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xff1b1b1b),
+                    color: Color(0xff000000),
                   ),
                 ),
                 const Spacer(),
                 ToolbarButton(
+                    key: _filterButtonKey,
                     label: '筛选',
                     iconWidget: const LuxwapIcon(LuxwapIcons.settings,
                         size: 14, color: Color(0xff1b1b1b)),
@@ -703,8 +694,14 @@ class _LinesPageState extends State<LinesPage> {
     _stopStatsPolling();
     await _killProcess(coreProcess);
     coreProcess = null;
-    await TunRouteManager.removeDirectNodeRoute();
+    // Make sure the core is really gone before touching the routing table.
+    // _killProcess gives up after 2s and swallows the timeout, and the core
+    // holds the TUN adapter open while it shuts down. Pulling the node's /32
+    // route out from under a still-running core leaves its outbound handshake
+    // to be captured by TUN's own 0.0.0.0/1 — the infinite loop this route
+    // exists to prevent. Reap first, then unwind the route.
     await _cleanupBundledCoreProcesses();
+    await TunRouteManager.removeDirectNodeRoute();
     await _setSystemProxy(false);
     if (updateState && mounted) {
       setState(() => connected = false);
@@ -977,6 +974,13 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
   String _normalizeCountryCode(String? country) =>
       LuxwapConfigBuilder.normalizeCountryCode(country);
 
+  bool _matchesFilter(LineNode node) {
+    if (filter == 'all') {
+      return true;
+    }
+    return node.keyword.trim().toLowerCase() == filter.toLowerCase();
+  }
+
   Map<String, dynamic> _buildDnsConfig(ClientConfig config, bool isChina) =>
       LuxwapConfigBuilder.buildDnsConfig(config, isChina);
 
@@ -987,15 +991,54 @@ Add-Type -Namespace WinInet -Name NativeMethods -MemberDefinition '[DllImport("w
   ) =>
       LuxwapConfigBuilder.buildRoutingRules(config, countryCode, isChina);
 
+  final GlobalKey _filterButtonKey = GlobalKey();
+
   Future<void> _showFilterMenu() async {
+    final keywords = nodes
+        .map((node) => node.keyword.trim())
+        .where((keyword) => keyword.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+
+    // Anchor the menu under the filter button instead of at a fixed point.
+    // The previous RelativeRect.fromLTRB(900, 230, 100, 0) was absolute screen
+    // coordinates, so the menu drifted away from the button at any window size
+    // other than the one it was tuned for.
+    final button = _filterButtonKey.currentContext?.findRenderObject();
+    RelativeRect position;
+    double menuWidth = 120;
+    if (button is RenderBox && button.hasSize) {
+      final overlay =
+          Overlay.of(context).context.findRenderObject()! as RenderBox;
+      final topLeft = button.localToGlobal(Offset.zero, ancestor: overlay);
+      final size = button.size;
+      menuWidth = size.width;
+      position = RelativeRect.fromLTRB(
+        topLeft.dx,
+        topLeft.dy + size.height + 4,
+        overlay.size.width - topLeft.dx - size.width,
+        0,
+      );
+    } else {
+      position = RelativeRect.fill;
+    }
+
+    PopupMenuItem<String> item(String value, String label) => PopupMenuItem(
+          value: value,
+          child: SizedBox(
+            width: menuWidth,
+            child: Text(label, style: const TextStyle(fontSize: 14)),
+          ),
+        );
+
     final selected = await showMenu<String>(
       context: context,
-      position: const RelativeRect.fromLTRB(900, 230, 100, 0),
-      items: const [
-        PopupMenuItem(value: 'all', child: Text('All')),
-        PopupMenuItem(value: 'high', child: Text('High')),
-        PopupMenuItem(value: 'medium', child: Text('Medium')),
-        PopupMenuItem(value: 'low', child: Text('Low')),
+      position: position,
+      constraints: BoxConstraints(minWidth: menuWidth, maxWidth: menuWidth * 2),
+      items: [
+        item('all', '全部'),
+        ...keywords.map((keyword) => item(keyword, keyword)),
       ],
     );
     if (selected != null) {
@@ -1040,7 +1083,7 @@ class StatusBar extends StatelessWidget {
             ? const LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                colors: [Color(0xFF26C35F), Color(0xFF27C36A)],
+                colors: [Color(0xFF0ADB34), Color(0xFF4AC29E)],
               )
             : null,
         color: connected ? null : const Color(0xFFF7F7F8),
@@ -1159,7 +1202,7 @@ class ToolbarButton extends StatelessWidget {
         height: 30,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: const Color(0xFFF2F3F7),
+          color: const Color(0xFFEAEAEA),
           borderRadius: BorderRadius.circular(159),
         ),
         child: Row(
@@ -1171,7 +1214,7 @@ class ToolbarButton extends StatelessWidget {
             Text(
               label,
               style: const TextStyle(
-                color: Color(0xFF1B1B1B),
+                color: Color(0xFF000000),
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
               ),
@@ -1200,7 +1243,7 @@ class RegionGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         children: [
           // Section header (Frame 21: 920x50, r=10, fill=#F2F2F7)
@@ -1208,7 +1251,7 @@ class RegionGroup extends StatelessWidget {
             height: 50,
             padding: const EdgeInsets.symmetric(horizontal: 18),
             decoration: BoxDecoration(
-              color: const Color(0xFFF2F2F7),
+              color: const Color(0xFFF7F7F8),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
@@ -1221,7 +1264,7 @@ class RegionGroup extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF1B1B1B),
+                    color: Color(0xFF000000),
                   ),
                 ),
               ],
@@ -1259,7 +1302,7 @@ class LineRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 20),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(10),
@@ -1268,17 +1311,17 @@ class LineRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color: selected ? const Color(0xFFEBF3FF) : Colors.white,
+            color: selected ? const Color(0xFFE9F0FF) : Colors.white,
             border: selected
                 ? null
-                : Border.all(color: const Color(0xFFEEEEEE), width: 1.0),
+                : Border.all(color: const Color(0xFFDFDFDF), width: 1.0),
           ),
           child: Row(
             children: [
               // Radio indicator (Figma: Solid blue circle when selected, gray ring when unselected)
               Container(
-                width: 24,
-                height: 24,
+                width: 27,
+                height: 27,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color:
@@ -1296,7 +1339,7 @@ class LineRow extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w400,
-                  color: Color(0xFF111111),
+                  color: Color(0xFF000000),
                 ),
               ),
               const SizedBox(width: 16),
@@ -1322,7 +1365,7 @@ class SignalBarsIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (node.testingDelay) {
-      return _buildBars(activeCount: 0, activeColor: const Color(0xFFDFDFDF));
+      return _buildBars(activeCount: 0, activeColor: const Color(0xFFB2B2B2));
     }
     final load = node.effectiveLoad;
     final int activeCount;
@@ -1342,7 +1385,7 @@ class SignalBarsIndicator extends StatelessWidget {
 
   Widget _buildBars({required int activeCount, required Color activeColor}) {
     const barHeights = [5.0, 9.0, 13.0, 17.0];
-    const inactiveColor = Color(0xFFDFDFDF);
+    const inactiveColor = Color(0xFFB2B2B2);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -1370,6 +1413,20 @@ class _DelayText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Out of quota: the node is reachable but unusable, so say why rather than
+    // showing a latency the user cannot act on. Delay is still measured (by
+    // TCP ping instead of urltest) so the row keeps its ordering.
+    if (AppScope.of(context).userInfo?.isTrafficExhausted ?? false) {
+      return const Text(
+        '流量耗尽',
+        textAlign: TextAlign.right,
+        style: TextStyle(
+          color: Color(0xFFFF8D28),
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      );
+    }
     if (node.testingDelay) {
       return const Text(
         '刷新中',
@@ -1377,7 +1434,7 @@ class _DelayText extends StatelessWidget {
         style: TextStyle(
           color: Color(0xFF286AFC),
           fontSize: 13,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w400,
         ),
       );
     }
@@ -1388,7 +1445,7 @@ class _DelayText extends StatelessWidget {
         style: TextStyle(
           color: Color(0xFF286AFC),
           fontSize: 13,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w400,
         ),
       );
     }
@@ -1399,7 +1456,7 @@ class _DelayText extends StatelessWidget {
         style: TextStyle(
           color: Color(0xFF286AFC),
           fontSize: 13,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w400,
         ),
       );
     }
@@ -1412,13 +1469,13 @@ class _DelayText extends StatelessWidget {
             style: const TextStyle(
               color: Color(0xFF286AFC),
               fontSize: 20,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const TextSpan(
             text: ' /ms',
             style: TextStyle(
-              color: Color(0xFF666666),
+              color: Color(0xFF000000),
               fontSize: 20,
               fontWeight: FontWeight.w400,
             ),

@@ -35,3 +35,9 @@ line-list-debug.json
 user-info-debug.json
 flutter_*.png
 wpf_screen.png
+
+# Golden test failure artifacts (regenerated on every failing run)
+test/visual/failures/
+
+# Scratch config written by test/unit/dot_dns_test.dart on every run
+test/temp_xray_dot_test.json

@@ -703,7 +703,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           const SizedBox(height: 4),
           Container(
-            width: 28,
+            width: 15,
             height: 3,
             decoration: BoxDecoration(
               color: isSelected ? LuxwapColors.brand500 : Colors.transparent,
@@ -792,7 +792,7 @@ class _LoginPageState extends State<LoginPage> {
         const Text(
           '注册即视为您已阅读并同意《用户协议》及《隐私政策》。我们将依法保护您的数据安全。',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Color(0xffb2b2b2), fontSize: 10, height: 1.5),
+          style: TextStyle(color: Color(0xffb2b2b2), fontSize: 12),
         ),
         const SizedBox(height: 8),
         _backToLoginButton(center: true),
@@ -1150,7 +1150,7 @@ class _OauthButton extends StatelessWidget {
                 label,
                 textAlign: TextAlign.center,
                 style:
-                    const TextStyle(fontSize: 12.5, color: Color(0xff666666)),
+                    const TextStyle(fontSize: 14, color: Color(0xff666666)),
               ),
             ),
           ],

@@ -67,12 +67,13 @@ class LuxwapConfigBuilder {
     };
   }
 
-  static Map<String, dynamic> buildDnsConfig(ClientConfig config, bool isChina) {
+  static Map<String, dynamic> buildDnsConfig(
+      ClientConfig config, bool isChina) {
     final servers = <dynamic>[];
     if (config.dotDns.trim().isNotEmpty) {
       servers.add(config.dotDns.trim());
     }
-    if (config.vpnRoute) {
+    if (config.dnsSplit) {
       if (isChina) {
         servers.add({
           'address': config.innerDns,
@@ -213,6 +214,61 @@ class LuxwapConfigBuilder {
     return rules;
   }
 
+  /// Builds the front-proxy outbound for chained routing.
+  ///
+  /// Accepts `socks5://`, `socks://` and `http://` URIs, with optional
+  /// credentials. Returns null when the URI is empty or unusable, in which case
+  /// the caller connects to the node directly rather than failing to start.
+  static Map<String, dynamic>? buildChainOutbound(String rawUri, String tag) {
+    final trimmed = rawUri.trim();
+    if (trimmed.isEmpty) return null;
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null || uri.host.isEmpty || !uri.hasPort) return null;
+
+    final scheme = uri.scheme.toLowerCase();
+    final credentials = uri.userInfo.split(':');
+    final user = credentials.isNotEmpty ? credentials[0] : '';
+    final pass = credentials.length > 1 ? credentials[1] : '';
+
+    if (scheme == 'socks5' || scheme == 'socks') {
+      return {
+        'tag': tag,
+        'protocol': 'socks',
+        'settings': {
+          'servers': [
+            {
+              'address': uri.host,
+              'port': uri.port,
+              if (user.isNotEmpty)
+                'users': [
+                  {'user': user, 'pass': pass}
+                ],
+            }
+          ],
+        },
+      };
+    }
+    if (scheme == 'http' || scheme == 'https') {
+      return {
+        'tag': tag,
+        'protocol': 'http',
+        'settings': {
+          'servers': [
+            {
+              'address': uri.host,
+              'port': uri.port,
+              if (user.isNotEmpty)
+                'users': [
+                  {'user': user, 'pass': pass}
+                ],
+            }
+          ],
+        },
+      };
+    }
+    return null;
+  }
+
   static Map<String, dynamic>? buildConfigMap({
     required LineNode node,
     required ClientConfig clientConfig,
@@ -223,6 +279,16 @@ class LuxwapConfigBuilder {
     final proxyOutbound = buildVlessOutbound(node, 'proxy');
     if (proxyOutbound == null) {
       return null;
+    }
+
+    // Chained routing: the node outbound dials through the front proxy instead
+    // of the local network. Xray expresses this as `proxySettings.tag` on the
+    // outbound that should be tunnelled.
+    final chainOutbound = clientConfig.chainEnabled
+        ? buildChainOutbound(clientConfig.chainUri, 'chain')
+        : null;
+    if (chainOutbound != null) {
+      proxyOutbound['proxySettings'] = {'tag': 'chain'};
     }
     final countryCode = normalizeCountryCode(userCountry);
     final isChina = countryCode == 'cn';
@@ -253,6 +319,7 @@ class LuxwapConfigBuilder {
       'inbounds': inbounds,
       'outbounds': [
         proxyOutbound,
+        if (chainOutbound != null) chainOutbound,
         {'tag': 'direct', 'protocol': 'freedom'},
         {'tag': 'block', 'protocol': 'blackhole'},
       ],

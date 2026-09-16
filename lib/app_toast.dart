@@ -46,7 +46,7 @@ void showAppToast(String message, {bool success = false}) {
                       ? LuxwapColors.stateSuccess
                       : LuxwapColors.stateError,
                   fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ),

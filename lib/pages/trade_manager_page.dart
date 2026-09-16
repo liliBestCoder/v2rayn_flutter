@@ -347,7 +347,7 @@ class _StateView extends StatelessWidget {
         children: [
           Text(
             text,
-            style: const TextStyle(fontSize: 13, color: Color(0xff777777)),
+            style: const TextStyle(fontSize: 16, color: Color(0xffb2b2b2)),
           ),
           const SizedBox(height: 12),
           OutlinedButton(

@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:v2rayn_flutter/app_state.dart';
 import 'package:v2rayn_flutter/models/client_config.dart';
 import 'package:v2rayn_flutter/models/user_info.dart';
@@ -56,7 +59,8 @@ class MockApiService extends ApiService {
   }
 
   @override
-  Future<ApiResult> paymentOrders(String token, {int page = 1, int size = 20}) async {
+  Future<ApiResult> paymentOrders(String token,
+      {int page = 1, int size = 20}) async {
     return const ApiResult(
       code: '0',
       msg: 'OK',
@@ -106,8 +110,16 @@ Widget wrapVisualTest({
   AppState? state,
   Size size = const Size(1000, 700),
   ThemeData? theme,
+  Alignment? alignment,
 }) {
   final appState = state ?? createMockAppState();
+  // A SizedBox hands its child *tight* constraints, so a widget that sizes
+  // itself (Sidebar's width: 230, StatusBar's height: 80) is stretched to the
+  // canvas instead. Aligning inside it restores loose constraints, which is
+  // what any test asserting a widget's own size needs.
+  final content = alignment == null
+      ? child
+      : Align(alignment: alignment, child: child);
   return MaterialApp(
     theme: theme ?? buildLuxwapThemeData(),
     debugShowCheckedModeBanner: false,
@@ -119,7 +131,7 @@ Widget wrapVisualTest({
           height: size.height,
           child: AppScope(
             state: appState,
-            child: child,
+            child: content,
           ),
         ),
       ),
@@ -127,45 +139,139 @@ Widget wrapVisualTest({
   );
 }
 
-/// Records visual inspection findings between Figma specifications and actual rendering.
-class VisualAuditRecord {
-  final String component;
-  final String figmaSpec;
-  final String actualRender;
-  final bool isMatched;
-  final String details;
+/// Pumps [child] onto a surface sized exactly to [size] at 1x pixel ratio.
+///
+/// Without this the widget is laid out against the 800x600 default test view,
+/// so anything wider silently overflows and the captured golden no longer
+/// matches what the app renders. The view is restored after each test.
+Future<void> pumpVisual(
+  WidgetTester tester, {
+  required Widget child,
+  Size size = const Size(1000, 700),
+  AppState? state,
+  ThemeData? theme,
+  Alignment? alignment,
+  Duration? settleAfter,
+}) async {
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
 
+  await tester.pumpWidget(
+    wrapVisualTest(
+      child: child,
+      state: state,
+      size: size,
+      theme: theme,
+      alignment: alignment,
+    ),
+  );
+  if (settleAfter == null) {
+    await tester.pumpAndSettle();
+  } else {
+    // pumpAndSettle never returns for a widget that animates forever — a
+    // progress spinner, a blinking text cursor. Advance a fixed amount instead
+    // so the frame captured is deterministic.
+    await tester.pump(settleAfter);
+  }
+}
+
+/// A [LocalFileComparator] that accepts differences below [tolerance].
+///
+/// Goldens are platform-dependent: font rasterisation and anti-aliasing differ
+/// between the macOS CI runner and a Windows dev machine, which shows up as a
+/// sub-percent diff on every text-bearing widget. An exact-match comparator
+/// therefore fails the whole suite for reasons unrelated to the UI. Real
+/// regressions move far more pixels than [tolerance] and still fail.
+class TolerantGoldenComparator extends LocalFileComparator {
+  TolerantGoldenComparator(super.testFile, {this.tolerance = 0.005});
+
+  /// Maximum fraction of differing pixels still treated as a pass (0.5%).
+  final double tolerance;
+
+  @override
+  Future<bool> compare(Uint8List imageBytes, Uri golden) async {
+    final result = await GoldenFileComparator.compareLists(
+      imageBytes,
+      await getGoldenBytes(golden),
+    );
+    if (result.passed || result.diffPercent <= tolerance) {
+      result.dispose();
+      return true;
+    }
+    final error = await generateFailureOutput(result, golden, basedir);
+    result.dispose();
+    throw FlutterError(error);
+  }
+}
+
+/// Installs [TolerantGoldenComparator] for the current test file.
+///
+/// Call from `setUpAll` in any suite that uses `matchesGoldenFile`.
+void useTolerantGoldens({double tolerance = 0.005}) {
+  final current = goldenFileComparator;
+  if (current is LocalFileComparator) {
+    goldenFileComparator = TolerantGoldenComparator(
+      Uri.parse('${current.basedir}test.dart'),
+      tolerance: tolerance,
+    );
+  }
+}
+
+/// Notes which Figma node a widget was checked against.
+///
+/// This is documentation attached to the run, not a verdict: whether the widget
+/// actually matches is decided by the `expect`/`matchesGoldenFile` calls in the
+/// test body, and a failure there fails the test. An earlier version of this
+/// class carried a hardcoded `isMatched: true`, so the summary printed
+/// "✅ 一致" for every entry even when the assertions had failed.
+class VisualAuditRecord {
   const VisualAuditRecord({
     required this.component,
     required this.figmaSpec,
     required this.actualRender,
-    required this.isMatched,
-    required this.details,
+    this.details = '',
   });
 
+  /// Widget under test, ideally with its Figma node id.
+  final String component;
+
+  /// What the design file specifies.
+  final String figmaSpec;
+
+  /// What the widget renders.
+  final String actualRender;
+
+  /// Which assertion covers the comparison.
+  final String details;
+
   void printReport() {
-    // ignore: avoid_print
-    print('\n------------------------------------------------------------');
-    // ignore: avoid_print
-    print('【组件比对】: $component');
-    // ignore: avoid_print
-    print('  [原型规范] : $figmaSpec');
-    // ignore: avoid_print
-    print('  [实际渲染] : $actualRender');
-    // ignore: avoid_print
-    print('  [比对状态] : ${isMatched ? "✅ 一致 (MATCHED)" : "❌ 不匹配 (MISMATCHED)"}');
-    // ignore: avoid_print
-    print('  [详细说明] : $details');
+    final lines = [
+      '------------------------------------------------------------',
+      '【组件比对】: $component',
+      '  [原型规范] : $figmaSpec',
+      '  [实际渲染] : $actualRender',
+      if (details.isNotEmpty) '  [覆盖断言] : $details',
+    ];
+    for (final line in lines) {
+      // ignore: avoid_print
+      print(line);
+    }
   }
 }
 
 void printAuditSummary(String title, List<VisualAuditRecord> records) {
-  // ignore: avoid_print
-  print('\n============================================================');
-  // ignore: avoid_print
-  print('       $title        ');
-  // ignore: avoid_print
-  print('============================================================');
+  final header = [
+    '',
+    '============================================================',
+    '       $title        ',
+    '  ${records.length} 项已覆盖 · 通过与否以上方测试结果为准',
+    '============================================================',
+  ];
+  for (final line in header) {
+    // ignore: avoid_print
+    print(line);
+  }
   for (final r in records) {
     r.printReport();
   }

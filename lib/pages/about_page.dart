@@ -47,7 +47,7 @@ class _AboutPageState extends State<AboutPage> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF111111),
+                          color: Color(0xFF000000),
                         ),
                       ),
                       const SizedBox(height: 21),
@@ -68,8 +68,8 @@ class _AboutPageState extends State<AboutPage> {
                               style: TextButton.styleFrom(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 14),
-                                backgroundColor: const Color(0xFFF3F6FB),
-                                foregroundColor: const Color(0xFF333333),
+                                backgroundColor: Colors.transparent,
+                                foregroundColor: const Color(0xFF000000),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16)),
                               ),
@@ -90,15 +90,14 @@ class _AboutPageState extends State<AboutPage> {
                         style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF111111)),
+                            color: Color(0xFF000000)),
                       ),
                       const SizedBox(height: 18),
                       const Text(
                         '本软件持续迭代优化，如需获取最新版本或反馈问题，请联系支持团队。',
                         style: TextStyle(
                             fontSize: 18,
-                            color: Color(0xFF555555),
-                            height: 1.5),
+                            color: Color(0xFF3D3D3D)),
                       ),
                       const SizedBox(height: 20),
                       const Text(
@@ -106,7 +105,7 @@ class _AboutPageState extends State<AboutPage> {
                         style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF111111)),
+                            color: Color(0xFF000000)),
                       ),
                       const SizedBox(height: 20),
                       Container(
@@ -114,7 +113,7 @@ class _AboutPageState extends State<AboutPage> {
                         height: 352,
                         decoration: BoxDecoration(
                           color: const Color(0xFFF7F7F8),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: TextField(
                           controller: feedbackController,
@@ -133,7 +132,7 @@ class _AboutPageState extends State<AboutPage> {
                             contentPadding: EdgeInsets.all(20),
                           ),
                           style: const TextStyle(
-                              fontSize: 18, color: Color(0xFF111111)),
+                              fontSize: 18, color: Color(0xFF000000)),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -150,7 +149,7 @@ class _AboutPageState extends State<AboutPage> {
                                 foregroundColor: const Color(0xFF286AFC),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20)),
+                                    borderRadius: BorderRadius.circular(15)),
                               ),
                               child: const Text(
                                 '发送',

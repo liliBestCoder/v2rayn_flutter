@@ -74,6 +74,15 @@ abstract final class LuxwapRadius {
 
 abstract final class LuxwapTypography {
   static const String primaryFont = 'Inter';
+
+  /// Line-height ratio used throughout the design file.
+  ///
+  /// Every one of the 439 text nodes in LuxwapPC_v2 sets lineHeight = 1.21 x
+  /// fontSize — the design uses a single flat ratio rather than a graduated
+  /// scale. Applying it on [body] (which backs `textTheme.bodyMedium`, the
+  /// source of DefaultTextStyle) makes every Text that does not set its own
+  /// `height` inherit it.
+  static const double lineHeight = 1.21;
   static const List<String> fontFallbacks = [
     'Microsoft YaHei',
     'Segoe UI',
@@ -84,8 +93,8 @@ abstract final class LuxwapTypography {
   static TextStyle get heading1 => const TextStyle(
         fontFamily: primaryFont,
         fontSize: 20,
-        fontWeight: FontWeight.w600,
-        height: 1.3,
+        fontWeight: FontWeight.w500,
+        height: lineHeight,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
@@ -94,7 +103,7 @@ abstract final class LuxwapTypography {
         fontFamily: primaryFont,
         fontSize: 20,
         fontWeight: FontWeight.w400,
-        height: 1.3,
+        height: lineHeight,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
@@ -103,7 +112,7 @@ abstract final class LuxwapTypography {
         fontFamily: primaryFont,
         fontSize: 18,
         fontWeight: FontWeight.w400,
-        height: 1.35,
+        height: lineHeight,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
@@ -112,7 +121,7 @@ abstract final class LuxwapTypography {
         fontFamily: primaryFont,
         fontSize: 18,
         fontWeight: FontWeight.w600,
-        height: 1.35,
+        height: lineHeight,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
@@ -120,8 +129,8 @@ abstract final class LuxwapTypography {
   static TextStyle get heading5 => const TextStyle(
         fontFamily: primaryFont,
         fontSize: 16,
-        fontWeight: FontWeight.w600,
-        height: 1.4,
+        fontWeight: FontWeight.w500,
+        height: lineHeight,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
@@ -130,7 +139,7 @@ abstract final class LuxwapTypography {
         fontFamily: primaryFont,
         fontSize: 16,
         fontWeight: FontWeight.w400,
-        height: 1.4,
+        height: lineHeight,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
@@ -139,7 +148,7 @@ abstract final class LuxwapTypography {
         fontFamily: primaryFont,
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        height: 1.45,
+        height: lineHeight,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
@@ -148,7 +157,7 @@ abstract final class LuxwapTypography {
         fontFamily: primaryFont,
         fontSize: 12,
         fontWeight: FontWeight.w400,
-        height: 1.5,
+        height: lineHeight,
         color: LuxwapColors.foreground,
         fontFamilyFallback: fontFallbacks,
       );
@@ -157,7 +166,7 @@ abstract final class LuxwapTypography {
         fontFamily: primaryFont,
         fontSize: 11,
         fontWeight: FontWeight.w400,
-        height: 1.4,
+        height: lineHeight,
         color: LuxwapColors.mutedForeground,
         fontFamilyFallback: fontFallbacks,
       );
@@ -197,6 +206,10 @@ ThemeData buildLuxwapThemeData() {
     fontFamily: LuxwapTypography.primaryFont,
     fontFamilyFallback: LuxwapTypography.fontFallbacks,
     scaffoldBackgroundColor: LuxwapColors.scaffoldBackground,
+    popupMenuTheme: const PopupMenuThemeData(
+      color: Color(0xfffafbfc),
+      surfaceTintColor: Colors.transparent,
+    ),
     colorScheme: ColorScheme.fromSeed(
       seedColor: LuxwapColors.brand500,
       primary: LuxwapColors.brand500,

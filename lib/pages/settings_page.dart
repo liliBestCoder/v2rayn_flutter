@@ -21,13 +21,15 @@ class _SettingsPageState extends State<SettingsPage> {
   final innerDns = TextEditingController(text: '223.5.5.5');
   final globalDns = TextEditingController(text: '8.8.8.8');
   final dotDns = TextEditingController(text: '');
+  final chainUri = TextEditingController(text: '');
 
   bool passByIp = true;
   bool passByDomain = true;
   bool passByLanIp = true;
   bool passByLanDomain = false;
   bool blockAds = false;
-  bool vpnRoute = true;
+  bool dnsSplit = true;
+  bool chainEnabled = false;
   bool tunEnabled = true;
   bool closeToTray = true;
   bool geoUpdating = false;
@@ -56,12 +58,14 @@ class _SettingsPageState extends State<SettingsPage> {
     innerDns.text = config.innerDns;
     globalDns.text = config.globalDns;
     dotDns.text = config.dotDns;
+    chainUri.text = config.chainUri;
     passByIp = config.passByIp;
     passByDomain = config.passByDomain;
     passByLanIp = config.passByLanIp;
     passByLanDomain = config.passByLanDomain;
     blockAds = config.blockAds;
-    vpnRoute = config.vpnRoute;
+    dnsSplit = config.dnsSplit;
+    chainEnabled = config.chainEnabled;
     tunEnabled = config.tunEnabled;
     closeToTray = config.closeToTray;
     routeStrategy = config.routeStrategy;
@@ -110,6 +114,7 @@ class _SettingsPageState extends State<SettingsPage> {
     innerDns.dispose();
     globalDns.dispose();
     dotDns.dispose();
+    chainUri.dispose();
     super.dispose();
   }
 
@@ -197,10 +202,12 @@ class _SettingsPageState extends State<SettingsPage> {
         passByLanIp: passByLanIp,
         passByLanDomain: passByLanDomain,
         blockAds: blockAds,
-        vpnRoute: vpnRoute,
+        dnsSplit: dnsSplit,
         tunEnabled: tunEnabled,
         closeToTray: closeToTray,
         dotDns: dotDns.text.trim(),
+        chainEnabled: chainEnabled,
+        chainUri: chainUri.text.trim(),
         outerDns:
             outerDns.text.trim().isEmpty ? '8.8.8.8' : outerDns.text.trim(),
         innerDns:
@@ -214,10 +221,20 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  /// Applies a change that alters the generated Xray config, then offers to
+  /// restart the proxy so it takes effect.
   Future<void> _setAndSave(VoidCallback change) async {
     setState(change);
     await _saveConfig();
     await _confirmProxyRestart();
+  }
+
+  /// Applies a change that only affects the app's own UI — window close
+  /// behaviour, interface language. These never reach the Xray config, so
+  /// asking to restart the proxy would be asking about nothing.
+  Future<void> _setAndSaveUiOnly(VoidCallback change) async {
+    setState(change);
+    await _saveConfig();
   }
 
   Future<void> _saveAndAskRestart() async {
@@ -379,14 +396,35 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             const SizedBox(height: 16),
+            const _SectionTitle('链式代理'),
+            const SizedBox(height: 8),
+            _SettingRow(
+              title: '启用链式代理',
+              subtitle: '节点流量先经过前置代理再出网，用于内网跳板或二次中转',
+              trailing: _MiniSwitch(
+                value: chainEnabled,
+                onChanged: (v) => _setAndSave(() => chainEnabled = v),
+              ),
+            ),
+            if (chainEnabled)
+              _SettingRow(
+                title: '前置代理地址',
+                subtitle: '支持 socks5:// 与 http://，可带账号密码，'
+                    '如 socks5://user:pass@127.0.0.1:1080',
+                trailing: _EditableDnsField(
+                  controller: chainUri,
+                  onChanged: _saveAndAskRestart,
+                ),
+              ),
+            const SizedBox(height: 16),
             const _SectionTitle('高级配置'),
             const SizedBox(height: 8),
             _SettingRow(
               title: '启用 DNS 分流',
               subtitle: '境内外流量使用不同 DNS，关闭后统一使用全局 DNS。',
               trailing: _MiniSwitch(
-                value: vpnRoute,
-                onChanged: (v) => _setAndSave(() => vpnRoute = v),
+                value: dnsSplit,
+                onChanged: (v) => _setAndSave(() => dnsSplit = v),
               ),
             ),
             _DnsSectionHeader(
@@ -446,7 +484,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 value: closeToTray ? '最小化到托盘' : '直接退出',
                 values: const ['最小化到托盘', '直接退出'],
                 onSelected: (value) =>
-                    _setAndSave(() => closeToTray = (value == '最小化到托盘')),
+                    _setAndSaveUiOnly(() => closeToTray = (value == '最小化到托盘')),
               ),
             ),
             if (Platform.isWindows)
@@ -476,7 +514,7 @@ class _SettingsPageState extends State<SettingsPage> {
               trailing: _DropdownText(
                 value: language,
                 values: const ['简体中文', 'English'],
-                onSelected: (value) => _setAndSave(() => language = value),
+                onSelected: (value) => _setAndSaveUiOnly(() => language = value),
               ),
             ),
           ],
@@ -506,7 +544,7 @@ class _DnsSectionHeader extends StatelessWidget {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w400,
-              color: Color(0xFF1A1A1A),
+              color: Color(0xFF000000),
             ),
           ),
         ),
@@ -527,7 +565,7 @@ class _SectionTitle extends StatelessWidget {
       style: const TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.w500,
-        color: Color(0xFF1A1A1A),
+        color: Color(0xFF000000),
       ),
     );
   }
@@ -567,8 +605,8 @@ class _GeoUpdateButton extends StatelessWidget {
                   text,
                   maxLines: 1,
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
                     color: error == null
                         ? LuxwapColors.brand500
                         : LuxwapColors.stateError,
@@ -634,7 +672,7 @@ class _SettingRow extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF333333),
+                    color: Color(0xFF3D3D3D),
                   ),
                 ),
                 if (subtitle.isNotEmpty) ...[
@@ -646,7 +684,7 @@ class _SettingRow extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF777777),
+                      color: Color(0x80666666),
                     ),
                   ),
                 ],
@@ -678,16 +716,30 @@ class _DropdownText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Width the menu to the widest option so it tracks its trigger instead of
+    // falling back to PopupMenuButton's 112pt minimum, and drop it under the
+    // trigger rather than the default `over`, which covers the current value.
+    final menuWidth = values.fold<double>(0, (widest, item) {
+      final painter = TextPainter(
+        text: TextSpan(text: item, style: const TextStyle(fontSize: 14)),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      return painter.width > widest ? painter.width : widest;
+    }) + 48;
+
     return PopupMenuButton<String>(
       tooltip: '',
       initialValue: value,
       onSelected: onSelected,
+      position: PopupMenuPosition.under,
+      offset: const Offset(0, 4),
+      constraints: BoxConstraints(minWidth: menuWidth, maxWidth: menuWidth),
       itemBuilder: (context) => values
           .map(
             (item) => PopupMenuItem<String>(
               value: item,
-              height: 30,
-              child: Text(item, style: const TextStyle(fontSize: 12)),
+              height: 36,
+              child: Text(item, style: const TextStyle(fontSize: 14)),
             ),
           )
           .toList(),

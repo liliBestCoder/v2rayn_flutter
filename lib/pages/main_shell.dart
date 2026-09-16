@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
+import '../models/user_info.dart';
 import 'about_page.dart';
 import 'activity_page.dart';
 import 'help_page.dart';
@@ -88,7 +89,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
               onSelect: _select,
               onHelp: () => _select(4),
             ),
-            Container(width: 1, color: const Color(0xFFEEEEEE)),
+            Container(width: 1, color: const Color(0xFFDFDFDF)),
             Expanded(
               child: Column(
                 children: [
@@ -326,7 +327,7 @@ class _NavButton extends StatelessWidget {
                     style: TextStyle(
                       color: active
                           ? const Color(0xFF286AFC)
-                          : const Color(0xFF666666),
+                          : const Color(0xFF3D3D3D),
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),
@@ -358,18 +359,28 @@ class _UserHeader extends StatelessWidget {
         user?.expiration.isNotEmpty == true ? user!.expiration : '-';
     final usedTraffic =
         user?.usedTraffic.isNotEmpty == true ? user!.usedTraffic : '0';
+    final total = user?.totalTraffic ?? UserInfo.kDefaultTotalTrafficGb;
+    final totalTrafficLabel =
+        '${total == total.roundToDouble() ? total.round() : total}GB';
     final level = _levelSymbols(user?.cumulativeMonths ?? 0);
 
     return Container(
       height: 263,
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1)),
+        border: Border(bottom: BorderSide(color: Color(0xFFDFDFDF), width: 1)),
         color: Colors.white,
       ),
       padding: const EdgeInsets.fromLTRB(42, 42, 42, 41),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final cardWidth = (constraints.maxWidth * 0.43).clamp(320.0, 399.0);
+          // Figma lays the header out as 406 (info) + 42 (gap) + 399 (card)
+          // inside a 916pt content column, so the card owns ~49.5% of the pair.
+          // Holding that share means the info block and the card lose width at
+          // the same rate instead of the card hitting a floor and the info
+          // block absorbing every further pixel.
+          const gap = 42.0;
+          final pairWidth = (constraints.maxWidth - gap).clamp(0.0, 916.0);
+          final cardWidth = (pairWidth * 0.495).clamp(300.0, 399.0);
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -385,7 +396,7 @@ class _UserHeader extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF1F2329),
+                        color: Color(0xFF1B1B1B),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -415,31 +426,24 @@ class _UserHeader extends StatelessWidget {
                     const SizedBox(height: 10),
                     _HeaderActionButton(
                       label: '交易记录',
-                      color: const Color(0xFF27C36A),
-                      background: const Color(0xFFEBF8F0),
+                      color: const Color(0xFF27A53C),
+                      background: const Color(0xFFE9F6EC),
                       icon: const LuxwapIcon(LuxwapIcons.copy, size: 20),
                       onPressed: onTrade,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 42),
+              const SizedBox(width: gap),
               // Blue Traffic Card
               Container(
                 width: cardWidth,
                 height: 180,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF286AFC), Color(0xFF3E98F3)],
+                    colors: [Color(0xFF3E98F3), Color(0xFF2A72E1)],
                   ),
                   borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF286AFC).withValues(alpha: 0.25),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
                 ),
                 padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
                 child: Column(
@@ -459,18 +463,20 @@ class _UserHeader extends StatelessWidget {
                         ),
                         InkWell(
                           onTap: onRenew,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(50),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 4),
+                                horizontal: 20, vertical: 9),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF27C36A),
-                              borderRadius: BorderRadius.circular(20),
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF3EF362), Color(0xFF00A721)],
+                              ),
+                              borderRadius: BorderRadius.circular(50),
                             ),
                             child: const Text(
                               '充值中心',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: Color(0xFFF7F7F8),
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -486,7 +492,7 @@ class _UserHeader extends StatelessWidget {
                         const Text(
                           '已用流量 ',
                           style: TextStyle(
-                            color: Colors.white70,
+                            color: Colors.white,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -505,18 +511,18 @@ class _UserHeader extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         RichText(
-                          text: const TextSpan(
+                          text: TextSpan(
                             children: [
-                              TextSpan(
+                              const TextSpan(
                                   text: '总流量',
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500)),
-                              TextSpan(text: '  '),
+                              const TextSpan(text: '  '),
                               TextSpan(
-                                  text: '80GB',
-                                  style: TextStyle(
+                                  text: totalTrafficLabel,
+                                  style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 18,
                                       fontWeight: FontWeight.w400)),
@@ -544,21 +550,18 @@ class _UserHeader extends StatelessWidget {
                         ),
                       ],
                     ),
-                    // Capsule progress bar with white rounded thumb knob
+                    // Capsule progress bar: white track, blue gradient fill
                     LayoutBuilder(
                       builder: (context, constraints) {
                         final barWidth = constraints.maxWidth;
-                        const trackHeight = 12.0;
-                        const thumbWidth = 44.0;
-                        final usedNum = double.tryParse(usedTraffic) ?? 0.0;
-                        final factor = (usedNum / 80.0).clamp(0.0, 1.0);
-                        final activeWidth =
-                            (barWidth * factor).clamp(thumbWidth, barWidth);
+                        const trackHeight = 23.0;
+                        final factor = user?.trafficFactor ?? 0.0;
+                        final activeWidth = (barWidth * factor).clamp(0.0, barWidth);
                         return Container(
                           width: barWidth,
                           height: trackHeight,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.22),
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(100),
                           ),
                           child: Stack(
@@ -569,29 +572,14 @@ class _UserHeader extends StatelessWidget {
                                 height: trackHeight,
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFF38B2FF), Colors.white],
+                                    colors: [
+                                      Color(0xFF92C7FF),
+                                      Color(0xFF29A4FF),
+                                      Color(0xFF218AFF),
+                                    ],
+                                    stops: [0.0, 0.51, 1.0],
                                   ),
                                   borderRadius: BorderRadius.circular(100),
-                                ),
-                              ),
-                              Positioned(
-                                left: (activeWidth - thumbWidth)
-                                    .clamp(0.0, barWidth - thumbWidth),
-                                child: Container(
-                                  width: thumbWidth,
-                                  height: trackHeight,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(100),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black
-                                            .withValues(alpha: 0.18),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 1),
-                                      ),
-                                    ],
-                                  ),
                                 ),
                               ),
                             ],

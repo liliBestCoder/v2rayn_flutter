@@ -143,7 +143,13 @@ class TunRouteManager {
       await removeDirectNodeRoute(_activeNodeIp);
     }
 
-    final gateway = await getPhysicalDefaultGateway();
+    // Re-probe every session rather than trusting the cache. The cached value
+    // survives for the life of the process, so moving between networks (or
+    // probing once while a previous TUN adapter still held the default route)
+    // pins every later /32 to a gateway that is no longer reachable — the node
+    // traffic is handed to a dead next hop and TUN appears to stop working.
+    // One `route print` per connect is not worth the risk of a stale hop.
+    final gateway = await getPhysicalDefaultGateway(forceRefresh: true);
     if (gateway == null || gateway.isEmpty) {
       return false;
     }
